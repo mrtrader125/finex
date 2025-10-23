@@ -1,349 +1,398 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark"> <!-- Default to dark theme -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Settings | Finclarity</title>
+    <title>Settings | Finclarity</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        // Apply theme from localStorage on load to prevent flash
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
+        // Tailwind config for dark mode
+        tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
         }
     </script>
     <style>
-        /* ADDED: CSS Variables for Theming */
-        :root {
-            --bg-primary: #f4f6f9;
-            --bg-secondary: #ffffff;
-            --bg-glass: rgba(255, 255, 255, 0.7);
-            --bg-hover: rgba(0, 0, 0, 0.05);
-            --bg-input: rgba(0, 0, 0, 0.05);
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --border-color: rgba(0, 0, 0, 0.1);
-        }
-        html.dark {
-            --bg-primary: #0c111e;
-            --bg-secondary: #111827;
-            --bg-glass: rgba(17, 24, 39, 0.7);
-            --bg-hover: rgba(255, 255, 255, 0.08);
-            --bg-input: rgba(255, 255, 255, 0.05);
-            --text-primary: #f4f6f9;
-            --text-secondary: #a9a9b3;
-            --border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Standard Styles */
         html { scrollbar-width: none; -ms-overflow-style: none; }
         html::-webkit-scrollbar { display: none; }
+        
+        /* Base styles */
         body { 
-            background-color: var(--bg-primary); 
-            color: var(--text-primary); 
             font-family: 'Source Sans Pro', sans-serif; 
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
         
-        /* Component Styles */
-        .sidebar-link { transition: all 0.2s ease; color: var(--text-secondary); }
-        .sidebar-link:hover, .sidebar-link.active { color: var(--text-primary); background-color: var(--bg-hover); }
-        #sidebar { background-color: var(--bg-secondary); transition: transform 0.3s ease-in-out; border-right: 1px solid var(--border-color); }
-        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+        /* Light Theme */
+        body { 
+            background-color: #f4f6f9; /* Light gray background */
+            color: #1f2937; /* Dark text */
+        }
         .glass-card { 
-            background: var(--bg-glass); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid var(--border-color); 
+            background: rgba(255, 255, 255, 0.8); /* Lighter white */
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(0, 0, 0, 0.08); 
             border-radius: 1.5rem; 
-            transition: background-color 0.3s, border-color 0.3s;
+            color: #1f2937; /* Dark text for cards */
         }
-        .form-input { 
-            background: var(--bg-input); 
-            border: 1px solid var(--border-color); 
-            color: var(--text-primary);
+        .sidebar { 
+            background-color: #e5e7eb/80; /* Light gray sidebar */
+            color: #374151; /* Medium gray text */
         }
-        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease; }
-        .main-button:hover { background-color: #0065ff; }
-        .secondary-button {
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            transition: all 0.3s;
+         .header {
+             background-color: #f9fafb/30; /* Very light gray header */
+         }
+        .sidebar-link { color: #4b5563; } /* Slightly darker gray for links */
+        .sidebar-link:hover, .sidebar-link.active { color: #0052cc; background-color: rgba(0, 82, 204, 0.08); } /* Blue accent */
+        .logout-link { color: #dc2626; } /* Red for logout */
+        .logout-link:hover { color: #b91c1c; background-color: rgba(220, 38, 38, 0.1); }
+        .form-input, .form-switch-bg { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937; }
+        .text-color-base { color: #1f2937; }
+        .text-color-muted { color: #4b5563; }
+        .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
+        .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
+        /* Background pattern for light mode */
+        .textured-background {
+             background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+             background-size: 2rem 2rem;
         }
-        .secondary-button:hover {
-            border-color: #0052cc;
-            color: var(--text-primary);
+
+        /* Dark Theme */
+        .dark body { 
+            background-color: #0c111e; 
+            color: #f4f6f9; 
         }
-        .secondary-button.active {
-            background-color: #0052cc;
-            border-color: #0052cc;
-            color: white;
+        .dark .glass-card { 
+            background: rgba(17, 24, 39, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #f4f6f9; 
         }
-        
-        /* Toggle Switch Style */
-        .form-switch {
-            width: 3.5rem; height: 2rem; background-color: var(--bg-input); border: 1px solid var(--border-color);
-            padding: 0.25rem; border-radius: 9999px; cursor: pointer; transition: background-color 0.2s ease-in-out;
+        .dark .sidebar { 
+            background-color: #111827/80; 
+            color: #a9a9b3; 
         }
-        .form-switch-knob {
-            width: 1.5rem; height: 1.5rem; background-color: var(--bg-secondary); border-radius: 9999px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s ease-in-out;
+         .dark .header {
+             background-color: #111827/30;
+         }
+        .dark .sidebar-link { color: #a9a9b3; }
+        .dark .sidebar-link:hover, .dark .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+        .dark .logout-link { color: #f87171; } /* Lighter red */
+        .dark .logout-link:hover { color: #ef4444; background-color: rgba(248, 113, 113, 0.1); }
+        .dark .form-input, .dark .form-switch-bg { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
+        .dark .text-color-base { color: #f4f6f9; }
+        .dark .text-color-muted { color: #a9a9b3; }
+        .dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
+        .dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
+        /* Background pattern for dark mode */
+        .dark .textured-background {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+             background-size: 2rem 2rem;
         }
-        input:checked + .form-switch { background-color: #0052cc; border-color: #0052cc; }
-        input:checked + .form-switch .form-switch-knob { transform: translateX(1.5rem); }
+
+        /* General styles */
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+        .form-switch { display: inline-flex; align-items: center; cursor: pointer; }
+        .form-switch-bg { width: 40px; height: 20px; border-radius: 9999px; position: relative; transition: background-color 0.2s ease; }
+        .form-switch-knob { width: 16px; height: 16px; background-color: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s ease; }
+        .form-switch input:checked + .form-switch-bg { background-color: #0052cc; }
+        .form-switch input:checked + .form-switch-bg .form-switch-knob { transform: translateX(20px); }
+        .checkbox-label { user-select: none; } /* Prevent text selection on double click */
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased textured-background"> <!-- Apply textured background -->
     <div id="app-wrapper" style="display: none;">
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden dark:bg-opacity-80"></div>
         
-        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
+        <!-- Sidebar - Content will be dynamically generated -->
+        <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full w-72 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
             <div class="p-6 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-8">
-                    <div class="text-xl font-bold tracking-wider"><a href="member_dashboard.html">FINCLARITY</a></div>
-                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+                    <div class="text-xl font-bold tracking-wider"><a href="member_dashboard.html" class="text-color-base hover:opacity-80">FINCLARITY</a></div>
+                    <button id="close-sidebar-btn" class="text-color-muted hover:text-color-base"><i class="fas fa-times fa-lg"></i></button>
                 </div>
-                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
-                    <a href="member_dashboard.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
-                    <a href="portfolio.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-wallet fa-fw w-6"></i><span>Portfolio</span></a>
-                    <a href="articles.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
-                    <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
-                    <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
-                    <a href="real_results.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
-                    <a href="market_screener.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-search-dollar fa-fw w-6"></i><span>Market Screener</span></a>
-                    <a href="news.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-newspaper fa-fw w-6"></i><span>Live News Feed</span></a>
-                    <a href="economic_calendar.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-calendar-alt fa-fw w-6"></i><span>Economic Calendar</span></a>
-                    <a href="trading_journal.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book fa-fw w-6"></i><span>Trading Journal</span></a>
-                    <a href="tools_calculators.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools</span></a>
-                    <a href="settings.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Settings</span></a>
+                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg overflow-y-auto">
+                    <!-- Links will be injected here by JS -->
                 </nav>
                 <div class="mt-auto">
-                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a>
+                    <a href="#" id="logout-btn" class="logout-link flex items-center gap-4 hover-bg-base p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a>
                 </div>
             </div>
         </aside>
 
         <div class="min-h-screen flex flex-col">
-             <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30">
+            <header id="header" class="header backdrop-blur-md sticky top-0 z-30">
                 <div class="container mx-auto flex justify-between items-center p-4">
                      <div class="flex items-center gap-4">
-                        <button id="open-sidebar-btn" class="hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
-                        <div class="text-2xl font-bold tracking-wider">Account Settings</div>
+                        <button id="open-sidebar-btn" class="text-color-base hover:text-blue-500 p-2 rounded-full hover-bg-base"><i class="fas fa-bars fa-lg"></i></button>
+                        <div class="text-2xl font-bold tracking-wider text-color-base">Settings</div>
                     </div>
                     <nav class="flex items-center gap-4">
-                         <span id="user-email" class="hidden sm:inline text-sm"></span>
-                         <a href="settings.html" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a>
+                         <span id="user-email" class="hidden sm:inline text-color-muted"></span>
+                         <a href="settings.html" class="text-color-base p-2 rounded-full hover-bg-base"><i class="fas fa-user-circle fa-lg"></i></a>
                     </nav>
                 </div>
             </header>
 
             <main class="container mx-auto p-4 md:p-8 flex-grow">
                 <div class="max-w-4xl mx-auto space-y-8">
-                
-                    <div class="glass-card p-6 md:p-8">
-                        <h2 class="text-2xl font-bold mb-6">Display & Theme</h2>
-                        <label class="text-sm font-semibold">Appearance</label>
-                        <p class="text-sm text-gray-500 mb-4">Choose how Finclarity looks to you.</p>
-                        <div id="theme-switcher" class="flex gap-4">
-                            <button data-theme="light" class="secondary-button rounded-lg p-4 w-full text-center">
-                                <i class="fas fa-sun fa-fw mr-2"></i> Light Mode
-                            </button>
-                            <button data-theme="dark" class="secondary-button rounded-lg p-4 w-full text-center">
-                                <i class="fas fa-moon fa-fw mr-2"></i> Dark Mode
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-6 md:p-8">
-                        <h2 class="text-2xl font-bold mb-2">Sidebar Navigation</h2>
-                        <p class="text-sm text-gray-500 mb-6">Choose which items appear in your sidebar.</p>
-                        <div class="space-y-4">
-                            <label for="toggle-portfolio" class="flex justify-between items-center cursor-pointer">
-                                <span><i class="fas fa-wallet fa-fw w-6 mr-3 text-gray-400"></i>Portfolio</span>
-                                <input type="checkbox" id="toggle-portfolio" data-key="showPortfolio" class="sr-only preference-toggle">
-                                <div class="form-switch"><div class="form-switch-knob"></div></div>
-                            </label>
-                            <label for="toggle-articles" class="flex justify-between items-center cursor-pointer">
-                                <span><i class="fas fa-book-reader fa-fw w-6 mr-3 text-gray-400"></i>Articles</span>
-                                <input type="checkbox" id="toggle-articles" data-key="showArticles" class="sr-only preference-toggle">
-                                <div class="form-switch"><div class="form-switch-knob"></div></div>
-                            </label>
-                            <label for="toggle-analysis" class="flex justify-between items-center cursor-pointer">
-                                <span><i class="fas fa-image fa-fw w-6 mr-3 text-gray-400"></i>Analysis</span>
-                                <input type="checkbox" id="toggle-analysis" data-key="showAnalysis" class="sr-only preference-toggle">
-                                <div class="form-switch"><div class="form-switch-knob"></div></div>
-                            </label>
-                            </div>
-                    </div>
-
-                    <div class="glass-card p-6 md:p-8">
-                        <h2 class="text-2xl font-bold mb-6">Account Management</h2>
-                        <div class="space-y-6">
-                            <div>
-                                <label for="email-input" class="text-sm font-semibold">Email Address</label>
-                                <div class="flex gap-4 mt-2">
-                                    <input type="email" id="email-input" class="form-input w-full p-2 rounded-lg" value="testuser@gmail.com">
-                                    <button id="change-email-btn" class="main-button font-semibold py-2 px-5 rounded-lg">Update</button>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="password-input" class="text-sm font-semibold">Change Password</label>
-                                <div class="flex gap-4 mt-2">
-                                    <input type="password" id="password-input" class="form-input w-full p-2 rounded-lg" placeholder="Enter new password">
-                                    <button id="change-pass-btn" class="main-button font-semibold py-2 px-5 rounded-lg">Update</button>
-                                </div>
+                    <!-- Appearance Settings -->
+                    <div class="glass-card p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Appearance</h2>
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-color-base">Theme</span>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-sun text-yellow-500"></i>
+                                <label class="form-switch">
+                                    <input type="checkbox" id="theme-toggle" class="sr-only">
+                                    <div class="form-switch-bg">
+                                        <div class="form-switch-knob"></div>
+                                    </div>
+                                </label>
+                                <i class="fas fa-moon text-blue-300"></i>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Sidebar Customization -->
+                    <div class="glass-card p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Sidebar Menu Items</h2>
+                        <p class="text-color-muted mb-6 text-sm">Choose which pages appear in your sidebar navigation for quick access.</p>
+                        <div id="sidebar-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Checkboxes will be dynamically loaded here -->
+                            <p class="text-color-muted text-center col-span-full">Loading options...</p>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="glass-card p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Account</h2>
+                         <div class="space-y-4">
+                             <div>
+                                 <span class="font-semibold text-color-base block mb-1">Email Address</span>
+                                 <span id="account-email" class="text-color-muted">Loading...</span>
+                             </div>
+                             <div>
+                                <span class="font-semibold text-color-base block mb-1">Password</span>
+                                <button class="text-sm text-blue-500 hover:underline">Change Password (Not implemented)</button>
+                             </div>
+                         </div>
+                    </div>
+                     <p id="save-status" class="text-center text-sm text-color-muted h-4"></p>
                 </div>
             </main>
         </div>
     </div>
-
+    
+    <!-- Unified JS Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
-        
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
         const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
+
+        // --- Core Elements ---
         const appWrapper = document.getElementById('app-wrapper');
         const userEmailSpan = document.getElementById('user-email');
-        const emailInput = document.getElementById('email-input');
-        const prefToggles = document.querySelectorAll('.preference-toggle');
+        const accountEmailSpan = document.getElementById('account-email');
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const themeToggle = document.getElementById('theme-toggle');
+        const sidebarOptionsContainer = document.getElementById('sidebar-options-container');
+        const saveStatus = document.getElementById('save-status');
+
+        let currentUserId = null;
+        let userPreferences = { // Default preferences
+            theme: 'dark',
+            sidebarItems: {} // Will be populated with all items initially visible
+        }; 
         let settingsDocRef = null;
+        let debounceTimer = null;
 
-        // --- Auth & Sidebar/Logout (Standard) ---
-        onAuthStateChanged(auth, user => {
+        // --- Available Sidebar Items ---
+        const allSidebarItems = [
+            { id: 'dashboard', href: 'member_dashboard.html', icon: 'fa-tachometer-alt', text: 'Dashboard' },
+            { id: 'portfolio', href: 'portfolio.html', icon: 'fa-wallet', text: 'Portfolio' },
+            { id: 'articles', href: 'articles.html', icon: 'fa-book-reader', text: 'Articles' },
+            { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
+            { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
+            { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
+            { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
+            { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
+            { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' },
+            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
+            { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
+            { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
+        ];
+        
+        // Initialize default sidebar visibility
+        allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true);
+
+        // --- Auth State ---
+        onAuthStateChanged(auth, async user => {
             if (user) {
-                appWrapper.style.display = 'block';
+                currentUserId = user.uid;
+                settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
                 userEmailSpan.textContent = user.email;
-                emailInput.value = user.email;
-
-                // Init settings listener
-                settingsDocRef = doc(db, 'users', user.uid, 'settings', 'userPreferences');
-                listenForSettings();
+                accountEmailSpan.textContent = user.email; // Display email on settings page
+                
+                await loadPreferences(); // Load saved preferences
+                
+                applyTheme(userPreferences.theme); // Apply loaded theme
+                renderSidebar(); // Render sidebar based on loaded preferences
+                populateSidebarOptions(); // Populate checkboxes on settings page
+                
+                appWrapper.style.display = 'block'; // Show the app content
             } else {
+                // Not logged in, redirect to login
                 window.location.replace(new URL('login.html', window.location.href).href);
             }
         });
 
+        // --- Preference Management ---
+        async function loadPreferences() {
+            try {
+                const docSnap = await getDoc(settingsDocRef);
+                if (docSnap.exists()) {
+                    const loadedPrefs = docSnap.data();
+                    // Merge loaded prefs with defaults, ensuring all keys exist
+                    userPreferences.theme = loadedPrefs.theme || 'dark';
+                    // Ensure sidebarItems exists and merge individual item visibility
+                    userPreferences.sidebarItems = { ...userPreferences.sidebarItems }; // Clone default visibility
+                    if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
+                         for (const key in userPreferences.sidebarItems) {
+                             if (loadedPrefs.sidebarItems.hasOwnProperty(key)) {
+                                 userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key];
+                             }
+                         }
+                    }
+                } else {
+                     // No saved settings, save the defaults
+                     await savePreferences(); 
+                }
+            } catch (error) {
+                console.error("Error loading preferences:", error);
+                 // Fallback to defaults if loading fails
+                 userPreferences = { theme: 'dark', sidebarItems: {} };
+                 allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true);
+            }
+        }
+        
+        async function savePreferences() {
+            if (!settingsDocRef) return;
+            saveStatus.textContent = 'Saving...';
+             try {
+                 await setDoc(settingsDocRef, { 
+                     ...userPreferences, // Save the entire preferences object
+                     lastUpdated: serverTimestamp() 
+                 }, { merge: true }); // Merge to avoid overwriting unrelated fields if any
+                 saveStatus.textContent = 'Preferences Saved.';
+                 setTimeout(() => saveStatus.textContent = '', 2000);
+             } catch (error) {
+                 console.error("Error saving preferences:", error);
+                 saveStatus.textContent = 'Error Saving.';
+             }
+        }
+        
+        // Debounced save
+        function debouncedSavePreferences() {
+            clearTimeout(debounceTimer);
+            saveStatus.textContent = 'Saving...';
+            debounceTimer = setTimeout(savePreferences, 1000); // Save 1 second after last change
+        }
+
+        // --- Theme ---
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+                themeToggle.checked = false;
+            } else {
+                document.documentElement.classList.add('dark');
+                themeToggle.checked = true;
+            }
+        }
+
+        themeToggle.addEventListener('change', () => {
+            userPreferences.theme = themeToggle.checked ? 'dark' : 'light';
+            applyTheme(userPreferences.theme);
+            savePreferences(); // Save immediately on theme change
+        });
+
+        // --- Sidebar Rendering ---
+        function renderSidebar() {
+            const currentPage = window.location.pathname.split('/').pop(); // Get current filename
+            sidebarNav.innerHTML = ''; // Clear existing links
+            
+            allSidebarItems.forEach(item => {
+                 // Only render if the visibility preference is true
+                if (userPreferences.sidebarItems[item.id]) {
+                    const link = document.createElement('a');
+                    link.href = item.href;
+                    link.className = `sidebar-link flex items-center gap-4 p-3 rounded-lg`;
+                    if (item.href === currentPage) {
+                        link.classList.add('active'); // Add active class if it's the current page
+                    }
+                    link.innerHTML = `<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`;
+                    sidebarNav.appendChild(link);
+                }
+            });
+        }
+
+        // --- Populate Settings Checkboxes ---
+        function populateSidebarOptions() {
+            sidebarOptionsContainer.innerHTML = ''; // Clear loading message
+            allSidebarItems.forEach(item => {
+                // Don't allow hiding the settings page itself
+                if (item.id === 'settings') return; 
+
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'form-input w-4 h-4 text-blue-600 rounded focus:ring-blue-500';
+                checkbox.checked = userPreferences.sidebarItems[item.id] || false; // Default to false if not set? No, use loaded pref.
+                checkbox.dataset.itemId = item.id;
+
+                const icon = document.createElement('i');
+                icon.className = `fas ${item.icon} fa-fw text-color-muted`;
+
+                const text = document.createElement('span');
+                text.className = 'text-color-base';
+                text.textContent = item.text;
+
+                label.appendChild(checkbox);
+                label.appendChild(icon);
+                label.appendChild(text);
+                sidebarOptionsContainer.appendChild(label);
+
+                checkbox.addEventListener('change', (e) => {
+                     const itemId = e.target.dataset.itemId;
+                     userPreferences.sidebarItems[itemId] = e.target.checked;
+                     renderSidebar(); // Re-render sidebar immediately
+                     debouncedSavePreferences(); // Debounce saving to Firestore
+                });
+            });
+        }
+
+        // --- Sidebar Toggle & Logout ---
         const openSidebarBtn = document.getElementById('open-sidebar-btn');
         const closeSidebarBtn = document.getElementById('close-sidebar-btn');
         const sidebar = document.getElementById('sidebar');
-        const sidebarNav = document.getElementById('sidebar-nav');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
         function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
         openSidebarBtn.addEventListener('click', openSidebar);
         closeSidebarBtn.addEventListener('click', closeSidebar);
         sidebarOverlay.addEventListener('click', closeSidebar);
-        sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
+        sidebarNav.addEventListener('click', (e) => { if (e.target.closest('a') && window.innerWidth < 1024) { closeSidebar(); } }); // Use closest('a')
         document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); signOut(auth).then(() => window.location.href = 'index.html'); });
-
-        // --- 1. Theme Switcher Logic ---
-        const themeSwitcher = document.getElementById('theme-switcher');
-        const lightBtn = themeSwitcher.querySelector('[data-theme="light"]');
-        const darkBtn = themeSwitcher.querySelector('[data-theme="dark"]');
-        
-        function setTheme(theme) {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-                darkBtn.classList.add('active');
-                lightBtn.classList.remove('active');
-            } else {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-                lightBtn.classList.add('active');
-                darkBtn.classList.remove('active');
-            }
-        }
-        
-        themeSwitcher.addEventListener('click', (e) => {
-            const button = e.target.closest('button');
-            if (button) {
-                setTheme(button.dataset.theme);
-            }
-        });
-        
-        // Set active button on load
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            darkBtn.classList.add('active');
-        } else {
-            lightBtn.classList.add('active');
-        }
-
-        // --- 2. Preferences Logic ---
-        function listenForSettings() {
-            onSnapshot(settingsDocRef, (doc) => {
-                if (doc.exists()) {
-                    const settings = doc.data();
-                    // Load settings into toggles
-                    prefToggles.forEach(toggle => {
-                        const key = toggle.dataset.key;
-                        if (settings[key] !== undefined) {
-                            toggle.checked = settings[key];
-                        } else {
-                            // Default to 'true' (checked) if not set
-                            toggle.checked = true; 
-                        }
-                    });
-                } else {
-                    // No settings doc, default all to 'true'
-                    prefToggles.forEach(toggle => toggle.checked = true);
-                }
-            });
-        }
-
-        prefToggles.forEach(toggle => {
-            toggle.addEventListener('change', async () => {
-                if (!settingsDocRef) return;
-                const key = toggle.dataset.key;
-                const value = toggle.checked;
-                try {
-                    // Save the single changed value
-                    await setDoc(settingsDocRef, { [key]: value }, { merge: true });
-                    console.log(`Preference '${key}' saved as '${value}'`);
-                } catch (error) {
-                    console.error("Error saving preference: ", error);
-                }
-            });
-        });
-
-        // --- 3. Account Management (Placeholders) ---
-        document.getElementById('change-email-btn').addEventListener('click', () => {
-            const newEmail = emailInput.value;
-            alert(`Placeholder: Change email to ${newEmail}\n\nNOTE: This is a complex action in Firebase. It requires the user to re-enter their password. See the console for more info.`);
-            console.log("TODO: Implement Firebase updateEmail(). This requires re-authentication.");
-            // Example path:
-            // 1. const user = auth.currentUser;
-            // 2. const password = prompt("Please re-enter your password:");
-            // 3. const credential = EmailAuthProvider.credential(user.email, password);
-            // 4. reauthenticateWithCredential(user, credential).then(() => {
-            // 5.   updateEmail(user, newEmail).then(() => { ... success ... });
-            // 6. }).catch((error) => { ... handle error ... });
-        });
-
-        document.getElementById('change-pass-btn').addEventListener('click', () => {
-            const newPassword = document.getElementById('password-input').value;
-            if (newPassword.length < 6) {
-                alert("Password must be at least 6 characters long.");
-                return;
-            }
-            alert(`Placeholder: Change password.\n\nNOTE: This is also a complex action that requires re-authentication. See the console.`);
-            console.log("TODO: Implement Firebase updatePassword(). This also requires re-authentication.");
-        });
 
     </script>
 </body>
