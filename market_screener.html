@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Screener | Finex</title> 
+    <title>Market Screener | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,14 +13,14 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
-    </head>
+</head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-        
+
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
-        <div class="min-h-screen flex flex-col"> {/* Ensure footer doesn't overlap */}
+        <div class="min-h-screen flex flex-col">
             <main class="container mx-auto p-4 md:p-8 flex-grow">
                 <div class="text-center mb-8">
                     <h1 class="text-4xl font-bold text-color-base">Discover Opportunities</h1>
@@ -38,24 +38,23 @@
         </div>
 
     <script type="module" src="app.js"></script>
-    
+
     <script type="module">
-        // Import the core initializer and theme functions
-        import { initializeAppCore, applyTheme } from './app.js'; 
+        // Import the core initializer
+        import { initializeAppCore } from './app.js';
 
         // Define the function containing this page's unique JavaScript logic
         function initMarketScreenerPage(user, db) {
             console.log("Setting up Market Screener page specific logic...");
-            
-            // Function to load the TradingView widget
+
+            // Function to load the TradingView Screener widget
             function loadTradingViewWidget() {
                 const container = document.getElementById('tradingview-screener-widget');
                 if (!container || container.querySelector('script')) {
                     // Don't load if container missing or widget already loaded
-                    return; 
+                    return;
                 }
 
-                // Determine theme based on HTML class
                 const isDarkMode = document.documentElement.classList.contains('dark');
                 const theme = isDarkMode ? 'dark' : 'light';
 
@@ -67,32 +66,30 @@
                     "width": "100%",
                     "height": "100%",
                     "defaultColumn": "overview",
-                    "screener_type": "crypto_mkt", // Change this type if needed (e.g., "forex", "stock")
+                    "screener_type": "crypto_mkt", // Options: "forex", "stock", "crypto_mkt"
                     "displayCurrency": "USD",
                     "colorTheme": theme, // Use dynamic theme
                     "isTransparent": true, // Match glass card look
                     "locale": "en"
                 });
+                // Clear container before adding script (for theme changes)
+                container.innerHTML = '';
                 container.appendChild(script);
             }
 
             // Load the widget initially
             loadTradingViewWidget();
 
-            // Optional: Reload widget if theme changes (might cause flicker)
-            // Consider if this is necessary based on user experience
-            // You might need a more robust way to handle theme changes if TradingView doesn't adapt automatically
-            // const observer = new MutationObserver(mutations => {
-            //     mutations.forEach(mutation => {
-            //         if (mutation.attributeName === 'class') {
-            //              // Reload or update widget theme here
-            //              const widgetContainer = document.getElementById('tradingview-screener-widget');
-            //              if (widgetContainer) widgetContainer.innerHTML = ''; // Clear old widget
-            //              loadTradingViewWidget(); // Reload with new theme
-            //         }
-            //     });
-            // });
-            // observer.observe(document.documentElement, { attributes: true });
+            // Reload widget on theme change
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'class' && mutation.target === document.documentElement) {
+                         console.log("Theme changed, reloading screener widget.");
+                         loadTradingViewWidget(); // Reload widget with new theme
+                    }
+                });
+            });
+            observer.observe(document.documentElement, { attributes: true });
         }
 
         // Initialize the app core, passing in the page-specific setup function
