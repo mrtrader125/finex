@@ -14,17 +14,12 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
+        /* Keep page-specific styles */
         .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; @apply text-color-muted; }
         .loader { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #0052cc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         .dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- ADD THIS RULE --- */
-        /* Hide the sidebar toggle button specifically on this page */
-        #open-sidebar-btn {
-            display: none !important; 
-        }
-        /* --- END ADDED RULE --- */
+        /* REMOVED the rule that hid #open-sidebar-btn */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -34,7 +29,9 @@
     </div>
 
     <div id="app-wrapper" style="display: none;">
+        <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
+
         <main class="container mx-auto p-4 md:p-8">
             <div class="text-center mb-12">
                 <h1 class="text-4xl md:text-5xl font-bold text-color-base">Weekly Trading Checklist</h1>
@@ -92,11 +89,10 @@
         function initChecklistPage(user, db) {
             console.log("Setting up Weekly Checklist specific logic...");
 
-            // --- ADD THIS LINE ---
-            // Manually set the header title for this page
-            const pageTitleEl = document.getElementById('page-title');
-            if(pageTitleEl) pageTitleEl.textContent = "Weekly Checklist";
-            // --- END ADDED LINE ---
+            // --- REMOVED Manual Title Setting ---
+            // const pageTitleEl = document.getElementById('page-title');
+            // if(pageTitleEl) pageTitleEl.textContent = "Weekly Checklist";
+            // --- END REMOVED ---
 
             const loadingContainer = document.getElementById('loading-container');
             const weekIdentifier = document.getElementById('week-identifier');
@@ -115,7 +111,7 @@
                  if(loadingContainer) loadingContainer.innerHTML = "<p class='text-red-500'>Error loading page elements.</p>";
                  return;
              }
-             
+
             // ... (Rest of the initChecklistPage function remains exactly the same as the previous correct version) ...
             // Includes:
             // let currentUserId = user.uid;
@@ -127,7 +123,7 @@
             // function debouncedSave(field, value) { ... }
             // function listenForChecklistData() { ... }
             // function setupEventListeners() { ... }
-            // Initial setup calls (currentWeekId, checklistDocRef, populate, listen, setup)
+            // Initial setup calls
 
             let currentUserId = user.uid;
             let currentWeekId = '';
@@ -204,17 +200,15 @@
                         document.querySelectorAll('.watchlist-checkbox').forEach(checkbox => checkbox.checked = false);
                         displayTradeLog([]);
                     }
-                    // Only hide loader once listener provides initial data (or confirms no data)
                     if(loadingContainer) loadingContainer.style.display = 'none';
 
                 }, (error) => {
                      console.error("Error listening to checklist data:", error);
-                     if(loadingContainer) loadingContainer.style.display = 'none'; // Hide on error too
+                     if(loadingContainer) loadingContainer.style.display = 'none';
                      const mainContent = document.querySelector('main');
                      if(mainContent) mainContent.innerHTML = "<p class='text-red-500 text-center p-8'>Could not load checklist data.</p>";
                 });
             }
-
 
             function setupEventListeners() {
                  pairsAnalyzedInput?.addEventListener('input', (e) => debouncedSave('pairsAnalyzed', parseInt(e.target.value) || 0));
@@ -230,17 +224,13 @@
                  });
                  addTradeForm?.addEventListener('submit', async (e) => {
                      e.preventDefault();
-                     // Ensure elements exist before getting values
                      const pairInput = document.getElementById('trade-pair');
                      const notesInput = document.getElementById('trade-notes');
                      const outcomeInput = document.getElementById('trade-outcome');
                      if(!pairInput || !notesInput || !outcomeInput) return;
 
                      const tradeData = {
-                         pair: pairInput.value,
-                         notes: notesInput.value,
-                         outcome: outcomeInput.value,
-                         loggedAt: serverTimestamp()
+                         pair: pairInput.value, notes: notesInput.value, outcome: outcomeInput.value, loggedAt: serverTimestamp()
                      };
                      if(saveStatus) saveStatus.textContent = 'Adding trade...';
                      try {
@@ -264,7 +254,7 @@
             checklistDocRef = doc(db, `users/${currentUserId}/weeklyChecklists`, currentWeekId);
 
             populateWatchlistCheckboxes();
-            listenForChecklistData(); // Handles hiding loader
+            listenForChecklistData();
             setupEventListeners();
         }
 
