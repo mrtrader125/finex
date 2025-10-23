@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tools & Calculators | Finex</title> {/* Updated Title */}
+    <title>Tools & Calculators | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,38 +89,28 @@
             const accountSizeInput = document.getElementById('account-size');
             const riskPercentInput = document.getElementById('risk-percent');
             const stopLossPipsInput = document.getElementById('stop-loss-pips');
-            const pipValuePerLotInput = document.getElementById('pip-value-per-lot'); // Assuming $10/pip/lot for now
+            const pipValuePerLotInput = document.getElementById('pip-value-per-lot');
 
             function calculatePositionSize() {
                 if (!psResult || !accountSizeInput || !riskPercentInput || !stopLossPipsInput || !pipValuePerLotInput) return;
-
                 const accountSize = parseFloat(accountSizeInput.value);
-                const riskPercent = parseFloat(riskPercentInput.value) / 100; // Convert to decimal
+                const riskPercent = parseFloat(riskPercentInput.value) / 100;
                 const stopLossPips = parseFloat(stopLossPipsInput.value);
-                const pipValuePerLot = parseFloat(pipValuePerLotInput.value); // e.g., 10 for EURUSD
+                const pipValuePerLot = parseFloat(pipValuePerLotInput.value);
 
                 if (isNaN(accountSize) || isNaN(riskPercent) || isNaN(stopLossPips) || isNaN(pipValuePerLot) ||
                     accountSize <= 0 || riskPercent <= 0 || stopLossPips <= 0 || pipValuePerLot <= 0) {
                     psResult.textContent = '-- Lots';
-                    psResult.classList.remove('text-green-600', 'dark:text-green-400', 'text-red-500');
-                    psResult.classList.add('text-color-muted'); // Use muted color for invalid input
+                    psResult.className = 'text-3xl font-bold text-color-muted'; // Use theme color
                     return;
                 }
-
                 const riskAmount = accountSize * riskPercent;
                 const riskPerLot = stopLossPips * pipValuePerLot;
                 const positionSizeLots = riskAmount / riskPerLot;
-
-                psResult.textContent = `${positionSizeLots.toFixed(2)} Lots`; // Display with 2 decimal places
-                psResult.classList.remove('text-color-muted', 'text-red-500');
-                psResult.classList.add('text-green-600', 'dark:text-green-400');
+                psResult.textContent = `${positionSizeLots.toFixed(2)} Lots`;
+                psResult.className = 'text-3xl font-bold text-green-600 dark:text-green-400';
             }
-
-            // Calculate initially and on any input change
-            if (psForm) {
-                calculatePositionSize();
-                psForm.addEventListener('input', calculatePositionSize);
-            }
+            if (psForm) { calculatePositionSize(); psForm.addEventListener('input', calculatePositionSize); }
 
             // --- Risk/Reward Calculator ---
             const rrForm = document.getElementById('risk-reward-form');
@@ -131,57 +121,28 @@
 
             function calculateRiskReward() {
                  if (!rrResult || !entryPriceInput || !stopLossPriceInput || !takeProfitPriceInput) return;
-
                  const entry = parseFloat(entryPriceInput.value);
                  const stop = parseFloat(stopLossPriceInput.value);
                  const target = parseFloat(takeProfitPriceInput.value);
 
                  if (isNaN(entry) || isNaN(stop) || isNaN(target)) {
                      rrResult.textContent = '1 : --';
-                     rrResult.classList.remove('text-green-600', 'dark:text-green-400', 'text-red-500');
-                     rrResult.classList.add('text-color-muted');
+                     rrResult.className = 'text-3xl font-bold text-color-muted';
                      return;
                  }
-
                  const risk = Math.abs(entry - stop);
                  const reward = Math.abs(target - entry);
 
-                 if (risk === 0) { // Avoid division by zero
-                     rrResult.textContent = '1 : ∞'; // Infinite reward if risk is zero?
-                     rrResult.classList.remove('text-color-muted', 'text-red-500');
-                     rrResult.classList.add('text-green-600', 'dark:text-green-400');
-                     return;
-                 }
-                  if (reward === 0) { // Handle zero reward
-                     rrResult.textContent = '1 : 0.00';
-                     rrResult.classList.remove('text-green-600', 'dark:text-green-400');
-                      rrResult.classList.add('text-red-500'); // Show as unfavorable
-                     return;
-                 }
-
+                 if (risk === 0) { rrResult.textContent = '1 : ∞'; rrResult.className = 'text-3xl font-bold text-green-600 dark:text-green-400'; return; }
+                 if (reward === 0) { rrResult.textContent = '1 : 0.00'; rrResult.className = 'text-3xl font-bold text-red-500'; return; } // Show 0 reward as red
 
                  const ratio = reward / risk;
-
-                 rrResult.textContent = `1 : ${ratio.toFixed(2)}`; // Display with 2 decimal places
-
-                 // Optional: Color based on ratio
-                 if (ratio >= 1) {
-                     rrResult.classList.remove('text-color-muted', 'text-red-500');
-                     rrResult.classList.add('text-green-600', 'dark:text-green-400');
-                 } else {
-                     rrResult.classList.remove('text-color-muted', 'text-green-600', 'dark:text-green-400');
-                     rrResult.classList.add('text-red-500'); // Red if R:R < 1
-                 }
+                 rrResult.textContent = `1 : ${ratio.toFixed(2)}`;
+                 if (ratio >= 1) { rrResult.className = 'text-3xl font-bold text-green-600 dark:text-green-400'; }
+                 else { rrResult.className = 'text-3xl font-bold text-red-500'; }
             }
-
-            // Calculate initially and on any input change
-            if (rrForm) {
-                calculateRiskReward();
-                rrForm.addEventListener('input', calculateRiskReward);
-            }
+            if (rrForm) { calculateRiskReward(); rrForm.addEventListener('input', calculateRiskReward); }
         }
-
-        // Initialize the app core, passing in the page-specific setup function
         initializeAppCore(initToolsPage);
     </script>
 </body>
