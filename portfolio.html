@@ -16,7 +16,6 @@
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
@@ -36,15 +35,11 @@
         </div>
 
     <script type="module" src="app.js"></script>
-
     <script type="module">
         import { initializeAppCore } from './app.js';
-
         function initPortfolioPage(user, db) {
             console.log("Setting up Portfolio page specific logic (none currently).");
-            // Add future portfolio JS here
         }
-
         initializeAppCore(initPortfolioPage);
     </script>
 </body>
