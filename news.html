@@ -1,133 +1,192 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live News Feed | Finclarity</title>
+    <title>Live News Feed | Finex</title> 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="main.css">
     <style>
-        html { scrollbar-width: none; -ms-overflow-style: none; }
-        html::-webkit-scrollbar { display: none; }
-        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
-        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-        .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
-        .news-source-button { background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
-        .news-source-button:hover { background-color: rgba(255, 255, 255, 0.1); border-color: #0052cc; }
+        .news-source-button { 
+            /* Base styles from main.css are applied via form-input */
+            @apply form-input flex items-center justify-between p-4 w-full cursor-pointer transition duration-300;
+        }
+        .news-source-button:hover { 
+             /* Define specific hover for light/dark if needed, or use theme classes */
+             @apply bg-white/10 dark:bg-black/20 border-blue-500/50; 
+        }
+        /* Ensure footer doesn't overlap content when scrolling */
+         main { padding-bottom: 70px; } /* Adjust based on footer height */
+         footer { z-index: 20; } /* Ensure footer stays above content */
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
-        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
-            <div class="p-6 flex flex-col h-full">
-                <div class="flex justify-between items-center mb-8">
-                    <div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINCLARITY</a></div>
-                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
-                </div>
-                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
-                    <a href="member_dashboard.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
-                    <a href="portfolio.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-wallet fa-fw w-6"></i><span>Portfolio</span></a>
-                    <a href="articles.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
-                    <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
-                    <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
-                    <a href="real_results.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
-                    <a href="market_screener.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-search-dollar fa-fw w-6"></i><span>Market Screener</span></a>
-                    <a href="news.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-newspaper fa-fw w-6"></i><span>Live News Feed</span></a>
-                    <a href="economic_calendar.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-calendar-alt fa-fw w-6"></i><span>Economic Calendar</span></a>
-                    <a href="trading_journal.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book fa-fw w-6"></i><span>Trading Journal</span></a>
-                    <a href="tools_calculators.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools</span></a>
-                    <a href="settings.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Settings</span></a>
-                </nav>
-                <div class="mt-auto">
-                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a>
-                </div>
-            </div>
-        </aside>
+        
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
 
-        <div>
-             <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30">
-                <div class="container mx-auto flex justify-between items-center p-4">
-                     <div class="flex items-center gap-4">
-                        <button id="open-sidebar-btn" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
-                        <div class="text-2xl font-bold tracking-wider text-white">Live News Feed</div>
-                    </div>
-                    <nav class="flex items-center gap-4">
-                         <span id="user-email" class="hidden sm:inline text-gray-300"></span>
-                         <a href="settings.html" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a>
-                    </nav>
-                </div>
-            </header>
-
-            <main class="container mx-auto p-4 md:p-8 pb-20">
+        <div> {/* Optional wrapper */}
+            <main class="container mx-auto p-4 md:p-8">
                  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2">
-                        <h2 class="text-3xl font-bold mb-4">Top Stories</h2>
-                        <div class="tradingview-widget-container" style="height:100vh; width:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>{ "feedMode": "all_symbols", "isTransparent": true, "displayMode": "regular", "width": "100%", "height": "100%", "colorTheme": "dark", "locale": "en" }</script></div>
+                        <h2 class="text-3xl font-bold mb-4 text-color-base">Top Stories</h2>
+                        {/* TradingView Timeline Widget */}
+                        <div class="tradingview-widget-container" style="height:calc(100vh - 200px); width:100%"> {/* Adjusted height */}
+                            <div id="tradingview-timeline-widget" class="tradingview-widget-container__widget h-full"></div>
+                            {/* Widget script will be loaded by JS */}
+                        </div>
                     </div>
                     <div class="space-y-8">
                         <div>
-                            <h2 class="text-3xl font-bold mb-4">Market Overview</h2>
-                            <div class="tradingview-widget-container" style="height:450px; width:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>{ "colorTheme": "dark", "dateRange": "12M", "showChart": true, "locale": "en", "largeChartUrl": "", "isTransparent": true, "showSymbolLogo": true, "showFloatingTooltip": false, "width": "100%", "height": "100%", "plotLineColorGrowing": "rgba(41, 98, 255, 1)", "plotLineColorFalling": "rgba(41, 98, 255, 1)", "gridLineColor": "rgba(240, 243, 250, 0)", "scaleFontColor": "rgba(120, 123, 134, 1)", "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)", "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)", "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)", "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)", "symbolActiveColor": "rgba(41, 98, 255, 0.12)", "tabs": [ { "title": "Indices", "symbols": [ { "s": "FOREXCOM:SPXUSD", "d": "S&P 500" }, { "s": "FOREXCOM:NSXUSD", "d": "US 100" }, { "s": "FOREXCOM:DJI", "d": "Dow 30" }, { "s": "INDEX:VIX", "d": "VIX" } ], "originalTitle": "Indices" }, { "title": "Futures", "symbols": [ { "s": "CME_MINI:ES1!", "d": "S&P 500" }, { "s": "CME:6E1!", "d": "Euro" }, { "s": "COMEX:GC1!", "d": "Gold" }, { "s": "NYMEX:CL1!", "d": "Crude Oil" } ], "originalTitle": "Futures" }, { "title": "Bonds", "symbols": [ { "s": "CME:GE1!", "d": "Eurodollar" }, { "s": "CBOT:ZB1!", "d": "T-Bond" }, { "s": "CBOT:UB1!", "d": "Ultra T-Bond" } ], "originalTitle": "Bonds" }, { "title": "Forex", "symbols": [ { "s": "FX:EURUSD", "d": "EUR/USD" }, { "s": "FX:GBPUSD", "d": "GBP/USD" }, { "s": "FX:USDJPY", "d": "USD/JPY" } ], "originalTitle": "Forex" } ] }</script></div>
+                            <h2 class="text-3xl font-bold mb-4 text-color-base">Market Overview</h2>
+                            {/* TradingView Market Overview Widget */}
+                            <div class="tradingview-widget-container" style="height:450px; width:100%">
+                                <div id="tradingview-marketoverview-widget" class="tradingview-widget-container__widget h-full"></div>
+                                {/* Widget script will be loaded by JS */}
+                            </div>
                         </div>
                         <div>
-                            <h2 class="text-3xl font-bold mb-4">Top News Sources</h2>
+                            <h2 class="text-3xl font-bold mb-4 text-color-base">Top News Sources</h2>
                             <div class="space-y-3">
-                                <a href="https://www.reuters.com/markets/" target="_blank" rel="noopener noreferrer" class="news-source-button flex items-center justify-between p-4 rounded-lg w-full"><span class="font-bold">Reuters Markets</span><i class="fas fa-external-link-alt text-gray-400"></i></a>
-                                <a href="https://www.bloomberg.com/" target="_blank" rel="noopener noreferrer" class="news-source-button flex items-center justify-between p-4 rounded-lg w-full"><span class="font-bold">Bloomberg</span><i class="fas fa-external-link-alt text-gray-400"></i></a>
-                                <a href="https://www.wsj.com/news/markets" target="_blank" rel="noopener noreferrer" class="news-source-button flex items-center justify-between p-4 rounded-lg w-full"><span class="font-bold">Wall Street Journal</span><i class="fas fa-external-link-alt text-gray-400"></i></a>
-                                 <a href="https://www.coindesk.com/" target="_blank" rel="noopener noreferrer" class="news-source-button flex items-center justify-between p-4 rounded-lg w-full"><span class="font-bold">CoinDesk (Crypto)</span><i class="fas fa-external-link-alt text-gray-400"></i></a>
-                            </div>
+                                <a href="https://www.reuters.com/markets/" target="_blank" rel="noopener noreferrer" class="news-source-button">
+                                    <span class="font-bold text-color-base">Reuters Markets</span>
+                                    <i class="fas fa-external-link-alt text-color-muted"></i>
+                                </a>
+                                <a href="https://www.bloomberg.com/" target="_blank" rel="noopener noreferrer" class="news-source-button">
+                                    <span class="font-bold text-color-base">Bloomberg</span>
+                                    <i class="fas fa-external-link-alt text-color-muted"></i>
+                                </a>
+                                <a href="https://www.wsj.com/news/markets" target="_blank" rel="noopener noreferrer" class="news-source-button">
+                                    <span class="font-bold text-color-base">Wall Street Journal</span>
+                                    <i class="fas fa-external-link-alt text-color-muted"></i>
+                                </a>
+                                 <a href="https://www.coindesk.com/" target="_blank" rel="noopener noreferrer" class="news-source-button">
+                                     <span class="font-bold text-color-base">CoinDesk (Crypto)</span>
+                                     <i class="fas fa-external-link-alt text-color-muted"></i>
+                                </a>
+                                </div>
                         </div>
                     </div>
                  </div>
             </main>
         </div>
 
-        <footer class="fixed bottom-0 left-0 right-0 z-20">
+        <footer class="fixed bottom-0 left-0 right-0">
             <div class="glass-card py-1 mx-4 mb-4 rounded-lg">
-                <div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>{ "symbols": [ { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" }, { "proName": "FOREXCOM:NSXUSD", "title": "US 100" }, { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" }, { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" }, { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" } ], "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en" }</script></div>
+                <div class="tradingview-widget-container">
+                    <div id="tradingview-ticker-widget" class="tradingview-widget-container__widget"></div>
+                    {/* Widget script will be loaded by JS */}
+                </div>
             </div>
         </footer>
-    </div>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-        
-        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        
-        const appWrapper = document.getElementById('app-wrapper');
-        const userEmailSpan = document.getElementById('user-email');
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                appWrapper.style.display = 'block';
-                userEmailSpan.textContent = user.email;
-            } else {
-                window.location.replace(new URL('login.html', window.location.href).href);
-            }
-        });
+        </div>
 
-        const openSidebarBtn = document.getElementById('open-sidebar-btn');
-        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarNav = document.getElementById('sidebar-nav');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
-        function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
-        openSidebarBtn.addEventListener('click', openSidebar);
-        closeSidebarBtn.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
-        sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
-        document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); signOut(auth).then(() => window.location.href = 'index.html'); });
+    <script type="module" src="app.js"></script>
+    
+    <script type="module">
+        // Import the core initializer
+        import { initializeAppCore } from './app.js'; 
+
+        // Define the function containing this page's unique JavaScript logic
+        function initNewsPage(user, db) {
+            console.log("Setting up News Feed page specific logic...");
+
+            // Function to load a TradingView widget dynamically
+            function loadTradingViewWidget(containerId, widgetConfig, widgetSource) {
+                 const container = document.getElementById(containerId);
+                 if (!container || container.querySelector('script')) {
+                     console.log(`Widget container #${containerId} not found or widget already loaded.`);
+                     return; 
+                 }
+
+                 // Determine theme based on HTML class
+                 const isDarkMode = document.documentElement.classList.contains('dark');
+                 const theme = isDarkMode ? 'dark' : 'light';
+                 
+                 // Update theme in the config
+                 widgetConfig.colorTheme = theme; 
+
+                 const script = document.createElement('script');
+                 script.type = 'text/javascript';
+                 script.src = widgetSource;
+                 script.async = true;
+                 script.innerHTML = JSON.stringify(widgetConfig);
+                 
+                 // Clear container before adding new script (important for theme switching if implemented)
+                 container.innerHTML = ''; 
+                 container.appendChild(script);
+            }
+
+            // --- Widget Configurations ---
+            const timelineConfig = { 
+                "feedMode": "all_symbols", 
+                "isTransparent": true, 
+                "displayMode": "regular", 
+                "width": "100%", 
+                "height": "100%", 
+                "colorTheme": "dark", // Will be updated by loadTradingViewWidget
+                "locale": "en" 
+            };
+            const marketOverviewConfig = { 
+                "colorTheme": "dark", // Will be updated
+                "dateRange": "12M", 
+                "showChart": true, 
+                "locale": "en", 
+                "largeChartUrl": "", 
+                "isTransparent": true, 
+                "showSymbolLogo": true, 
+                "showFloatingTooltip": false, 
+                "width": "100%", 
+                "height": "100%", 
+                "plotLineColorGrowing": "rgba(41, 98, 255, 1)", // Consider theme-based colors later if needed
+                "plotLineColorFalling": "rgba(41, 98, 255, 1)", 
+                "gridLineColor": "rgba(240, 243, 250, 0)", 
+                "scaleFontColor": "rgba(120, 123, 134, 1)", // Might need theme adjustment
+                "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)", 
+                "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)", 
+                "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)", 
+                "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)", 
+                "symbolActiveColor": "rgba(41, 98, 255, 0.12)", 
+                "tabs": [ { "title": "Indices", "symbols": [ { "s": "FOREXCOM:SPXUSD", "d": "S&P 500" }, { "s": "FOREXCOM:NSXUSD", "d": "US 100" }, { "s": "FOREXCOM:DJI", "d": "Dow 30" }, { "s": "INDEX:VIX", "d": "VIX" } ], "originalTitle": "Indices" }, { "title": "Futures", "symbols": [ { "s": "CME_MINI:ES1!", "d": "S&P 500" }, { "s": "CME:6E1!", "d": "Euro" }, { "s": "COMEX:GC1!", "d": "Gold" }, { "s": "NYMEX:CL1!", "d": "Crude Oil" } ], "originalTitle": "Futures" }, { "title": "Bonds", "symbols": [ { "s": "CME:GE1!", "d": "Eurodollar" }, { "s": "CBOT:ZB1!", "d": "T-Bond" }, { "s": "CBOT:UB1!", "d": "Ultra T-Bond" } ], "originalTitle": "Bonds" }, { "title": "Forex", "symbols": [ { "s": "FX:EURUSD", "d": "EUR/USD" }, { "s": "FX:GBPUSD", "d": "GBP/USD" }, { "s": "FX:USDJPY", "d": "USD/JPY" } ], "originalTitle": "Forex" } ] 
+            };
+            const tickerConfig = { 
+                "symbols": [ { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" }, { "proName": "FOREXCOM:NSXUSD", "title": "US 100" }, { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" }, { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" }, { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" } ], 
+                "showSymbolLogo": true, 
+                "colorTheme": "dark", // Will be updated
+                "isTransparent": true, 
+                "displayMode": "adaptive", 
+                "locale": "en" 
+            };
+
+            // --- Load Widgets ---
+            loadTradingViewWidget('tradingview-timeline-widget', timelineConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js');
+            loadTradingViewWidget('tradingview-marketoverview-widget', marketOverviewConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js');
+            loadTradingViewWidget('tradingview-ticker-widget', tickerConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js');
+
+            // Optional: Add theme change listener to reload widgets
+            // const observer = new MutationObserver(mutations => {
+            //     mutations.forEach(mutation => {
+            //         if (mutation.attributeName === 'class') {
+            //             console.log("Theme changed, reloading widgets...");
+            //             loadTradingViewWidget('tradingview-timeline-widget', timelineConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js');
+            //             loadTradingViewWidget('tradingview-marketoverview-widget', marketOverviewConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js');
+            //             loadTradingViewWidget('tradingview-ticker-widget', tickerConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js');
+            //         }
+            //     });
+            // });
+            // observer.observe(document.documentElement, { attributes: true });
+        }
+
+        // Initialize the app core, passing in the page-specific setup function
+        initializeAppCore(initNewsPage);
     </script>
 </body>
 </html>
