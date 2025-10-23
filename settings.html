@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | Finclarity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        // Apply theme from localStorage on load to prevent flash
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <style>
+        /* ADDED: CSS Variables for Theming */
+        :root {
+            --bg-primary: #f4f6f9;
+            --bg-secondary: #ffffff;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --bg-hover: rgba(0, 0, 0, 0.05);
+            --bg-input: rgba(0, 0, 0, 0.05);
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
+        html.dark {
+            --bg-primary: #0c111e;
+            --bg-secondary: #111827;
+            --bg-glass: rgba(17, 24, 39, 0.7);
+            --bg-hover: rgba(255, 255, 255, 0.08);
+            --bg-input: rgba(255, 255, 255, 0.05);
+            --text-primary: #f4f6f9;
+            --text-secondary: #a9a9b3;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Standard Styles */
+        html { scrollbar-width: none; -ms-overflow-style: none; }
+        html::-webkit-scrollbar { display: none; }
+        body { 
+            background-color: var(--bg-primary); 
+            color: var(--text-primary); 
+            font-family: 'Source Sans Pro', sans-serif; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        
+        /* Component Styles */
+        .sidebar-link { transition: all 0.2s ease; color: var(--text-secondary); }
+        .sidebar-link:hover, .sidebar-link.active { color: var(--text-primary); background-color: var(--bg-hover); }
+        #sidebar { background-color: var(--bg-secondary); transition: transform 0.3s ease-in-out; border-right: 1px solid var(--border-color); }
+        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+        .glass-card { 
+            background: var(--bg-glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--border-color); 
+            border-radius: 1.5rem; 
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .form-input { 
+            background: var(--bg-input); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-primary);
+        }
+        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease; }
+        .main-button:hover { background-color: #0065ff; }
+        .secondary-button {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+        .secondary-button:hover {
+            border-color: #0052cc;
+            color: var(--text-primary);
+        }
+        .secondary-button.active {
+            background-color: #0052cc;
+            border-color: #0052cc;
+            color: white;
+        }
+        
+        /* Toggle Switch Style */
+        .form-switch {
+            width: 3.5rem; height: 2rem; background-color: var(--bg-input); border: 1px solid var(--border-color);
+            padding: 0.25rem; border-radius: 9999px; cursor: pointer; transition: background-color 0.2s ease-in-out;
+        }
+        .form-switch-knob {
+            width: 1.5rem; height: 1.5rem; background-color: var(--bg-secondary); border-radius: 9999px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s ease-in-out;
+        }
+        input:checked + .form-switch { background-color: #0052cc; border-color: #0052cc; }
+        input:checked + .form-switch .form-switch-knob { transform: translateX(1.5rem); }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app-wrapper" style="display: none;">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
+        
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
+            <div class="p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="text-xl font-bold tracking-wider"><a href="member_dashboard.html">FINCLARITY</a></div>
+                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+                </div>
+                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
+                    <a href="member_dashboard.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
+                    <a href="portfolio.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-wallet fa-fw w-6"></i><span>Portfolio</span></a>
+                    <a href="articles.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
+                    <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
+                    <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
+                    <a href="real_results.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
+                    <a href="market_screener.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-search-dollar fa-fw w-6"></i><span>Market Screener</span></a>
+                    <a href="news.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-newspaper fa-fw w-6"></i><span>Live News Feed</span></a>
+                    <a href="economic_calendar.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-calendar-alt fa-fw w-6"></i><span>Economic Calendar</span></a>
+                    <a href="trading_journal.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book fa-fw w-6"></i><span>Trading Journal</span></a>
+                    <a href="tools_calculators.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools</span></a>
+                    <a href="settings.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Settings</span></a>
+                </nav>
+                <div class="mt-auto">
+                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="min-h-screen flex flex-col">
+             <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30">
+                <div class="container mx-auto flex justify-between items-center p-4">
+                     <div class="flex items-center gap-4">
+                        <button id="open-sidebar-btn" class="hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
+                        <div class="text-2xl font-bold tracking-wider">Account Settings</div>
+                    </div>
+                    <nav class="flex items-center gap-4">
+                         <span id="user-email" class="hidden sm:inline text-sm"></span>
+                         <a href="settings.html" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a>
+                    </nav>
+                </div>
+            </header>
+
+            <main class="container mx-auto p-4 md:p-8 flex-grow">
+                <div class="max-w-4xl mx-auto space-y-8">
+                
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-6">Display & Theme</h2>
+                        <label class="text-sm font-semibold">Appearance</label>
+                        <p class="text-sm text-gray-500 mb-4">Choose how Finclarity looks to you.</p>
+                        <div id="theme-switcher" class="flex gap-4">
+                            <button data-theme="light" class="secondary-button rounded-lg p-4 w-full text-center">
+                                <i class="fas fa-sun fa-fw mr-2"></i> Light Mode
+                            </button>
+                            <button data-theme="dark" class="secondary-button rounded-lg p-4 w-full text-center">
+                                <i class="fas fa-moon fa-fw mr-2"></i> Dark Mode
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-2">Sidebar Navigation</h2>
+                        <p class="text-sm text-gray-500 mb-6">Choose which items appear in your sidebar.</p>
+                        <div class="space-y-4">
+                            <label for="toggle-portfolio" class="flex justify-between items-center cursor-pointer">
+                                <span><i class="fas fa-wallet fa-fw w-6 mr-3 text-gray-400"></i>Portfolio</span>
+                                <input type="checkbox" id="toggle-portfolio" data-key="showPortfolio" class="sr-only preference-toggle">
+                                <div class="form-switch"><div class="form-switch-knob"></div></div>
+                            </label>
+                            <label for="toggle-articles" class="flex justify-between items-center cursor-pointer">
+                                <span><i class="fas fa-book-reader fa-fw w-6 mr-3 text-gray-400"></i>Articles</span>
+                                <input type="checkbox" id="toggle-articles" data-key="showArticles" class="sr-only preference-toggle">
+                                <div class="form-switch"><div class="form-switch-knob"></div></div>
+                            </label>
+                            <label for="toggle-analysis" class="flex justify-between items-center cursor-pointer">
+                                <span><i class="fas fa-image fa-fw w-6 mr-3 text-gray-400"></i>Analysis</span>
+                                <input type="checkbox" id="toggle-analysis" data-key="showAnalysis" class="sr-only preference-toggle">
+                                <div class="form-switch"><div class="form-switch-knob"></div></div>
+                            </label>
+                            </div>
+                    </div>
+
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-6">Account Management</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="email-input" class="text-sm font-semibold">Email Address</label>
+                                <div class="flex gap-4 mt-2">
+                                    <input type="email" id="email-input" class="form-input w-full p-2 rounded-lg" value="testuser@gmail.com">
+                                    <button id="change-email-btn" class="main-button font-semibold py-2 px-5 rounded-lg">Update</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="password-input" class="text-sm font-semibold">Change Password</label>
+                                <div class="flex gap-4 mt-2">
+                                    <input type="password" id="password-input" class="form-input w-full p-2 rounded-lg" placeholder="Enter new password">
+                                    <button id="change-pass-btn" class="main-button font-semibold py-2 px-5 rounded-lg">Update</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const appWrapper = document.getElementById('app-wrapper');
+        const userEmailSpan = document.getElementById('user-email');
+        const emailInput = document.getElementById('email-input');
+        const prefToggles = document.querySelectorAll('.preference-toggle');
+        let settingsDocRef = null;
+
+        // --- Auth & Sidebar/Logout (Standard) ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                appWrapper.style.display = 'block';
+                userEmailSpan.textContent = user.email;
+                emailInput.value = user.email;
+
+                // Init settings listener
+                settingsDocRef = doc(db, 'users', user.uid, 'settings', 'userPreferences');
+                listenForSettings();
+            } else {
+                window.location.replace(new URL('login.html', window.location.href).href);
+            }
+        });
+
+        const openSidebarBtn = document.getElementById('open-sidebar-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
+        function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
+        openSidebarBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
+        document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); signOut(auth).then(() => window.location.href = 'index.html'); });
+
+        // --- 1. Theme Switcher Logic ---
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const lightBtn = themeSwitcher.querySelector('[data-theme="light"]');
+        const darkBtn = themeSwitcher.querySelector('[data-theme="dark"]');
+        
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                darkBtn.classList.add('active');
+                lightBtn.classList.remove('active');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                lightBtn.classList.add('active');
+                darkBtn.classList.remove('active');
+            }
+        }
+        
+        themeSwitcher.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (button) {
+                setTheme(button.dataset.theme);
+            }
+        });
+        
+        // Set active button on load
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            darkBtn.classList.add('active');
+        } else {
+            lightBtn.classList.add('active');
+        }
+
+        // --- 2. Preferences Logic ---
+        function listenForSettings() {
+            onSnapshot(settingsDocRef, (doc) => {
+                if (doc.exists()) {
+                    const settings = doc.data();
+                    // Load settings into toggles
+                    prefToggles.forEach(toggle => {
+                        const key = toggle.dataset.key;
+                        if (settings[key] !== undefined) {
+                            toggle.checked = settings[key];
+                        } else {
+                            // Default to 'true' (checked) if not set
+                            toggle.checked = true; 
+                        }
+                    });
+                } else {
+                    // No settings doc, default all to 'true'
+                    prefToggles.forEach(toggle => toggle.checked = true);
+                }
+            });
+        }
+
+        prefToggles.forEach(toggle => {
+            toggle.addEventListener('change', async () => {
+                if (!settingsDocRef) return;
+                const key = toggle.dataset.key;
+                const value = toggle.checked;
+                try {
+                    // Save the single changed value
+                    await setDoc(settingsDocRef, { [key]: value }, { merge: true });
+                    console.log(`Preference '${key}' saved as '${value}'`);
+                } catch (error) {
+                    console.error("Error saving preference: ", error);
+                }
+            });
+        });
+
+        // --- 3. Account Management (Placeholders) ---
+        document.getElementById('change-email-btn').addEventListener('click', () => {
+            const newEmail = emailInput.value;
+            alert(`Placeholder: Change email to ${newEmail}\n\nNOTE: This is a complex action in Firebase. It requires the user to re-enter their password. See the console for more info.`);
+            console.log("TODO: Implement Firebase updateEmail(). This requires re-authentication.");
+            // Example path:
+            // 1. const user = auth.currentUser;
+            // 2. const password = prompt("Please re-enter your password:");
+            // 3. const credential = EmailAuthProvider.credential(user.email, password);
+            // 4. reauthenticateWithCredential(user, credential).then(() => {
+            // 5.   updateEmail(user, newEmail).then(() => { ... success ... });
+            // 6. }).catch((error) => { ... handle error ... });
+        });
+
+        document.getElementById('change-pass-btn').addEventListener('click', () => {
+            const newPassword = document.getElementById('password-input').value;
+            if (newPassword.length < 6) {
+                alert("Password must be at least 6 characters long.");
+                return;
+            }
+            alert(`Placeholder: Change password.\n\nNOTE: This is also a complex action that requires re-authentication. See the console.`);
+            console.log("TODO: Implement Firebase updatePassword(). This also requires re-authentication.");
+        });
+
+    </script>
+</body>
+</html>
