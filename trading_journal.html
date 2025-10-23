@@ -1,158 +1,478 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Journal | Finclarity</title>
+    <title>Trading Journal | Finex</title> 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> {/* Keep Chart.js */}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        html { scrollbar-width: none; -ms-overflow-style: none; }
-        html::-webkit-scrollbar { display: none; }
-        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
-        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-        .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
-        .form-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease; }
-        .main-button:hover { background-color: #0065ff; }
-        .main-button:disabled { background-color: #003d99; cursor: not-allowed; }
-        .modal { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s ease; }
-        .tag { background-color: rgba(255, 255, 255, 0.1); cursor: pointer; transition: background-color 0.2s; }
-        .tag:hover, .tag.active { background-color: #0052cc; }
-    </style>
-</head>
-<body class="antialiased">
-    <div id="app-wrapper" style="display: none;">
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
-        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
-            <div class="p-6 flex flex-col h-full">
-                <div class="flex justify-between items-center mb-8"><div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINCLARITY</a></div><button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button></div>
-                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
-                    <a href="member_dashboard.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
-                    <a href="portfolio.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-wallet fa-fw w-6"></i><span>Portfolio</span></a>
-                    <a href="articles.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
-                    <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
-                    <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
-                    <a href="real_results.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
-                    <a href="market_screener.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-search-dollar fa-fw w-6"></i><span>Market Screener</span></a>
-                    <a href="news.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-newspaper fa-fw w-6"></i><span>Live News Feed</span></a>
-                    <a href="economic_calendar.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-calendar-alt fa-fw w-6"></i><span>Economic Calendar</span></a>
-                    <a href="trading_journal.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book fa-fw w-6"></i><span>Trading Journal</span></a>
-                    <a href="tools_calculators.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools</span></a>
-                    <a href="settings.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Settings</span></a>
-                </nav>
-                <div class="mt-auto"><a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a></div>
-            </div>
-        </aside>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="main.css">
+    </head>
+<body class="antialiased textured-background">
+     <div id="app-wrapper" style="display: none;">
+        
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
+
         <div class="min-h-screen flex flex-col">
-            <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30"><div class="container mx-auto flex justify-between items-center p-4"><div class="flex items-center gap-4"><button id="open-sidebar-btn" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button><div class="text-2xl font-bold tracking-wider text-white">Trading Journal</div></div><nav class="flex items-center gap-4"><span id="user-email" class="hidden sm:inline text-gray-300"></span><a href="settings.html" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a></nav></div></header>
             <main class="container mx-auto p-4 md:p-8 flex-grow">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: Analytics */}
                     <div class="lg:col-span-1 space-y-8">
-                        <div class="glass-card p-6"><h2 class="text-2xl font-bold text-center mb-4">Performance Analytics</h2><div class="grid grid-cols-2 gap-4 text-center"><div class="glass-card p-3"><span class="text-sm text-gray-400 block">Total P/L</span><span id="total-pl" class="text-xl font-bold">-$--.--</span></div><div class="glass-card p-3"><span class="text-sm text-gray-400 block">Total Trades</span><span id="total-trades" class="text-xl font-bold">0</span></div><div class="glass-card p-3"><span class="text-sm text-gray-400 block">Win Rate</span><span id="win-rate" class="text-xl font-bold">--%</span></div><div class="glass-card p-3"><span class="text-sm text-gray-400 block">Profit Factor</span><span id="profit-factor" class="text-xl font-bold">--</span></div><div class="glass-card p-3 col-span-2"><span class="text-sm text-gray-400 block">Avg Win / Loss</span><span id="avg-win-loss" class="text-lg font-bold">-$-- / -$--</span></div></div></div>
-                        <div class="glass-card p-6"><h2 class="text-2xl font-bold mb-4">Equity Curve</h2><canvas id="equity-curve-chart"></canvas></div>
-                        <div class="glass-card p-6"><h2 class="text-2xl font-bold mb-4">Filter by Tag</h2><div id="tags-container" class="flex flex-wrap gap-2"><p class="text-gray-400 text-sm">No trades with tags yet.</p></div></div>
+                        {/* Performance Stats */}
+                        <div class="glass-card p-6">
+                            <h2 class="text-2xl font-bold text-center mb-4">Performance Analytics</h2>
+                            <div class="grid grid-cols-2 gap-4 text-center">
+                                <div class="glass-card p-3"><span class="text-sm text-color-muted block">Total P/L</span><span id="total-pl" class="text-xl font-bold">-$--.--</span></div>
+                                <div class="glass-card p-3"><span class="text-sm text-color-muted block">Total Trades</span><span id="total-trades" class="text-xl font-bold">0</span></div>
+                                <div class="glass-card p-3"><span class="text-sm text-color-muted block">Win Rate</span><span id="win-rate" class="text-xl font-bold">--%</span></div>
+                                <div class="glass-card p-3"><span class="text-sm text-color-muted block">Profit Factor</span><span id="profit-factor" class="text-xl font-bold">--</span></div>
+                                <div class="glass-card p-3 col-span-2"><span class="text-sm text-color-muted block">Avg Win / Loss</span><span id="avg-win-loss" class="text-lg font-bold">-$-- / -$--</span></div>
+                            </div>
+                        </div>
+                        {/* Equity Curve */}
+                        <div class="glass-card p-6">
+                            <h2 class="text-2xl font-bold mb-4">Equity Curve</h2>
+                            <div style="height: 250px;"> {/* Constrain chart height */}
+                               <canvas id="equity-curve-chart"></canvas>
+                            </div>
+                        </div>
+                        {/* Tag Filter */}
+                        <div class="glass-card p-6">
+                            <h2 class="text-2xl font-bold mb-4">Filter by Tag</h2>
+                            <div id="tags-container" class="flex flex-wrap gap-2">
+                                <p class="text-color-muted text-sm">No trades with tags yet.</p>
+                            </div>
+                        </div>
                     </div>
+                    {/* Right Column: Trade Entry & History */}
                     <div class="lg:col-span-2 space-y-8">
-                        <div class="glass-card p-6"><h2 class="text-2xl font-bold mb-4">Log a New Trade</h2><form id="trade-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="text-sm text-gray-400">Symbol</label><input type="text" id="trade-symbol" required class="form-input w-full mt-1 p-2 rounded-lg" placeholder="e.g., AAPL"></div><div><label class="text-sm text-gray-400">Direction</label><select id="trade-direction" class="form-input w-full mt-1 p-2 rounded-lg bg-[#0c111e]"><option value="long">Long</option><option value="short">Short</option></select></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-4"><div><label class="text-sm text-gray-400">Entry</label><input type="number" step="any" id="trade-entry" required class="form-input w-full mt-1 p-2 rounded-lg"></div><div><label class="text-sm text-gray-400">Exit</label><input type="number" step="any" id="trade-exit" required class="form-input w-full mt-1 p-2 rounded-lg"></div><div><label class="text-sm text-gray-400">Size</label><input type="number" step="any" id="trade-size" required class="form-input w-full mt-1 p-2 rounded-lg" placeholder="Shares/Lots"></div><div><label class="text-sm text-gray-400">P/L ($)</label><input type="text" id="trade-pl-display" readonly class="form-input w-full mt-1 p-2 rounded-lg bg-gray-800/50"></div></div><div><label class="text-sm text-gray-400">Chart Screenshot URL</label><input type="url" id="trade-image" class="form-input w-full mt-1 p-2 rounded-lg" placeholder="Paste image link here..."></div><div><label class="text-sm text-gray-400">Tags (comma-separated)</label><input type="text" id="trade-tags" class="form-input w-full mt-1 p-2 rounded-lg" placeholder="#breakout, #followed_plan..."></div><div><label class="text-sm text-gray-400">Notes / Setup</label><textarea id="trade-notes" rows="3" class="form-input w-full mt-1 p-2 rounded-lg" placeholder="Why did you take this trade? What was your mindset?"></textarea></div><button type="submit" id="save-trade-btn" class="main-button w-full font-bold py-3 rounded-lg">Save Trade</button><p id="form-message" class="text-center text-sm mt-3 h-4"></p></form></div>
-                        <div class="glass-card p-6"><h2 class="text-2xl font-bold mb-4">Trade History</h2><div id="trade-history" class="space-y-3 max-h-[70vh] overflow-y-auto pr-2"><p class="text-center text-gray-400">No trades logged yet.</p></div></div>
+                        {/* New Trade Form */}
+                        <div class="glass-card p-6">
+                            <h2 class="text-2xl font-bold mb-4">Log a New Trade</h2>
+                            <form id="trade-form" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label class="text-sm text-color-muted block mb-1">Symbol</label><input type="text" id="trade-symbol" required class="form-input w-full" placeholder="e.g., AAPL"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">Direction</label><select id="trade-direction" class="form-select w-full"><option value="long">Long</option><option value="short">Short</option></select></div>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div><label class="text-sm text-color-muted block mb-1">Entry</label><input type="number" step="any" id="trade-entry" required class="form-input w-full"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">Exit</label><input type="number" step="any" id="trade-exit" required class="form-input w-full"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">Size</label><input type="number" step="any" id="trade-size" required class="form-input w-full" placeholder="Shares/Lots"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">P/L ($)</label><input type="text" id="trade-pl-display" readonly class="form-input w-full bg-black/10 dark:bg-white/5 cursor-not-allowed"></div> {/* Adjusted background */}
+                                </div>
+                                <div><label class="text-sm text-color-muted block mb-1">Chart Screenshot URL</label><input type="url" id="trade-image" class="form-input w-full" placeholder="Paste image link here..."></div>
+                                <div><label class="text-sm text-color-muted block mb-1">Tags (comma-separated)</label><input type="text" id="trade-tags" class="form-input w-full" placeholder="#breakout, #followed_plan..."></div>
+                                <div><label class="text-sm text-color-muted block mb-1">Notes / Setup</label><textarea id="trade-notes" rows="3" class="form-textarea w-full" placeholder="Why did you take this trade? What was your mindset?"></textarea></div>
+                                <button type="submit" id="save-trade-btn" class="main-button w-full font-bold py-3">Save Trade</button>
+                                <p id="form-message" class="text-center text-sm mt-3 h-4"></p>
+                            </form>
+                        </div>
+                        {/* Trade History */}
+                        <div class="glass-card p-6">
+                            <h2 class="text-2xl font-bold mb-4">Trade History</h2>
+                            <div id="trade-history" class="space-y-3 max-h-[70vh] overflow-y-auto pr-2"> {/* Add max-height and overflow */}
+                                <p class="text-center text-color-muted">No trades logged yet.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
         </div>
-    </div>
-    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal"><div class="modal-content glass-card p-8 rounded-2xl w-full max-w-sm text-center transform scale-95"><h2 class="text-xl font-bold mb-4">Confirm Deletion</h2><p class="text-gray-300 mb-6">Are you sure you want to permanently delete this trade?</p><div class="flex gap-4"><button id="cancel-delete-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-lg">Cancel</button><button id="confirm-delete-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg">Delete</button></div></div></div>
-    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal"><button id="close-image-modal" class="absolute top-4 right-6 text-white text-4xl">&times;</button><div class="modal-content w-full h-full flex items-center justify-center transform scale-95"><img id="modal-image-src" src="" class="max-w-[90vw] max-h-[90vh] rounded-lg"></div></div>
+
+        <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-70 dark:bg-opacity-80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
+            <div class="modal-content glass-card p-8 rounded-2xl w-full max-w-sm text-center transform scale-95">
+                <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
+                <p class="text-color-muted mb-6">Are you sure you want to permanently delete this trade?</p>
+                <div class="flex gap-4">
+                    <button id="cancel-delete-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 rounded-lg">Cancel</button> {/* Adjusted colors */}
+                    <button id="confirm-delete-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg">Delete</button>
+                </div>
+            </div>
+        </div>
+        <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
+            <button id="close-image-modal" class="absolute top-4 right-6 text-white text-4xl hover:opacity-75">&times;</button>
+            <div class="modal-content w-full h-full flex items-center justify-center transform scale-95">
+                <img id="modal-image-src" src="" alt="Trade Screenshot" class="max-w-[90vw] max-h-[90vh] rounded-lg"> {/* Added default alt */}
+            </div>
+        </div>
+        </div>
+
+    <script type="module" src="app.js"></script>
     
     <script type="module">
-        // ADDED: Firebase App and Auth imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-        
-        // Original Firestore imports
-        import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query, where, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // Import the core initializer, db, and auth from app.js
+        import { initializeAppCore, db, auth } from './app.js'; 
+        // Import Firestore functions needed for the journal
+        import { collection, addDoc, serverTimestamp, onSnapshot, query, where, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // ADDED: Firebase App Initialization
-        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Define the function containing this page's unique JavaScript logic
+        function initJournalPage(user, db) {
+            console.log("Setting up Trading Journal specific logic...");
 
-        // Original script content
-        let allTrades = []; let filteredTrades = []; let activeTag = null; let equityChart;
-        const elements = { 
-            appWrapper: document.getElementById('app-wrapper'), // Added
-            userEmailSpan: document.getElementById('user-email'), // Added
-            totalPl: document.getElementById('total-pl'), 
-            totalTrades: document.getElementById('total-trades'), 
-            winRate: document.getElementById('win-rate'), 
-            profitFactor: document.getElementById('profit-factor'), 
-            avgWinLoss: document.getElementById('avg-win-loss'), 
-            tradeHistory: document.getElementById('trade-history'), 
-            tradeForm: document.getElementById('trade-form'), 
-            saveBtn: document.getElementById('save-trade-btn'), 
-            formMessage: document.getElementById('form-message'), 
-            deleteModal: document.getElementById('delete-modal'), 
-            cancelDelete: document.getElementById('cancel-delete-btn'), 
-            confirmDelete: document.getElementById('confirm-delete-btn'), 
-            imageModal: document.getElementById('image-modal'), 
-            closeImageModal: document.getElementById('close-image-modal'), 
-            modalImageSrc: document.getElementById('modal-image-src'), 
-            tagsContainer: document.getElementById('tags-container'), 
-            plDisplay: document.getElementById('trade-pl-display') 
-        };
-        let tradeToDeleteId = null;
-        
-        const calculatePL = () => { const entry = parseFloat(elements.tradeForm['trade-entry'].value) || 0; const exit = parseFloat(elements.tradeForm['trade-exit'].value) || 0; const size = parseFloat(elements.tradeForm['trade-size'].value) || 0; const direction = elements.tradeForm['trade-direction'].value; let pl = (direction === 'long' ? (exit - entry) : (entry - exit)) * size; elements.plDisplay.value = pl.toLocaleString('en-US', {style: 'currency', currency: 'USD'}); };
-        function updateAnalytics(tradesToAnalyze) { const total = tradesToAnalyze.length; const totalPL = tradesToAnalyze.reduce((sum, t) => sum + t.pl, 0); const winners = tradesToAnalyze.filter(t => t.pl > 0); const losers = tradesToAnalyze.filter(t => t.pl < 0); const winRate = total > 0 ? (winners.length / total) * 100 : 0; const grossProfit = winners.reduce((sum, t) => sum + t.pl, 0); const grossLoss = Math.abs(losers.reduce((sum, t) => sum + t.pl, 0)); const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : Infinity; const avgWin = winners.length > 0 ? grossProfit / winners.length : 0; const avgLoss = losers.length > 0 ? grossLoss / losers.length : 0; elements.totalPl.textContent = totalPL.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); elements.totalPl.className = `text-xl font-bold ${totalPL >= 0 ? 'text-green-400' : 'text-red-400'}`; elements.totalTrades.textContent = total; elements.winRate.textContent = `${winRate.toFixed(1)}%`; elements.profitFactor.textContent = isFinite(profitFactor) ? profitFactor.toFixed(2) : '∞'; elements.avgWinLoss.innerHTML = `<span class="text-green-400">${avgWin.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span> / <span class="text-red-400">${avgLoss.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span>`; updateEquityCurve(tradesToAnalyze); }
-        function initEquityChart() { const ctx = document.getElementById('equity-curve-chart').getContext('2d'); equityChart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Equity', data: [], borderColor: '#0052cc', tension: 0.1, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } } } } }); }
-        function updateEquityCurve(trades) { let runningTotal = 0; const equityData = trades.slice().reverse().map(trade => runningTotal += trade.pl); equityChart.data.labels = trades.map((_, i) => i + 1); equityChart.data.datasets[0].data = equityData; equityChart.update(); }
-        function renderTrades(tradesToRender) { if (tradesToRender.length === 0) { elements.tradeHistory.innerHTML = `<p class="text-center text-gray-400">No trades ${activeTag ? `with tag #${activeTag}` : 'logged yet'}.</p>`; return; } elements.tradeHistory.innerHTML = tradesToRender.map(trade => { const plColor = trade.pl >= 0 ? 'text-green-400' : 'text-red-400'; const directionColor = trade.direction === 'long' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'; const tagsHTML = trade.tags ? trade.tags.map(tag => `<span class="text-xs text-blue-300">#${tag}</span>`).join(' ') : ''; return `<div class="bg-white/5 p-4 rounded-lg"><div class="flex justify-between items-start gap-4"><div><div class="flex items-center gap-3 flex-wrap"><span class="font-bold text-lg text-white">${trade.symbol.toUpperCase()}</span><span class="text-xs font-semibold px-2 py-1 rounded-md ${directionColor}">${trade.direction.toUpperCase()}</span> ${trade.image ? `<button class="view-chart-btn" data-img-src="${trade.image}"><i class="fas fa-image text-blue-400"></i></button>` : ''}</div><p class="text-sm text-gray-400">${trade.createdAt.toDate().toLocaleString()}</p></div><div class="text-right flex-shrink-0"><p class="font-bold text-lg ${plColor}">${trade.pl.toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</p><p class="text-xs text-gray-500">${trade.entryPrice} &rarr; ${trade.exitPrice} (Size: ${trade.positionSize})</p></div></div><p class="text-sm text-gray-300 mt-2">${trade.notes || ''}</p><div class="flex justify-between items-end mt-2 pt-2 border-t border-white/10"><div class="flex gap-2 flex-wrap">${tagsHTML}</div><button data-id="${trade.id}" class="delete-trade-btn text-xs text-red-500 hover:text-red-400">Delete</button></div></div>`; }).join(''); }
-        function renderTags() { const allTags = new Set(allTrades.flatMap(t => t.tags || [])); if (allTags.size === 0) { elements.tagsContainer.innerHTML = '<p class="text-gray-400 text-sm">No trades with tags yet.</p>'; return; } elements.tagsContainer.innerHTML = `<button class="tag text-xs font-semibold py-1 px-3 rounded-full ${!activeTag ? 'active' : ''}" data-tag="all">All</button>` + [...allTags].map(tag => `<button class="tag text-xs font-semibold py-1 px-3 rounded-full ${activeTag === tag ? 'active' : ''}" data-tag="${tag}">#${tag}</button>`).join(''); }
-        
-        // This function now gets called by the auth listener
-        function setupPage(userId) {
-            const tradesCollection = collection(db, "trades"); const q = query(tradesCollection, where("userId", "==", userId), orderBy("createdAt", "desc")); initEquityChart(); onSnapshot(q, (snapshot) => { allTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), pl: (doc.data().direction === 'long' ? (doc.data().exitPrice - doc.data().entryPrice) : (doc.data().entryPrice - doc.data().exitPrice)) * (doc.data().positionSize || 1) })); applyFilters(); renderTags(); }, (error) => { console.error("Error fetching trades:", error); if (error.code === 'failed-precondition') { elements.tradeHistory.innerHTML = `<p class="text-center text-red-400">Error: The database requires an index. Please check the browser's developer console for a link to create it.</p>`; } }); elements.tradeForm.addEventListener('submit', async (e) => { e.preventDefault(); elements.saveBtn.disabled = true; elements.saveBtn.textContent = 'Saving...'; const tradeData = { userId, symbol: elements.tradeForm['trade-symbol'].value, direction: elements.tradeForm['trade-direction'].value, entryPrice: parseFloat(elements.tradeForm['trade-entry'].value), exitPrice: parseFloat(elements.tradeForm['trade-exit'].value), positionSize: parseFloat(elements.tradeForm['trade-size'].value), image: elements.tradeForm['trade-image'].value, tags: elements.tradeForm['trade-tags'].value.split(',').map(t => t.trim()).filter(Boolean), notes: elements.tradeForm['trade-notes'].value, createdAt: serverTimestamp() }; try { await addDoc(tradesCollection, tradeData); elements.tradeForm.reset(); elements.plDisplay.value = ''; showFormMessage('Trade Saved!'); } catch (error) { console.error("Error adding trade: ", error); showFormMessage('Error: Could not save trade.', true); } finally { elements.saveBtn.disabled = false; elements.saveBtn.textContent = 'Save Trade'; } }); ['trade-entry', 'trade-exit', 'trade-size', 'trade-direction'].forEach(id => { elements.tradeForm[id].addEventListener('input', calculatePL); }); elements.tradeHistory.addEventListener('click', (e) => { if (e.target.closest('.delete-trade-btn')) { tradeToDeleteId = e.target.closest('.delete-trade-btn').dataset.id; openModal(elements.deleteModal); } if (e.target.closest('.view-chart-btn')) { elements.modalImageSrc.src = e.target.closest('.view-chart-btn').dataset.imgSrc; openModal(elements.imageModal); } }); elements.tagsContainer.addEventListener('click', e => { if (e.target.matches('.tag')) { const tag = e.target.dataset.tag; activeTag = tag === 'all' ? null : tag; applyFilters(); renderTags(); } }); [elements.cancelDelete, elements.confirmDelete, elements.closeImageModal, elements.deleteModal, elements.imageModal].forEach(el => { el.addEventListener('click', e => { if (e.target === el) { closeModal(elements.deleteModal); closeModal(elements.imageModal); } }); }); elements.cancelDelete.addEventListener('click', () => closeModal(elements.deleteModal)); elements.closeImageModal.addEventListener('click', () => closeModal(elements.imageModal)); elements.confirmDelete.addEventListener('click', async () => { if (tradeToDeleteId) { await deleteDoc(doc(db, "trades", tradeToDeleteId)); closeModal(elements.deleteModal); } }); 
-        };
-        
-        function applyFilters() { filteredTrades = activeTag ? allTrades.filter(t => t.tags && t.tags.includes(activeTag)) : allTrades; renderTrades(filteredTrades); updateAnalytics(filteredTrades); }
-        function showFormMessage(message, isError = false) { elements.formMessage.textContent = message; elements.formMessage.className = `text-center text-sm mt-3 h-4 ${isError ? 'text-red-400' : 'text-green-400'}`; setTimeout(() => elements.formMessage.textContent = '', 3000); }
-        function openModal(modal) { modal.classList.remove('opacity-0', 'pointer-events-none'); modal.querySelector('.modal-content').classList.remove('scale-95'); }
-        function closeModal(modal) { modal.classList.add('opacity-0', 'pointer-events-none'); modal.querySelector('.modal-content').classList.add('scale-95'); }
+            // --- Elements Cache ---
+            const elements = { 
+                totalPl: document.getElementById('total-pl'), 
+                totalTrades: document.getElementById('total-trades'), 
+                winRate: document.getElementById('win-rate'), 
+                profitFactor: document.getElementById('profit-factor'), 
+                avgWinLoss: document.getElementById('avg-win-loss'), 
+                tradeHistory: document.getElementById('trade-history'), 
+                tradeForm: document.getElementById('trade-form'), 
+                saveBtn: document.getElementById('save-trade-btn'), 
+                formMessage: document.getElementById('form-message'), 
+                deleteModal: document.getElementById('delete-modal'), 
+                cancelDelete: document.getElementById('cancel-delete-btn'), 
+                confirmDelete: document.getElementById('confirm-delete-btn'), 
+                imageModal: document.getElementById('image-modal'), 
+                closeImageModal: document.getElementById('close-image-modal'), 
+                modalImageSrc: document.getElementById('modal-image-src'), 
+                tagsContainer: document.getElementById('tags-container'), 
+                plDisplay: document.getElementById('trade-pl-display'),
+                chartCanvas: document.getElementById('equity-curve-chart') // Get canvas element
+            };
 
-        // ADDED: Auth State and Sidebar/Logout Logic
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                elements.appWrapper.style.display = 'block';
-                elements.userEmailSpan.textContent = user.email;
-                setupPage(user.uid); // Call your existing setup function
-            } else {
-                window.location.replace(new URL('login.html', window.location.href).href);
+             // --- State Variables ---
+            let allTrades = []; 
+            let filteredTrades = []; 
+            let activeTag = null; 
+            let equityChart = null; // Chart instance
+            let tradeToDeleteId = null;
+            const userId = user.uid; // Get userId from passed user object
+            const tradesCollectionRef = collection(db, "trades"); // Define collection ref
+
+            // --- Check for Missing Elements ---
+            let missingElement = false;
+            for (const key in elements) {
+                if (!elements[key]) {
+                    console.error(`Error: Element with ID '${key}' not found!`);
+                    missingElement = true;
+                }
             }
-        });
+            if(missingElement) {
+                 // Display error to user if critical elements are missing
+                 document.getElementById('app-wrapper').innerHTML = "<p class='text-red-500 text-center p-8'>Error initializing journal page elements. Please contact support.</p>";
+                 return; // Stop execution
+            }
 
-        const openSidebarBtn = document.getElementById('open-sidebar-btn');
-        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarNav = document.getElementById('sidebar-nav');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
-        function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
-        openSidebarBtn.addEventListener('click', openSidebar);
-        closeSidebarBtn.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
-        sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
-        document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); signOut(auth).then(() => window.location.href = 'index.html'); });
+            // --- P/L Calculation ---
+            const calculatePL = () => { 
+                // Ensure form elements exist before accessing values
+                if (!elements.tradeForm || !elements.plDisplay) return; 
+                const entry = parseFloat(elements.tradeForm['trade-entry']?.value) || 0; 
+                const exit = parseFloat(elements.tradeForm['trade-exit']?.value) || 0; 
+                const size = parseFloat(elements.tradeForm['trade-size']?.value) || 0; 
+                const direction = elements.tradeForm['trade-direction']?.value; 
+                let pl = (direction === 'long' ? (exit - entry) : (entry - exit)) * size; 
+                elements.plDisplay.value = isNaN(pl) ? '' : pl.toLocaleString('en-US', {style: 'currency', currency: 'USD'}); 
+            };
 
+            // --- Analytics Update ---
+            function updateAnalytics(tradesToAnalyze) { 
+                const total = tradesToAnalyze.length; 
+                const totalPL = tradesToAnalyze.reduce((sum, t) => sum + (t.pl || 0), 0); // Handle potential undefined pl
+                const winners = tradesToAnalyze.filter(t => t.pl > 0); 
+                const losers = tradesToAnalyze.filter(t => t.pl < 0); 
+                const winRate = total > 0 ? (winners.length / total) * 100 : 0; 
+                const grossProfit = winners.reduce((sum, t) => sum + t.pl, 0); 
+                const grossLoss = Math.abs(losers.reduce((sum, t) => sum + t.pl, 0)); 
+                const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : (grossProfit > 0 ? Infinity : 0); // Handle zero loss/profit
+                const avgWin = winners.length > 0 ? grossProfit / winners.length : 0; 
+                const avgLoss = losers.length > 0 ? grossLoss / losers.length : 0; 
+                
+                // Update DOM elements safely
+                elements.totalPl.textContent = totalPL.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); 
+                elements.totalPl.className = `text-xl font-bold ${totalPL >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`; 
+                elements.totalTrades.textContent = total; 
+                elements.winRate.textContent = `${winRate.toFixed(1)}%`; 
+                elements.profitFactor.textContent = isFinite(profitFactor) ? profitFactor.toFixed(2) : '∞'; 
+                elements.avgWinLoss.innerHTML = `<span class="text-green-500 dark:text-green-400">${avgWin.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span> / <span class="text-red-500 dark:text-red-400">${avgLoss.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span>`; 
+                
+                updateEquityCurve(tradesToAnalyze); 
+            }
+
+            // --- Equity Curve Chart ---
+            function initEquityChart() { 
+                if (equityChart) { equityChart.destroy(); } // Destroy existing chart if any
+                const ctx = elements.chartCanvas.getContext('2d'); 
+                const isDarkMode = document.documentElement.classList.contains('dark');
+                const gridColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                const tickColor = isDarkMode ? '#a9a9b3' : '#4b5563';
+                const lineColor = isDarkMode ? '#0065ff' : '#0052cc'; // Brighter blue for dark
+
+                equityChart = new Chart(ctx, { 
+                    type: 'line', 
+                    data: { labels: [], datasets: [{ label: 'Equity', data: [], borderColor: lineColor, tension: 0.1, fill: false, pointRadius: 0, pointHoverRadius: 0 }] }, // Hide points initially
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            x: { 
+                                ticks: { display: false }, 
+                                grid: { color: gridColor, drawBorder: false } // Hide X border
+                            }, 
+                            y: { 
+                                grid: { color: gridColor, drawBorder: false }, // Hide Y border
+                                ticks: { color: tickColor, // Use theme color
+                                     // Format ticks as currency (optional)
+                                    // callback: function(value, index, values) {
+                                    //     return value.toLocaleString('en-US', {style:'currency', currency:'USD', maximumFractionDigits: 0});
+                                    // } 
+                                } 
+                            } 
+                        },
+                        interaction: { // Improve tooltip behavior
+                           intersect: false,
+                           mode: 'index',
+                        },
+                    } 
+                }); 
+            }
+            function updateEquityCurve(trades) { 
+                if (!equityChart) return;
+                let runningTotal = 0; 
+                // Sort trades by date ASCENDING for the curve calculation
+                const sortedTrades = trades.slice().sort((a, b) => a.createdAt.toDate() - b.createdAt.toDate()); 
+                const equityData = sortedTrades.map(trade => runningTotal += (trade.pl || 0)); 
+                
+                equityChart.data.labels = sortedTrades.map((_, i) => i + 1); 
+                equityChart.data.datasets[0].data = [0, ...equityData]; // Start curve at 0
+                 equityChart.data.labels = [0, ...equityChart.data.labels]; // Add label for starting point
+
+                equityChart.update(); 
+            }
+
+             // --- Render Trades & Tags ---
+            function renderTrades(tradesToRender) { 
+                if (tradesToRender.length === 0) { 
+                    elements.tradeHistory.innerHTML = `<p class="text-center text-color-muted">No trades ${activeTag ? `with tag #${activeTag}` : 'logged yet'}.</p>`; 
+                    return; 
+                } 
+                elements.tradeHistory.innerHTML = tradesToRender.map(trade => { 
+                    const plColor = (trade.pl || 0) >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'; 
+                    const directionColor = trade.direction === 'long' ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'; 
+                    const tagsHTML = Array.isArray(trade.tags) ? trade.tags.map(tag => `<span class="text-xs text-blue-400 dark:text-blue-300 mr-1">#${tag}</span>`).join('') : ''; 
+                    const dateString = trade.createdAt?.toDate() ? trade.createdAt.toDate().toLocaleString() : 'Date unavailable';
+
+                    return `
+                    <div class="bg-black/10 dark:bg-white/5 p-4 rounded-lg"> {/* Theme background */}
+                        <div class="flex justify-between items-start gap-4 flex-wrap"> {/* Allow wrapping */}
+                            <div>
+                                <div class="flex items-center gap-3 flex-wrap mb-1"> {/* Margin bottom */}
+                                    <span class="font-bold text-lg text-color-base">${trade.symbol?.toUpperCase() || 'N/A'}</span>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${directionColor}">${trade.direction?.toUpperCase() || 'N/A'}</span> 
+                                    ${trade.image ? `<button class="view-chart-btn text-color-muted hover:text-blue-500" data-img-src="${trade.image}"><i class="fas fa-image"></i></button>` : ''}
+                                </div>
+                                <p class="text-xs text-color-muted">${dateString}</p>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <p class="font-bold text-lg ${plColor}">${(trade.pl || 0).toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</p>
+                                <p class="text-xs text-color-muted">${trade.entryPrice || '?'} &rarr; ${trade.exitPrice || '?'} (Size: ${trade.positionSize || '?'})</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-color-muted mt-2">${trade.notes || ''}</p>
+                        <div class="flex justify-between items-end mt-2 pt-2 border-t border-color-base">
+                            <div class="flex gap-2 flex-wrap text-xs">${tagsHTML}</div>
+                            <button data-id="${trade.id}" class="delete-trade-btn text-xs text-red-500 hover:text-red-400">Delete</button>
+                        </div>
+                    </div>`; 
+                }).join(''); 
+            }
+            function renderTags() { 
+                const allTags = new Set(allTrades.flatMap(t => t.tags || [])); 
+                if (allTags.size === 0) { 
+                    elements.tagsContainer.innerHTML = '<p class="text-color-muted text-sm">No trades with tags yet.</p>'; 
+                    return; 
+                } 
+                elements.tagsContainer.innerHTML = 
+                    `<button class="tag text-xs font-semibold py-1 px-3 ${!activeTag ? 'active' : ''}" data-tag="all">All</button>` + 
+                    [...allTags].sort().map(tag => // Sort tags alphabetically
+                        `<button class="tag text-xs font-semibold py-1 px-3 ${activeTag === tag ? 'active' : ''}" data-tag="${tag}">#${tag}</button>`
+                    ).join(''); 
+            }
+
+            // --- Apply Filters ---
+            function applyFilters() { 
+                filteredTrades = activeTag ? allTrades.filter(t => Array.isArray(t.tags) && t.tags.includes(activeTag)) : allTrades; 
+                // Sort filtered trades DESCENDING for the history view
+                const sortedForHistory = filteredTrades.slice().sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+                renderTrades(sortedForHistory); 
+                updateAnalytics(filteredTrades); // Analytics use unfiltered or tag-filtered, order doesn't matter for calc
+                renderTags(); // Re-render tags to update active state
+            }
+
+             // --- UI Feedback & Modals ---
+            function showFormMessage(message, isError = false) { 
+                elements.formMessage.textContent = message; 
+                elements.formMessage.className = `text-center text-sm mt-3 h-4 ${isError ? 'text-red-400' : 'text-green-400'}`; 
+                setTimeout(() => elements.formMessage.textContent = '', 3000); 
+            }
+            function openModal(modal) { 
+                if(!modal) return;
+                modal.classList.remove('opacity-0', 'pointer-events-none'); 
+                modal.querySelector('.modal-content')?.classList.remove('scale-95'); // Optional: check if content exists
+            }
+            function closeModal(modal) { 
+                if(!modal) return;
+                modal.classList.add('opacity-0', 'pointer-events-none'); 
+                modal.querySelector('.modal-content')?.classList.add('scale-95'); // Optional: check if content exists
+                 // Reset delete ID when closing delete modal
+                 if (modal === elements.deleteModal) { tradeToDeleteId = null; }
+                 // Clear image source when closing image modal
+                 if (modal === elements.imageModal) { setTimeout(() => { elements.modalImageSrc.src = ''; }, 300); }
+            }
+
+            // --- Event Listeners ---
+            function setupEventListeners() {
+                // Form submission
+                elements.tradeForm.addEventListener('submit', async (e) => { 
+                    e.preventDefault(); 
+                    elements.saveBtn.disabled = true; 
+                    elements.saveBtn.textContent = 'Saving...'; 
+                    const tradeData = { 
+                        userId, // Store user ID with trade
+                        symbol: elements.tradeForm['trade-symbol'].value, 
+                        direction: elements.tradeForm['trade-direction'].value, 
+                        entryPrice: parseFloat(elements.tradeForm['trade-entry'].value), 
+                        exitPrice: parseFloat(elements.tradeForm['trade-exit'].value), 
+                        positionSize: parseFloat(elements.tradeForm['trade-size'].value), 
+                        image: elements.tradeForm['trade-image'].value, 
+                        tags: elements.tradeForm['trade-tags'].value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean), // Lowercase tags
+                        notes: elements.tradeForm['trade-notes'].value, 
+                        createdAt: serverTimestamp() 
+                    }; 
+                    try { 
+                        await addDoc(tradesCollectionRef, tradeData); 
+                        elements.tradeForm.reset(); 
+                        elements.plDisplay.value = ''; 
+                        showFormMessage('Trade Saved!'); 
+                    } catch (error) { 
+                        console.error("Error adding trade: ", error); 
+                        showFormMessage('Error: Could not save trade.', true); 
+                    } finally { 
+                        elements.saveBtn.disabled = false; 
+                        elements.saveBtn.textContent = 'Save Trade'; 
+                    } 
+                }); 
+
+                // Auto P/L calculation on input change
+                ['trade-entry', 'trade-exit', 'trade-size', 'trade-direction'].forEach(id => { 
+                    const inputElement = elements.tradeForm[id];
+                    if (inputElement) {
+                       inputElement.addEventListener('input', calculatePL); 
+                    }
+                }); 
+
+                // Trade history click delegation (Delete / View Chart)
+                elements.tradeHistory.addEventListener('click', (e) => { 
+                    const deleteButton = e.target.closest('.delete-trade-btn');
+                    const viewChartButton = e.target.closest('.view-chart-btn');
+                    
+                    if (deleteButton) { 
+                        tradeToDeleteId = deleteButton.dataset.id; 
+                        openModal(elements.deleteModal); 
+                    } else if (viewChartButton) { 
+                        elements.modalImageSrc.src = viewChartButton.dataset.imgSrc; 
+                        openModal(elements.imageModal); 
+                    } 
+                }); 
+
+                // Tag filtering
+                elements.tagsContainer.addEventListener('click', e => { 
+                    if (e.target.matches('.tag')) { 
+                        const tag = e.target.dataset.tag; 
+                        activeTag = tag === 'all' ? null : tag; 
+                        applyFilters(); // Apply filter and re-render everything needed
+                    } 
+                }); 
+
+                // Modal close buttons & background clicks
+                [elements.cancelDelete, elements.closeImageModal].forEach(btn => {
+                   if(btn) btn.addEventListener('click', () => {
+                       closeModal(elements.deleteModal); // Close delete modal on cancel
+                       closeModal(elements.imageModal); // Close image modal on its close button
+                   });
+                });
+                [elements.deleteModal, elements.imageModal].forEach(modal => {
+                   if(modal) modal.addEventListener('click', e => { 
+                       if (e.target === modal) { // Click on modal background
+                           closeModal(modal); 
+                       } 
+                   });
+                });
+
+                // Confirm delete button
+                if(elements.confirmDelete) elements.confirmDelete.addEventListener('click', async () => { 
+                    if (tradeToDeleteId) { 
+                        try {
+                            elements.confirmDelete.textContent = "Deleting...";
+                            elements.confirmDelete.disabled = true;
+                            await deleteDoc(doc(db, "trades", tradeToDeleteId)); 
+                            console.log("Trade deleted:", tradeToDeleteId);
+                        } catch (error) {
+                             console.error("Error deleting trade:", error);
+                             alert("Error deleting trade. Please try again."); // Simple error feedback
+                        } finally {
+                            elements.confirmDelete.textContent = "Delete";
+                            elements.confirmDelete.disabled = false;
+                            closeModal(elements.deleteModal); 
+                            // Data will refresh via onSnapshot listener
+                        }
+                    } 
+                }); 
+                
+                // Close modals on Escape key
+                 document.addEventListener('keydown', (e) => { 
+                     if (e.key === 'Escape') {
+                         if (!elements.deleteModal.classList.contains('opacity-0')) closeModal(elements.deleteModal);
+                         if (!elements.imageModal.classList.contains('opacity-0')) closeModal(elements.imageModal);
+                     }
+                 });
+
+            } // End of setupEventListeners
+
+            // --- Firestore Listener Setup ---
+            function listenForTrades() {
+                const q = query(tradesCollectionRef, where("userId", "==", userId), orderBy("createdAt", "desc")); 
+                onSnapshot(q, (snapshot) => { 
+                    allTrades = snapshot.docs.map(doc => {
+                         const data = doc.data();
+                         // Calculate P/L here if not stored, ensure values are numbers
+                         const entry = Number(data.entryPrice) || 0;
+                         const exit = Number(data.exitPrice) || 0;
+                         const size = Number(data.positionSize) || 0; // Default to 0 if not present/invalid
+                         const pl = (data.direction === 'long' ? (exit - entry) : (entry - exit)) * size;
+                         
+                         return { 
+                             id: doc.id, 
+                             ...data, 
+                             pl: isNaN(pl) ? 0 : pl // Ensure pl is a number, default to 0
+                         };
+                    }); 
+                    applyFilters(); // Apply current filter (or show all) and update UI
+                }, (error) => { 
+                    console.error("Error fetching trades:", error); 
+                    elements.tradeHistory.innerHTML = `<p class="text-center text-red-500">Error loading trades. ${error.code === 'failed-precondition' ? 'Database index required - check console.' : ''}</p>`; 
+                });
+            }
+
+            // --- Initial Setup ---
+            initEquityChart(); // Initialize chart structure
+            setupEventListeners(); // Attach all event handlers
+            listenForTrades(); // Start listening for Firestore data
+
+        } // End of initJournalPage function
+
+        // Initialize the app core, passing in the page-specific setup function
+        initializeAppCore(initJournalPage);
     </script>
 </body>
 </html>
