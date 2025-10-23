@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-World Results | Finclarity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        .glass-card { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
+        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
+        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; }
+        .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app-wrapper" style="display: none;">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
+
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
+            <div class="p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINCLARITY</a></div>
+                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+                </div>
+                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
+                    <a href="member_dashboard.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
+                    <a href="portfolio.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-wallet fa-fw w-6"></i><span>Portfolio</span></a>
+                    <a href="articles.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
+                    <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
+                    <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
+                    <a href="real_results.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
+                    <a href="market_screener.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-search-dollar fa-fw w-6"></i><span>Market Screener</span></a>
+                    <a href="news.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-newspaper fa-fw w-6"></i><span>Live News Feed</span></a>
+                    <a href="economic_calendar.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-calendar-alt fa-fw w-6"></i><span>Economic Calendar</span></a>
+                    <a href="trading_journal.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book fa-fw w-6"></i><span>Trading Journal</span></a>
+                    <a href="tools_calculators.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools</span></a>
+                    <a href="settings.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Settings</span></a>
+                </nav>
+                <div class="mt-auto">
+                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a>
+                </div>
+            </div>
+        </aside>
+
+        <div>
+             <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30">
+                <div class="container mx-auto flex justify-between items-center p-4">
+                    <div class="flex items-center gap-4">
+                        <button id="open-sidebar-btn" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
+                        <div class="text-2xl font-bold tracking-wider text-white">Real-World Results</div>
+                    </div>
+                    <nav class="flex items-center gap-4">
+                         <span id="user-email" class="hidden sm:inline text-gray-300"></span>
+                         <a href="settings.html" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a>
+                    </nav>
+                </div>
+            </header>
+
+            <main class="container mx-auto p-4 md:p-8">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl md:text-5xl font-bold">Real-World Results</h1>
+                    <p class="text-lg text-gray-400 mt-4 max-w-2xl mx-auto">Explore case studies and data-driven examples of our financial principles in action. This is proof, not theory.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass-card flex flex-col p-6">
+                        <h2 class="text-2xl font-bold mb-4">Case Study: Niche Website</h2>
+                        <p class="text-gray-400 mb-6 flex-grow">A 12-month journey from a simple idea to a consistent monthly income stream using SEO and affiliate marketing.</p>
+                        <div class="flex justify-around items-center border-t border-b border-white/10 py-4 my-4">
+                            <div class="text-center"><span class="text-2xl font-bold text-green-400">$1,520</span><span class="text-xs text-gray-400 block">Monthly Profit</span></div>
+                            <div class="text-center"><span class="text-2xl font-bold">12</span><span class="text-xs text-gray-400 block">Months</span></div>
+                             <div class="text-center"><span class="text-2xl font-bold">$750</span><span class="text-xs text-gray-400 block">Initial Cost</span></div>
+                        </div>
+                        <a href="#" class="main-button font-semibold py-3 px-6 rounded-lg mt-4 text-center">Read Full Analysis</a>
+                    </div>
+                    <div class="glass-card flex flex-col p-6">
+                        <h2 class="text-2xl font-bold mb-4">Member Spotlight: Dividend Portfolio</h2>
+                        <p class="text-gray-400 mb-6 flex-grow">How one member used our dividend strategy to triple their portfolio's passive income in just two years, focusing on compound growth.</p>
+                         <div class="flex justify-around items-center border-t border-b border-white/10 py-4 my-4">
+                            <div class="text-center"><span class="text-2xl font-bold text-green-400">+210%</span><span class="text-xs text-gray-400 block">Income Growth</span></div>
+                            <div class="text-center"><span class="text-2xl font-bold">24</span><span class="text-xs text-gray-400 block">Months</span></div>
+                             <div class="text-center"><span class="text-2xl font-bold">8.2%</span><span class="text-xs text-gray-400 block">Avg. Yield</span></div>
+                        </div>
+                        <a href="#" class="main-button font-semibold py-3 px-6 rounded-lg mt-4 text-center">View Case Study</a>
+                    </div>
+                    <div class="glass-card flex flex-col p-6">
+                        <h2 class="text-2xl font-bold mb-4">Data Deep Dive: Real Estate</h2>
+                        <p class="text-gray-400 mb-6 flex-grow">An analysis of a "live-in-flip" strategy that resulted in a significant tax-free profit, creating a substantial down payment for future investments.</p>
+                        <div class="flex justify-around items-center border-t border-b border-white/10 py-4 my-4">
+                            <div class="text-center"><span class="text-2xl font-bold text-green-400">$78,000</span><span class="text-xs text-gray-400 block">Net Profit</span></div>
+                            <div class="text-center"><span class="text-2xl font-bold">18</span><span class="text-xs text-gray-400 block">Months</span></div>
+                             <div class="text-center"><span class="text-2xl font-bold">21%</span><span class="text-xs text-gray-400 block">Cash-on-Cash</span></div>
+                        </div>
+                        <a href="#" class="main-button font-semibold py-3 px-6 rounded-lg mt-4 text-center">Explore the Data</a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        const appWrapper = document.getElementById('app-wrapper');
+        const userEmailSpan = document.getElementById('user-email');
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                appWrapper.style.display = 'block';
+                userEmailSpan.textContent = user.email;
+            } else {
+                window.location.replace(new URL('login.html', window.location.href).href);
+            }
+        });
+
+        const openSidebarBtn = document.getElementById('open-sidebar-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
+        function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
+        openSidebarBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
+        // UPDATED: Fixed logout script
+        document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); signOut(auth).then(() => window.location.href = 'index.html'); });
+    </script>
+</body>
+</html>
