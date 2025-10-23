@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Checklist | Finex</title> 
+    <title>Weekly Checklist | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,9 +14,9 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; @apply text-color-muted; } /* Use theme color */
-        .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0052cc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; /* Center loader */}
-        .dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; } /* Slightly different loader color for dark */
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; @apply text-color-muted; }
+        .loader { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #0052cc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        .dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -27,9 +27,8 @@
     </div>
 
     <div id="app-wrapper" style="display: none;">
-        
-        <div id="header-placeholder"></div> 
 
+        <div id="header-placeholder"></div>
         <main class="container mx-auto p-4 md:p-8">
             <div class="text-center mb-12">
                 <h1 class="text-4xl md:text-5xl font-bold text-color-base">Weekly Trading Checklist</h1>
@@ -70,14 +69,14 @@
                     <form id="add-trade-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-color-base pt-6">
                         <input type="text" id="trade-pair" placeholder="Pair/Instrument" required class="form-input">
                         <input type="text" id="trade-notes" placeholder="Setup Notes" required class="form-input">
-                        <select id="trade-outcome" required class="form-select w-full"> {/* Added w-full */}
+                        <select id="trade-outcome" required class="form-select w-full">
                             <option value="" disabled selected>Select Outcome</option>
                             <option value="Profit">Profit</option>
                             <option value="Loss">Loss</option>
                             <option value="Break Even">Break Even</option>
                             <option value="Missed">Missed Entry</option>
                         </select>
-                        <button type="submit" class="main-button font-bold py-2 px-4 md:col-span-3">Add Trade to Log</button> {/* Removed rounded-lg as main-button now includes it */}
+                        <button type="submit" class="main-button font-bold py-2 px-4 md:col-span-3">Add Trade to Log</button>
                     </form>
                 </div>
 
@@ -95,24 +94,24 @@
                     </div>
                 </div>
 
-                <p id="save-status" class="text-center text-sm text-color-muted h-4 mt-4"></p> {/* Added margin-top */}
+                <p id="save-status" class="text-center text-sm text-color-muted h-4 mt-4"></p>
             </div>
         </main>
         </div>
 
-    <script type="module" src="app.js"></script> 
-    
+    <script type="module" src="app.js"></script>
+
     <script type="module">
         // Import the core initializer and db instance from app.js
         import { initializeAppCore, db } from './app.js';
-        // Import Firestore functions needed specifically for this page
+        // Import Firestore functions
         import { doc, setDoc, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         // Define the function containing this page's unique JavaScript logic
         function initChecklistPage(user, db) {
             console.log("Setting up Weekly Checklist specific logic...");
 
-            // Get elements specific to this page
+            // Get elements (ensure IDs match HTML)
             const loadingContainer = document.getElementById('loading-container');
             const weekIdentifier = document.getElementById('week-identifier');
             const saveStatus = document.getElementById('save-status');
@@ -125,26 +124,23 @@
             const weeklyPlInput = document.getElementById('weekly-pl');
             const lessonsLearnedInput = document.getElementById('lessons-learned');
 
-            // Check if essential elements exist
-             if (!loadingContainer || !weekIdentifier || !saveStatus || !pairsAnalyzedInput || !watchlistContainer || !otherPairsInput || !topPairsFocusInput || !addTradeForm || !tradeLogList || !weeklyPlInput || !lessonsLearnedInput) {
-                 console.error("One or more essential checklist elements not found!");
-                 // Hide loader and show error if container exists
-                 if (loadingContainer) loadingContainer.style.display = 'none';
-                 const body = document.querySelector('body');
-                 if(body) body.innerHTML = "<p class='text-red-500 text-center p-8'>Error initializing page elements.</p>";
-                 return;
+             // Basic check if critical elements exist
+             if (!loadingContainer || !weekIdentifier || !saveStatus || !pairsAnalyzedInput || !watchlistContainer || !addTradeForm || !tradeLogList) {
+                 console.error("Critical checklist elements missing!");
+                 if(loadingContainer) loadingContainer.innerHTML = "<p class='text-red-500'>Error loading page elements.</p>";
+                 return; // Stop initialization
              }
 
-            let currentUserId = user.uid; // Get user ID from the passed user object
+            let currentUserId = user.uid;
             let currentWeekId = '';
             let checklistDocRef = null;
-            let checklistData = {}; // Cache for current data
+            let checklistData = {};
             let debounceTimer = null;
 
             const commonPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CAD", "AUD/USD", "NZD/USD", "USD/CHF", "GBP/JPY"];
 
             // --- Helper Functions ---
-            function getWeekId(date) {
+            function getWeekId(date) { /* ... (same as before) ... */
                 const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                 const dayNum = d.getUTCDay() || 7;
                 d.setUTCDate(d.getUTCDate() + 4 - dayNum);
@@ -153,176 +149,136 @@
                 return `${d.getUTCFullYear()}-${String(weekNo).padStart(2, '0')}`;
             }
 
-            function populateWatchlistCheckboxes() {
+            function populateWatchlistCheckboxes() { /* ... (same as before, ensure theme classes) ... */
                  watchlistContainer.innerHTML = commonPairs.map(pair => `
-                    <label class="flex items-center space-x-2 cursor-pointer checkbox-label p-1"> {/* Added padding */}
+                    <label class="flex items-center space-x-2 cursor-pointer checkbox-label p-1">
                         <input type="checkbox" class="form-checkbox watchlist-checkbox" value="${pair}">
-                        <span class="text-color-base">${pair}</span> {/* Use theme color */}
+                        <span class="text-color-base">${pair}</span>
                     </label>
                 `).join('');
             }
 
-            function displayTradeLog(trades = []) {
+            function displayTradeLog(trades = []) { /* ... (same as before, ensure theme classes) ... */
                 if (!trades || trades.length === 0) {
                      tradeLogList.innerHTML = '<p class="text-color-muted text-center">No trades logged yet for this week.</p>';
                      return;
                 }
                 tradeLogList.innerHTML = trades.map(trade => `
-                    <div class="bg-white/5 dark:bg-black/20 p-3 rounded-lg text-sm flex flex-wrap justify-between items-center gap-2"> {/* Theme background */}
+                    <div class="bg-gray-100 dark:bg-white/5 p-3 rounded-lg text-sm flex flex-wrap justify-between items-center gap-2"> {/* Adjusted background */}
                         <span class="font-semibold text-color-base">${trade.pair}</span>
                         <span class="text-color-muted flex-grow mx-2">${trade.notes}</span>
-                         <span class="${trade.outcome === 'Profit' ? 'text-green-500 dark:text-green-400' : trade.outcome === 'Loss' ? 'text-red-500 dark:text-red-400' : 'text-color-muted'} font-semibold">${trade.outcome}</span>
+                         <span class="${trade.outcome === 'Profit' ? 'text-green-600 dark:text-green-400' : trade.outcome === 'Loss' ? 'text-red-600 dark:text-red-400' : 'text-color-muted'} font-semibold">${trade.outcome}</span>
                     </div>
                 `).join('');
             }
-            
+
             // --- Firestore Interaction ---
-            async function saveData(field, value) {
+            async function saveData(field, value) { /* ... (same as before) ... */
                 if (!checklistDocRef) return;
                 saveStatus.textContent = 'Saving...';
-                
-                const dataToSave = {
-                    [field]: value,
-                    lastUpdated: serverTimestamp() // Always update timestamp
-                };
-
+                const dataToSave = { [field]: value, lastUpdated: serverTimestamp() };
                 try {
-                    await setDoc(checklistDocRef, dataToSave, { merge: true }); // Use setDoc with merge
+                    await setDoc(checklistDocRef, dataToSave, { merge: true });
                     saveStatus.textContent = 'Saved.';
-                    setTimeout(() => saveStatus.textContent = '', 2000); 
-                } catch (error) {
-                    console.error("Error saving checklist data: ", error);
-                    saveStatus.textContent = 'Error saving.';
-                }
-            }
-            
-            function debouncedSave(field, value) {
-                clearTimeout(debounceTimer);
-                saveStatus.textContent = 'Typing...'; 
-                debounceTimer = setTimeout(() => {
-                    saveData(field, value);
-                }, 1000); // Save 1 second after typing stops
+                    setTimeout(() => saveStatus.textContent = '', 2000);
+                } catch (error) { console.error("Error saving checklist data:", error); saveStatus.textContent = 'Error saving.'; }
             }
 
-            function listenForChecklistData() {
-                // Set up the real-time listener
-                onSnapshot(checklistDocRef, (doc) => {
+            function debouncedSave(field, value) { /* ... (same as before) ... */
+                clearTimeout(debounceTimer);
+                saveStatus.textContent = 'Typing...';
+                debounceTimer = setTimeout(() => { saveData(field, value); }, 1000);
+            }
+
+            function listenForChecklistData() { /* ... (same as before, handles hiding loader) ... */
+                 onSnapshot(checklistDocRef, (doc) => {
                     if (doc.exists()) {
                         checklistData = doc.data();
-                        // Populate form fields safely, using '' as fallback
-                        pairsAnalyzedInput.value = checklistData.pairsAnalyzed || '';
-                        otherPairsInput.value = checklistData.otherPairs || '';
-                        topPairsFocusInput.value = checklistData.topPairsFocus || '';
-                        weeklyPlInput.value = checklistData.weeklyPL || '';
-                        lessonsLearnedInput.value = checklistData.lessonsLearned || '';
-
-                        // Update checkboxes
+                        pairsAnalyzedInput.value = checklistData.pairsAnalyzed ?? ''; // Use nullish coalescing
+                        otherPairsInput.value = checklistData.otherPairs ?? '';
+                        topPairsFocusInput.value = checklistData.topPairsFocus ?? '';
+                        weeklyPlInput.value = checklistData.weeklyPL ?? '';
+                        lessonsLearnedInput.value = checklistData.lessonsLearned ?? '';
                         const selectedPairs = checklistData.watchlist || [];
                         document.querySelectorAll('.watchlist-checkbox').forEach(checkbox => {
                              checkbox.checked = selectedPairs.includes(checkbox.value);
                         });
-                        
-                        // Display trade log
                         displayTradeLog(checklistData.trades);
-
                     } else {
-                        console.log("No checklist data for this week yet. Initializing defaults.");
-                        checklistData = {}; // Reset local cache
-                        // Optionally clear form fields or leave them empty
+                        console.log("No checklist data for this week yet.");
+                        checklistData = {};
+                        // Clear fields explicitly if document doesn't exist
                         pairsAnalyzedInput.value = '';
                         otherPairsInput.value = '';
                         topPairsFocusInput.value = '';
                         weeklyPlInput.value = '';
                         lessonsLearnedInput.value = '';
                         document.querySelectorAll('.watchlist-checkbox').forEach(checkbox => checkbox.checked = false);
-                        displayTradeLog([]); // Ensure log is explicitly cleared
+                        displayTradeLog([]);
                     }
-                     // Hide loading indicator after first data load (or failure)
-                     loadingContainer.style.display = 'none';
-
+                    loadingContainer.style.display = 'none'; // Hide loader after data is processed
                 }, (error) => {
                      console.error("Error listening to checklist data:", error);
-                     loadingContainer.style.display = 'none'; // Hide loader on error too
-                     // Display a user-friendly error message
+                     loadingContainer.style.display = 'none';
                      const mainContent = document.querySelector('main');
-                     if(mainContent) mainContent.innerHTML = "<p class='text-red-500 text-center p-8'>Could not load checklist data. Please try again later.</p>";
+                     if(mainContent) mainContent.innerHTML = "<p class='text-red-500 text-center p-8'>Could not load checklist data.</p>";
                 });
             }
-            
+
             // --- Event Listeners Setup ---
-            function setupEventListeners() {
-                pairsAnalyzedInput.addEventListener('input', (e) => debouncedSave('pairsAnalyzed', parseInt(e.target.value) || 0));
-                otherPairsInput.addEventListener('input', (e) => debouncedSave('otherPairs', e.target.value));
-                topPairsFocusInput.addEventListener('input', (e) => debouncedSave('topPairsFocus', e.target.value));
-                weeklyPlInput.addEventListener('input', (e) => debouncedSave('weeklyPL', e.target.value));
-                lessonsLearnedInput.addEventListener('input', (e) => debouncedSave('lessonsLearned', e.target.value));
+            function setupEventListeners() { /* ... (same as before, including form submission) ... */
+                 pairsAnalyzedInput.addEventListener('input', (e) => debouncedSave('pairsAnalyzed', parseInt(e.target.value) || 0));
+                 otherPairsInput.addEventListener('input', (e) => debouncedSave('otherPairs', e.target.value));
+                 topPairsFocusInput.addEventListener('input', (e) => debouncedSave('topPairsFocus', e.target.value));
+                 weeklyPlInput.addEventListener('input', (e) => debouncedSave('weeklyPL', e.target.value));
+                 lessonsLearnedInput.addEventListener('input', (e) => debouncedSave('lessonsLearned', e.target.value));
 
-                // Handle checkbox changes immediately (no debounce needed)
                  watchlistContainer.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('watchlist-checkbox')) {
-                        const selectedPairs = Array.from(document.querySelectorAll('.watchlist-checkbox:checked')).map(cb => cb.value);
-                        saveData('watchlist', selectedPairs);
-                    }
-                });
+                     if (e.target.classList.contains('watchlist-checkbox')) {
+                         const selectedPairs = Array.from(document.querySelectorAll('.watchlist-checkbox:checked')).map(cb => cb.value);
+                         saveData('watchlist', selectedPairs);
+                     }
+                 });
 
-                // Handle adding a trade
-                addTradeForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const tradeData = {
-                        pair: document.getElementById('trade-pair').value,
-                        notes: document.getElementById('trade-notes').value,
-                        outcome: document.getElementById('trade-outcome').value,
-                        loggedAt: serverTimestamp() // Add timestamp for the trade entry
-                    };
-
-                    saveStatus.textContent = 'Adding trade...';
+                 addTradeForm.addEventListener('submit', async (e) => {
+                     e.preventDefault();
+                     const tradeData = {
+                         pair: document.getElementById('trade-pair').value,
+                         notes: document.getElementById('trade-notes').value,
+                         outcome: document.getElementById('trade-outcome').value,
+                         loggedAt: serverTimestamp()
+                     };
+                     saveStatus.textContent = 'Adding trade...';
                      try {
-                        // Try updating first (most common case)
-                        await updateDoc(checklistDocRef, {
-                            trades: arrayUnion(tradeData),
-                            lastUpdated: serverTimestamp() 
-                        });
-                        addTradeForm.reset(); 
-                        saveStatus.textContent = 'Trade added.';
+                         await updateDoc(checklistDocRef, { trades: arrayUnion(tradeData), lastUpdated: serverTimestamp() });
+                         addTradeForm.reset();
+                         saveStatus.textContent = 'Trade added.';
                          setTimeout(() => saveStatus.textContent = '', 2000);
                      } catch (error) {
-                         // If update fails because doc doesn't exist, create it
-                        if (error.code === 'not-found' || error.message.includes("No document to update")) {
+                         if (error.code === 'not-found' || error.message.includes("No document to update")) {
                              try {
-                                 await setDoc(checklistDocRef, { 
-                                     trades: [tradeData], // Initialize trades array
-                                     createdAt: serverTimestamp(), // Add creation timestamp
-                                     lastUpdated: serverTimestamp() 
-                                 });
+                                 await setDoc(checklistDocRef, { trades: [tradeData], createdAt: serverTimestamp(), lastUpdated: serverTimestamp() });
                                  addTradeForm.reset();
                                  saveStatus.textContent = 'Checklist created & trade added.';
                                  setTimeout(() => saveStatus.textContent = '', 2000);
-                             } catch (createError) {
-                                console.error("Error creating document and adding trade:", createError);
-                                saveStatus.textContent = 'Error adding trade.';
-                             }
-                        } else {
-                            // Handle other errors during update
-                            console.error("Error adding trade: ", error);
-                            saveStatus.textContent = 'Error adding trade.';
-                        }
+                             } catch (createError) { console.error("Error creating document:", createError); saveStatus.textContent = 'Error adding trade.'; }
+                         } else { console.error("Error adding trade:", error); saveStatus.textContent = 'Error adding trade.'; }
                      }
-                });
+                 });
             }
 
             // --- Initialization ---
             currentWeekId = getWeekId(new Date());
             weekIdentifier.textContent = `Checklist for ${currentWeekId.replace('-', ', Week ')}`;
             checklistDocRef = doc(db, `users/${currentUserId}/weeklyChecklists`, currentWeekId);
-            
+
             populateWatchlistCheckboxes();
-            listenForChecklistData(); // This now handles hiding the loader
+            listenForChecklistData(); // Handles hiding the loader
             setupEventListeners();
-            
+
         } // End of initChecklistPage function
 
-        // Initialize the app core for this page
-        // Note: app.js will handle showing app-wrapper, theme, user email in header
+        // Initialize the app core for this page (will load header, theme, etc.)
         initializeAppCore(initChecklistPage);
     </script>
 </body>
