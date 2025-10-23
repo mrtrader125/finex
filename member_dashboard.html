@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Dashboard | Finex</title> 
+    <title>Member Dashboard | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-        
+
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
@@ -28,7 +28,7 @@
                 </div>
                 <div class="absolute bottom-10 left-1/2 -translate-x-1/2"><a href="#dashboard-content" class="text-color-muted animate-bounce"><i class="fas fa-chevron-down fa-2x"></i></a></div>
             </section>
-            
+
             <section id="dashboard-content" class="p-4 md:py-16">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-8">
@@ -51,15 +51,15 @@
                             <h3 class="text-2xl font-bold mb-6">New Results</h3>
                             <div class="space-y-6">
                                 <div class="flex items-start gap-4 group">
-                                    <i class="fas fa-chart-pie text-green-400 mt-1"></i>
+                                    <i class="fas fa-chart-pie text-green-500 dark:text-green-400 mt-1"></i>
                                     <div>
-                                        <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-400 transition-colors">Case Study: $0 to $1,500/mo</a><p class="text-sm text-color-muted">Analysis of a 12-month journey.</p>
+                                        <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Case Study: $0 to $1,500/mo</a><p class="text-sm text-color-muted">Analysis of a 12-month journey.</p>
                                     </div>
                                 </div>
                                  <div class="flex items-start gap-4 group">
-                                     <i class="fas fa-wallet text-green-400 mt-1"></i>
+                                     <i class="fas fa-wallet text-green-500 dark:text-green-400 mt-1"></i>
                                     <div>
-                                         <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-400 transition-colors">Member Spotlight: Tripling Portfolio</a><p class="text-sm text-color-muted">How one member used our dividend strategy.</p>
+                                         <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Member Spotlight: Tripling Portfolio</a><p class="text-sm text-color-muted">How one member used our dividend strategy.</p>
                                      </div>
                                 </div>
                             </div>
@@ -71,45 +71,36 @@
         </div>
 
     <script type="module" src="app.js"></script>
-    
+
     <script type="module">
-        // Import the core initializer and db instance from app.js
         import { initializeAppCore, db } from './app.js';
-        // Import Firestore functions needed specifically for this page
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // Define the function containing this page's unique JavaScript logic
         function initDashboardPage(user, db) {
-            console.log("Setting up Dashboard specific logic..."); // Log for debugging
-            
+            console.log("Setting up Dashboard specific logic...");
+
             const articlesListContainer = document.getElementById('latest-articles-list');
-            
-            // Check if the target element exists before trying to use it
-            if (articlesListContainer) { 
-                // Set up the Firestore listener for latest articles
+
+            if (articlesListContainer) {
                 onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3)), (snapshot) => {
-                    // Display loading or no articles message
-                    articlesListContainer.innerHTML = snapshot.empty 
-                        ? '<p class="text-color-muted text-center">No articles available yet.</p>' 
-                        : ''; 
-                    
-                    // Populate the list if articles exist
+                    articlesListContainer.innerHTML = snapshot.empty
+                        ? '<p class="text-color-muted text-center">No articles available yet.</p>'
+                        : '';
+
                     snapshot.forEach((doc, index) => {
                         const article = { id: doc.id, ...doc.data() };
                         const articleDiv = document.createElement('div');
-                        // Use theme-aware classes
-                        articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors'; 
+                        articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
                         articleDiv.innerHTML = `
                             <a href="articles.html" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
                             <p class="text-color-muted text-sm">${article.readTime} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
                         `;
                         articlesListContainer.appendChild(articleDiv);
-                        
-                        // Add divider between articles
-                        if (index < snapshot.docs.length - 1) { 
-                            const divider = document.createElement('hr'); 
-                            divider.className = 'border-color-base mx-4'; // Use theme-aware class
-                            articlesListContainer.appendChild(divider); 
+
+                        if (index < snapshot.docs.length - 1) {
+                            const divider = document.createElement('hr');
+                            divider.className = 'border-color-base mx-4';
+                            articlesListContainer.appendChild(divider);
                         }
                     });
                 }, (error) => {
@@ -121,7 +112,6 @@
             }
         }
 
-        // Initialize the app core, passing in the page-specific setup function
         initializeAppCore(initDashboardPage);
     </script>
 </body>
