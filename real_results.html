@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-World Results | Finex</title> 
+    <title>Real-World Results | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,11 +16,11 @@
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-        
+
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
-        <div> {/* Optional wrapper if needed */}
+        <div> {/* Optional wrapper */}
              <main class="container mx-auto p-4 md:p-8">
                 <div class="text-center mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Real-World Results</h1>
@@ -32,30 +32,30 @@
                         <p class="text-color-muted mb-6 flex-grow">A 12-month journey from a simple idea to a consistent monthly income stream using SEO and affiliate marketing.</p>
                         <div class="flex justify-around items-center border-t border-b border-color-base py-4 my-4">
                             <div class="text-center"><span class="text-2xl font-bold text-green-500 dark:text-green-400">$1,520</span><span class="text-xs text-color-muted block">Monthly Profit</span></div>
-                            <div class="text-center"><span class="text-2xl font-bold">12</span><span class="text-xs text-color-muted block">Months</span></div>
-                             <div class="text-center"><span class="text-2xl font-bold">$750</span><span class="text-xs text-color-muted block">Initial Cost</span></div>
+                            <div class="text-center"><span class="text-2xl font-bold text-color-base">12</span><span class="text-xs text-color-muted block">Months</span></div>
+                             <div class="text-center"><span class="text-2xl font-bold text-color-base">$750</span><span class="text-xs text-color-muted block">Initial Cost</span></div>
                         </div>
-                        <a href="#" class="main-button font-semibold py-3 px-6 mt-4 text-center block">Read Full Analysis</a> {/* Added block */}
+                        <a href="#" class="main-button font-semibold py-3 px-6 mt-4 text-center block">Read Full Analysis</a>
                     </div>
                     <div class="glass-card flex flex-col p-6">
                         <h2 class="text-2xl font-bold mb-4">Member Spotlight: Dividend Portfolio</h2>
                         <p class="text-color-muted mb-6 flex-grow">How one member used our dividend strategy to triple their portfolio's passive income in just two years, focusing on compound growth.</p>
                          <div class="flex justify-around items-center border-t border-b border-color-base py-4 my-4">
                             <div class="text-center"><span class="text-2xl font-bold text-green-500 dark:text-green-400">+210%</span><span class="text-xs text-color-muted block">Income Growth</span></div>
-                            <div class="text-center"><span class="text-2xl font-bold">24</span><span class="text-xs text-color-muted block">Months</span></div>
-                             <div class="text-center"><span class="text-2xl font-bold">8.2%</span><span class="text-xs text-color-muted block">Avg. Yield</span></div>
+                            <div class="text-center"><span class="text-2xl font-bold text-color-base">24</span><span class="text-xs text-color-muted block">Months</span></div>
+                             <div class="text-center"><span class="text-2xl font-bold text-color-base">8.2%</span><span class="text-xs text-color-muted block">Avg. Yield</span></div>
                         </div>
-                        <a href="#" class="main-button font-semibold py-3 px-6 mt-4 text-center block">View Case Study</a> {/* Added block */}
+                        <a href="#" class="main-button font-semibold py-3 px-6 mt-4 text-center block">View Case Study</a>
                     </div>
                     <div class="glass-card flex flex-col p-6">
                         <h2 class="text-2xl font-bold mb-4">Data Deep Dive: Real Estate</h2>
                         <p class="text-color-muted mb-6 flex-grow">An analysis of a "live-in-flip" strategy that resulted in a significant tax-free profit, creating a substantial down payment for future investments.</p>
                         <div class="flex justify-around items-center border-t border-b border-color-base py-4 my-4">
                             <div class="text-center"><span class="text-2xl font-bold text-green-500 dark:text-green-400">$78,000</span><span class="text-xs text-color-muted block">Net Profit</span></div>
-                            <div class="text-center"><span class="text-2xl font-bold">18</span><span class="text-xs text-color-muted block">Months</span></div>
-                             <div class="text-center"><span class="text-2xl font-bold">21%</span><span class="text-xs text-color-muted block">Cash-on-Cash</span></div>
+                            <div class="text-center"><span class="text-2xl font-bold text-color-base">18</span><span class="text-xs text-color-muted block">Months</span></div>
+                             <div class="text-center"><span class="text-2xl font-bold text-color-base">21%</span><span class="text-xs text-color-muted block">Cash-on-Cash</span></div>
                         </div>
-                        <a href="#" class="main-button font-semibold py-3 px-6 mt-4 text-center block">Explore the Data</a> {/* Added block */}
+                        <a href="#" class="main-button font-semibold py-3 px-6 mt-4 text-center block">Explore the Data</a>
                     </div>
                      </div>
             </main>
@@ -63,16 +63,15 @@
         </div>
 
     <script type="module" src="app.js"></script>
-    
+
     <script type="module">
         // Import the core initializer from app.js
         import { initializeAppCore } from './app.js';
 
         // Define the function containing this page's unique JavaScript logic (if any)
-        // For this page, there's no specific JS needed besides the core setup
         function initRealResultsPage(user, db) {
             console.log("Setting up Real Results page specific logic (none currently).");
-            // Add any JavaScript specific to the real results page here in the future
+            // Add any JavaScript specific to this page here in the future
         }
 
         // Initialize the app core, passing in the page-specific setup function
