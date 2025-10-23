@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Dashboard | Finclarity</title>
+    <title>Member Dashboard | Finex</title> 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,49 +12,7 @@
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
-    <style>
-        html { scrollbar-width: none; -ms-overflow-style: none; }
-        html::-webkit-scrollbar { display: none; }
-        body { font-family: 'Source Sans Pro', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        /* Light Theme */
-        body { background-color: #f4f6f9; color: #1f2937; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 1.5rem; color: #1f2937; }
-        .sidebar { background-color: #e5e7eb/80; color: #374151; }
-        .header { background-color: #f9fafb/30; }
-        .sidebar-link { color: #4b5563; }
-        .sidebar-link:hover, .sidebar-link.active { color: #0052cc; background-color: rgba(0, 82, 204, 0.08); }
-        .logout-link { color: #dc2626; }
-        .logout-link:hover { color: #b91c1c; background-color: rgba(220, 38, 38, 0.1); }
-        .form-input, .form-switch-bg { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937; }
-        .text-color-base { color: #1f2937; }
-        .text-color-muted { color: #4b5563; }
-        .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
-        .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; }
-        .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
-        .textured-background { background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px); background-size: 2rem 2rem; }
-        /* Dark Theme */
-        .dark body { background-color: #0c111e; color: #f4f6f9; }
-        .dark .glass-card { background: rgba(17, 24, 39, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
-        .dark .sidebar { background-color: #111827/80; color: #a9a9b3; }
-        .dark .header { background-color: #111827/30; }
-        .dark .sidebar-link { color: #a9a9b3; }
-        .dark .sidebar-link:hover, .dark .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
-        .dark .logout-link { color: #f87171; }
-        .dark .logout-link:hover { color: #ef4444; background-color: rgba(248, 113, 113, 0.1); }
-        .dark .form-input, .dark .form-switch-bg { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
-        .dark .text-color-base { color: #f4f6f9; }
-        .dark .text-color-muted { color: #a9a9b3; }
-        .dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
-        .dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
-        .dark .main-button { background-color: #0052cc; color: white; }
-        .dark .main-button:hover { background-color: #0065ff; }
-        .dark .textured-background { background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 2rem 2rem; }
-        /* General */
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-    </style>
+    <link rel="stylesheet" href="main.css">
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
@@ -63,7 +21,7 @@
         <div id="header-placeholder"></div>
 
         <main class="container mx-auto">
-            <section class="h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+            <section class="min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
                 <div class="max-w-3xl">
                     <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, Member.</h1>
                     <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Clarity is the key to financial growth. What will you learn today?</p>
@@ -115,33 +73,55 @@
     <script type="module" src="app.js"></script>
     
     <script type="module">
+        // Import the core initializer and db instance from app.js
         import { initializeAppCore, db } from './app.js';
+        // Import Firestore functions needed specifically for this page
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // This function will be passed to the core initializer
+        // Define the function containing this page's unique JavaScript logic
         function initDashboardPage(user, db) {
-            console.log("Setting up Dashboard specific logic...");
+            console.log("Setting up Dashboard specific logic..."); // Log for debugging
+            
             const articlesListContainer = document.getElementById('latest-articles-list');
+            
+            // Check if the target element exists before trying to use it
             if (articlesListContainer) { 
+                // Set up the Firestore listener for latest articles
                 onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3)), (snapshot) => {
-                    articlesListContainer.innerHTML = snapshot.empty ? '<p class="text-color-muted text-center">No articles available yet.</p>' : '';
+                    // Display loading or no articles message
+                    articlesListContainer.innerHTML = snapshot.empty 
+                        ? '<p class="text-color-muted text-center">No articles available yet.</p>' 
+                        : ''; 
+                    
+                    // Populate the list if articles exist
                     snapshot.forEach((doc, index) => {
                         const article = { id: doc.id, ...doc.data() };
                         const articleDiv = document.createElement('div');
-                        articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
-                        articleDiv.innerHTML = `<a href="articles.html" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a><p class="text-color-muted text-sm">${article.readTime} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>`;
+                        // Use theme-aware classes
+                        articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors'; 
+                        articleDiv.innerHTML = `
+                            <a href="articles.html" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
+                            <p class="text-color-muted text-sm">${article.readTime} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+                        `;
                         articlesListContainer.appendChild(articleDiv);
+                        
+                        // Add divider between articles
                         if (index < snapshot.docs.length - 1) { 
                             const divider = document.createElement('hr'); 
-                            divider.className = 'border-color-base mx-4';
+                            divider.className = 'border-color-base mx-4'; // Use theme-aware class
                             articlesListContainer.appendChild(divider); 
                         }
                     });
+                }, (error) => {
+                     console.error("Error fetching latest articles:", error);
+                     articlesListContainer.innerHTML = '<p class="text-red-500 text-center">Could not load articles.</p>';
                 });
+            } else {
+                 console.warn("Element with ID 'latest-articles-list' not found on this page.");
             }
         }
 
-        // Initialize the app, passing in our page-specific function
+        // Initialize the app core, passing in the page-specific setup function
         initializeAppCore(initDashboardPage);
     </script>
 </body>
