@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Checklist | Finclarity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background-color: #0c111e; background-image: radial-gradient(circle at top left, rgba(26, 35, 54, 0.8), transparent 40%), radial-gradient(circle at bottom right, rgba(26, 35, 54, 0.8), transparent 40%); background-attachment: fixed; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
+        .form-input, .form-textarea, .form-checkbox, .form-select { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.5rem; padding: 0.75rem; color: white; }
+        .form-checkbox { padding: 0.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #cbd5e1; }
+        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease; }
+        .main-button:hover:not(:disabled) { background-color: #0065ff; }
+        .main-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0052cc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="loading-container" class="min-h-screen flex flex-col items-center justify-center text-center p-4">
+        <div class="loader mb-4"></div>
+        <p class="text-lg text-gray-400">Initializing Checklist...</p>
+    </div>
+
+    <div id="app-wrapper" style="display: none;">
+        <header class="bg-[#111827]/30 backdrop-blur-md sticky top-0 z-30">
+            <div class="container mx-auto flex justify-between items-center p-4">
+                <div class="flex items-center gap-4">
+                    <a href="member_dashboard.html" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10" title="Back to Dashboard"><i class="fas fa-arrow-left fa-lg"></i></a>
+                    <div class="text-2xl font-bold tracking-wider text-white" id="logo"><a href="member_dashboard.html">FINCLARITY</a></div>
+                </div>
+                <nav class="flex items-center gap-4"><span class="hidden sm:inline text-gray-300">Welcome, Member</span><a href="#" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a></nav>
+            </div>
+        </header>
+
+        <main class="container mx-auto p-4 md:p-8">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold">Weekly Trading Checklist</h1>
+                <p id="week-identifier" class="text-lg text-gray-400 mt-4">Plan and review your trading week.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto space-y-8">
+                <div class="glass-card p-8">
+                    <h2 class="text-2xl font-bold mb-4">1. Weekly Analysis</h2>
+                    <div>
+                        <label for="pairs-analyzed" class="form-label">How many pairs/instruments did you analyze this week?</label>
+                        <input type="number" id="pairs-analyzed" min="0" class="form-input w-full md:w-1/2">
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h2 class="text-2xl font-bold mb-4">2. Watchlist for the Week</h2>
+                    <p class="text-gray-400 mb-4">Select the pairs/instruments you plan to focus on.</p>
+                    <div id="watchlist-pairs" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        </div>
+                     <div class="mt-4">
+                        <label for="other-pairs" class="form-label">Other pairs/instruments (comma-separated):</label>
+                        <input type="text" id="other-pairs" class="form-input w-full" placeholder="e.g., XAU/USD, SPX500">
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h2 class="text-2xl font-bold mb-4">3. Top Pairs Focus</h2>
+                    <p class="text-gray-400 mb-4">List the 1-3 pairs you consider the highest probability setups for the week and why.</p>
+                    <textarea id="top-pairs-focus" rows="4" class="form-textarea w-full" placeholder="e.g., EUR/USD - Strong uptrend on H4, waiting for pullback to support.&#10;GBP/JPY - Potential reversal pattern forming on Daily chart."></textarea>
+                </div>
+
+                 <div class="glass-card p-8">
+                    <h2 class="text-2xl font-bold mb-6">4. Trade Log</h2>
+                    <div id="trade-log-list" class="space-y-4 mb-6">
+                        <p class="text-gray-400 text-center">No trades logged yet for this week.</p>
+                    </div>
+                    <form id="add-trade-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-white/10 pt-6">
+                        <input type="text" id="trade-pair" placeholder="Pair/Instrument" required class="form-input">
+                        <input type="text" id="trade-notes" placeholder="Setup Notes" required class="form-input">
+                        <select id="trade-outcome" required class="form-select">
+                            <option value="" disabled selected>Select Outcome</option>
+                            <option value="Profit">Profit</option>
+                            <option value="Loss">Loss</option>
+                            <option value="Break Even">Break Even</option>
+                            <option value="Missed">Missed Entry</option>
+                        </select>
+                        <button type="submit" class="main-button font-bold py-2 px-4 rounded-lg md:col-span-3">Add Trade to Log</button>
+                    </form>
+                </div>
+
+                 <div class="glass-card p-8">
+                    <h2 class="text-2xl font-bold mb-4">5. Weekly Summary</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div>
+                            <label for="weekly-pl" class="form-label">Total Profit/Loss for the week ($ or %)</label>
+                            <input type="text" id="weekly-pl" class="form-input w-full" placeholder="e.g., +$500 or +2.5%">
+                        </div>
+                        <div>
+                            <label for="lessons-learned" class="form-label">Key Lessons Learned / Reflections</label>
+                            <textarea id="lessons-learned" rows="3" class="form-textarea w-full" placeholder="What went well? What could be improved?"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="save-status" class="text-center text-sm text-gray-500 h-4"></p>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loadingContainer = document.getElementById('loading-container');
+        const appWrapper = document.getElementById('app-wrapper');
+        const weekIdentifier = document.getElementById('week-identifier');
+        const saveStatus = document.getElementById('save-status');
+        
+        // Form Elements
+        const pairsAnalyzedInput = document.getElementById('pairs-analyzed');
+        const watchlistContainer = document.getElementById('watchlist-pairs');
+        const otherPairsInput = document.getElementById('other-pairs');
+        const topPairsFocusInput = document.getElementById('top-pairs-focus');
+        const addTradeForm = document.getElementById('add-trade-form');
+        const tradeLogList = document.getElementById('trade-log-list');
+        const weeklyPlInput = document.getElementById('weekly-pl');
+        const lessonsLearnedInput = document.getElementById('lessons-learned');
+
+        let currentUserId = null;
+        let currentWeekId = '';
+        let checklistDocRef = null;
+        let checklistData = {}; // Cache for current data
+        let debounceTimer = null;
+
+        const commonPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CAD", "AUD/USD", "NZD/USD", "USD/CHF", "GBP/JPY"];
+
+        // --- Auth & Initialization ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                currentUserId = user.uid;
+                currentWeekId = getWeekId(new Date());
+                weekIdentifier.textContent = `Checklist for ${currentWeekId.replace('-', ', Week ')}`;
+                checklistDocRef = doc(db, `users/${currentUserId}/weeklyChecklists`, currentWeekId);
+                
+                loadingContainer.style.display = 'none';
+                appWrapper.style.display = 'block';
+                
+                populateWatchlistCheckboxes();
+                listenForChecklistData();
+                setupEventListeners();
+            } else {
+                window.location.replace(new URL('login.html', window.location.href).href);
+            }
+        });
+
+        // --- Helper Functions ---
+        function getWeekId(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            return `${d.getUTCFullYear()}-${String(weekNo).padStart(2, '0')}`;
+        }
+
+        function populateWatchlistCheckboxes() {
+             watchlistContainer.innerHTML = commonPairs.map(pair => `
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" class="form-checkbox watchlist-checkbox" value="${pair}">
+                    <span>${pair}</span>
+                </label>
+            `).join('');
+        }
+
+        function displayTradeLog(trades = []) {
+            if (!trades || trades.length === 0) {
+                 tradeLogList.innerHTML = '<p class="text-gray-400 text-center">No trades logged yet for this week.</p>';
+                 return;
+            }
+            tradeLogList.innerHTML = trades.map(trade => `
+                <div class="bg-white/5 p-3 rounded-lg text-sm flex flex-wrap justify-between items-center gap-2">
+                    <span class="font-semibold">${trade.pair}</span>
+                    <span class="text-gray-300 flex-grow mx-2">${trade.notes}</span>
+                     <span class="${trade.outcome === 'Profit' ? 'text-green-400' : trade.outcome === 'Loss' ? 'text-red-400' : 'text-gray-400'} font-semibold">${trade.outcome}</span>
+                </div>
+            `).join('');
+        }
+        
+        // --- Firestore Interaction ---
+        async function saveData(field, value) {
+            if (!checklistDocRef) return;
+            
+            // Show saving indicator
+            saveStatus.textContent = 'Saving...';
+            
+            const dataToSave = {};
+            dataToSave[field] = value;
+            dataToSave.lastUpdated = serverTimestamp(); // Always update timestamp
+
+            try {
+                // Use setDoc with merge to create or update the document
+                await setDoc(checklistDocRef, dataToSave, { merge: true });
+                saveStatus.textContent = 'Saved.';
+                setTimeout(() => saveStatus.textContent = '', 2000); // Clear status after 2s
+            } catch (error) {
+                console.error("Error saving data: ", error);
+                saveStatus.textContent = 'Error saving.';
+            }
+        }
+        
+        // Debounced save for text inputs/textareas
+        function debouncedSave(field, value) {
+            clearTimeout(debounceTimer);
+            saveStatus.textContent = 'Typing...'; // Indicate typing
+            debounceTimer = setTimeout(() => {
+                saveData(field, value);
+            }, 1000); // Save 1 second after user stops typing
+        }
+
+        function listenForChecklistData() {
+            onSnapshot(checklistDocRef, (doc) => {
+                if (doc.exists()) {
+                    checklistData = doc.data();
+                    // Populate form fields from checklistData
+                    pairsAnalyzedInput.value = checklistData.pairsAnalyzed || '';
+                    otherPairsInput.value = checklistData.otherPairs || '';
+                    topPairsFocusInput.value = checklistData.topPairsFocus || '';
+                    weeklyPlInput.value = checklistData.weeklyPL || '';
+                    lessonsLearnedInput.value = checklistData.lessonsLearned || '';
+
+                    // Update checkboxes
+                    const selectedPairs = checklistData.watchlist || [];
+                    document.querySelectorAll('.watchlist-checkbox').forEach(checkbox => {
+                         checkbox.checked = selectedPairs.includes(checkbox.value);
+                    });
+                    
+                    // Display trade log
+                    displayTradeLog(checklistData.trades);
+
+                } else {
+                    console.log("No checklist data for this week yet.");
+                    checklistData = {}; // Reset cache if document doesn't exist
+                    displayTradeLog([]); // Ensure log is cleared
+                }
+            });
+        }
+        
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            pairsAnalyzedInput.addEventListener('input', (e) => debouncedSave('pairsAnalyzed', parseInt(e.target.value) || 0));
+            otherPairsInput.addEventListener('input', (e) => debouncedSave('otherPairs', e.target.value));
+            topPairsFocusInput.addEventListener('input', (e) => debouncedSave('topPairsFocus', e.target.value));
+            weeklyPlInput.addEventListener('input', (e) => debouncedSave('weeklyPL', e.target.value));
+            lessonsLearnedInput.addEventListener('input', (e) => debouncedSave('lessonsLearned', e.target.value));
+
+            // Handle checkbox changes immediately
+             watchlistContainer.addEventListener('change', (e) => {
+                if (e.target.classList.contains('watchlist-checkbox')) {
+                    const selectedPairs = Array.from(document.querySelectorAll('.watchlist-checkbox:checked')).map(cb => cb.value);
+                    saveData('watchlist', selectedPairs);
+                }
+            });
+
+            // Handle adding a trade
+            addTradeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const tradeData = {
+                    pair: document.getElementById('trade-pair').value,
+                    notes: document.getElementById('trade-notes').value,
+                    outcome: document.getElementById('trade-outcome').value,
+                    loggedAt: serverTimestamp() // Add timestamp for the trade itself
+                };
+
+                saveStatus.textContent = 'Adding trade...';
+                 try {
+                    // Use updateDoc with arrayUnion to add to the trades array
+                    await updateDoc(checklistDocRef, {
+                        trades: arrayUnion(tradeData),
+                        lastUpdated: serverTimestamp() 
+                    });
+                    addTradeForm.reset(); // Clear the form
+                    saveStatus.textContent = 'Trade added.';
+                     setTimeout(() => saveStatus.textContent = '', 2000);
+                 } catch (error) {
+                     // If the document doesn't exist yet, create it first then add the trade
+                    if (error.code === 'not-found') {
+                         try {
+                             await setDoc(checklistDocRef, { 
+                                 trades: [tradeData], // Start with this trade
+                                 lastUpdated: serverTimestamp() 
+                             });
+                             addTradeForm.reset();
+                             saveStatus.textContent = 'Trade added.';
+                             setTimeout(() => saveStatus.textContent = '', 2000);
+                         } catch (createError) {
+                            console.error("Error creating document and adding trade:", createError);
+                            saveStatus.textContent = 'Error adding trade.';
+                         }
+                    } else {
+                        console.error("Error adding trade: ", error);
+                        saveStatus.textContent = 'Error adding trade.';
+                    }
+                 }
+            });
+        }
+
+    </script>
+</body>
+</html>
