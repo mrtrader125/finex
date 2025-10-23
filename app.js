@@ -1,3 +1,4 @@
+// app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
@@ -25,10 +26,10 @@ export const allSidebarItems = [
 ];
 
 let userPreferences = {
-    theme: 'dark',
-    sidebarItems: {}
+    theme: 'dark', // Default theme
+    sidebarItems: {} // Default visibility (all true)
 };
-allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true); // Default all to visible
+allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true); // Initialize defaults
 
 // --- Main App Initialization ---
 export async function initializeAppCore(pageSpecificInit) {
@@ -45,25 +46,26 @@ export async function initializeAppCore(pageSpecificInit) {
             applyTheme(userPreferences.theme);
 
             // 4. Render sidebar based on preferences
-            renderSidebar();
+            renderSidebar(); // This function now also sets the page title
 
-            // 5. Attach core event listeners (sidebar toggle, logout)
+            // 5. Attach core event listeners (sidebar toggle, logout) AFTER components load
             attachCoreEventListeners();
 
             // 6. Update user email in header
             const userEmailSpan = document.getElementById('user-email');
             if (userEmailSpan) userEmailSpan.textContent = user.email;
 
-            // 7. Run page-specific logic
+            // 7. Run page-specific logic (passed in from the specific page's script)
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                pageSpecificInit(user, db);
+                pageSpecificInit(user, db); // Pass user and db if needed
             }
             
-            // 8. Show the app
-            document.getElementById('app-wrapper').style.display = 'block';
+            // 8. Show the main app content
+            const appWrapper = document.getElementById('app-wrapper');
+            if (appWrapper) appWrapper.style.display = 'block';
 
         } else {
-            // No user, redirect to login
+            // No user, redirect to login page
             window.location.replace(new URL('login.html', window.location.href).href);
         }
     });
@@ -71,20 +73,30 @@ export async function initializeAppCore(pageSpecificInit) {
 
 // --- HTML Component Loader ---
 async function loadCommonComponents() {
+    // Find the placeholder elements in the current page
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
 
     try {
+        // Fetch the HTML content of the header and sidebar templates
         const [headerRes, sidebarRes] = await Promise.all([
-            fetch('_header.html'),
-            fetch('_sidebar.html')
+            fetch('_header.html'), // Assuming _header.html is in the same directory
+            fetch('_sidebar.html')  // Assuming _sidebar.html is in the same directory
         ]);
         
+        // Check if fetches were successful
+        if (!headerRes.ok) throw new Error(`Failed to load _header.html: ${headerRes.statusText}`);
+        if (!sidebarRes.ok) throw new Error(`Failed to load _sidebar.html: ${sidebarRes.statusText}`);
+
+        // Insert the HTML content into the placeholders
         if (headerPlaceholder) headerPlaceholder.innerHTML = await headerRes.text();
         if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = await sidebarRes.text();
 
     } catch (error) {
         console.error("Error loading common components:", error);
+        // Optionally display an error message to the user on the page
+        if (headerPlaceholder) headerPlaceholder.innerHTML = "<p class='text-red-500 text-center'>Error loading header.</p>";
+        if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = "<p class='text-red-500 text-center'>Error loading sidebar.</p>";
     }
 }
 
@@ -94,56 +106,73 @@ async function loadPreferences(settingsDocRef) {
         const docSnap = await getDoc(settingsDocRef);
         if (docSnap.exists()) {
             const loadedPrefs = docSnap.data();
+            // Load theme, defaulting to 'dark' if not found
             userPreferences.theme = loadedPrefs.theme || 'dark';
-            userPreferences.sidebarItems = { ...userPreferences.sidebarItems }; // Clone default
+            
+            // Load sidebar item visibility, merging with defaults
+            userPreferences.sidebarItems = { /* Default visibility */ };
+            allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true); // Start with all true
+            
             if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
-                for (const key in userPreferences.sidebarItems) {
-                    if (loadedPrefs.sidebarItems.hasOwnProperty(key)) {
-                        userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key];
-                    }
-                }
+                 // Update visibility based on saved preferences
+                 for (const key in userPreferences.sidebarItems) {
+                     if (loadedPrefs.sidebarItems.hasOwnProperty(key)) {
+                         // Only update if the key exists in the saved preferences
+                         userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key];
+                     }
+                 }
             }
+            // If sidebarItems was missing entirely, the defaults remain.
         } else {
-            // Save defaults if no settings exist
+            // No settings document found, save the default preferences
+            console.log("No user preferences found, saving defaults.");
             await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() });
         }
     } catch (error) {
         console.error("Error loading preferences:", error);
+        // Fallback to defaults in case of error
+        userPreferences.theme = 'dark';
+        userPreferences.sidebarItems = {};
+        allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true);
     }
 }
 
-// --- Theme ---
+// --- Theme Application ---
 export function applyTheme(theme) {
     if (theme === 'light') {
         document.documentElement.classList.remove('dark');
     } else {
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.add('dark'); // Add dark class if not light
     }
-    // For settings page toggle (if it exists)
+    // Update the toggle on the settings page if it exists
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         themeToggle.checked = (theme === 'dark');
     }
 }
 
-// --- Sidebar Rendering ---
+// --- Sidebar Rendering & Page Title Setting ---
 export function renderSidebar() {
     const sidebarNav = document.getElementById('sidebar-nav');
-    if (!sidebarNav) return;
+    const pageTitleEl = document.getElementById('page-title'); // Get page title element
+    if (!sidebarNav) return; // Exit if sidebar nav area doesn't exist
 
-    const currentPage = window.location.pathname.split('/').pop();
-    let pageTitle = "Dashboard"; // Default
-    sidebarNav.innerHTML = ''; 
+    const currentPage = window.location.pathname.split('/').pop() || 'member_dashboard.html'; // Default to dashboard if root path
+    let currentPageTitle = "Dashboard"; // Default page title
+    sidebarNav.innerHTML = ''; // Clear existing links
 
     allSidebarItems.forEach(item => {
+        // Render the link only if its visibility preference is true
         if (userPreferences.sidebarItems[item.id]) {
             const link = document.createElement('a');
             link.href = item.href;
-            link.className = `sidebar-link flex items-center gap-4 p-3 rounded-lg`;
+            // Use the static dark theme class for links
+            link.className = `sidebar-link flex items-center gap-4 p-3 rounded-lg`; 
             
+            // Check if this link corresponds to the current page
             if (item.href === currentPage) {
-                link.classList.add('active');
-                pageTitle = item.text; // Found the title for the current page
+                link.classList.add('active'); // Highlight the active link
+                currentPageTitle = item.text; // Update the page title
             }
             
             link.innerHTML = `<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`;
@@ -151,13 +180,17 @@ export function renderSidebar() {
         }
     });
 
-    // Set the header title
-    const pageTitleEl = document.getElementById('page-title');
-    if (pageTitleEl) pageTitleEl.textContent = pageTitle;
+    // Set the dynamically determined page title in the header
+    if (pageTitleEl) {
+        pageTitleEl.textContent = currentPageTitle;
+    } else {
+        console.warn("Element with ID 'page-title' not found in the header.");
+    }
 }
 
-// --- Core Event Listeners ---
+// --- Core Event Listeners Attachment ---
 function attachCoreEventListeners() {
+    // Ensure elements exist before attaching listeners
     const openSidebarBtn = document.getElementById('open-sidebar-btn');
     const closeSidebarBtn = document.getElementById('close-sidebar-btn');
     const sidebar = document.getElementById('sidebar');
@@ -165,12 +198,42 @@ function attachCoreEventListeners() {
     const sidebarNav = document.getElementById('sidebar-nav');
     const logoutBtn = document.getElementById('logout-btn');
 
-    function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
-    function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
+    // Sidebar toggle functions
+    function openSidebar() { 
+        if(sidebar) sidebar.classList.remove('-translate-x-full'); 
+        if(sidebarOverlay) {
+            sidebarOverlay.classList.remove('hidden'); 
+            // Delay opacity transition slightly to ensure element is visible
+            setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); 
+        }
+    }
+    function closeSidebar() { 
+        if(sidebar) sidebar.classList.add('-translate-x-full'); 
+        if(sidebarOverlay) {
+            sidebarOverlay.classList.add('opacity-0'); 
+            // Hide after transition ends
+            setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); 
+        }
+    }
 
+    // Attach listeners only if elements exist
     if (openSidebarBtn) openSidebarBtn.addEventListener('click', openSidebar);
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
-    if (sidebarNav) sidebarNav.addEventListener('click', (e) => { if (e.target.closest('a') && window.innerWidth < 1024) { closeSidebar(); } }); 
-    if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).then(() => window.location.href = 'index.html'); });
+    // Close sidebar on link click on smaller screens
+    if (sidebarNav) sidebarNav.addEventListener('click', (e) => { 
+        if (e.target.closest('a') && window.innerWidth < 1024) { 
+            closeSidebar(); 
+        } 
+    }); 
+    // Logout functionality
+    if (logoutBtn) logoutBtn.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        signOut(auth).then(() => {
+            console.log('User signed out, redirecting to index.html');
+            window.location.href = 'index.html'; // Redirect to public home after logout
+        }).catch((error) => {
+            console.error('Sign out error', error);
+        }); 
+    });
 }
