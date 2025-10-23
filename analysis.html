@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis | Finex</title> 
+    <title>Analysis | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,14 +16,13 @@
     <style>
         #image-modal { transition: opacity 0.3s ease-in-out; }
         #modal-image { transition: transform 0.3s ease-in-out; }
-        /* Add open/close state styles if not handled by JS opacity toggle */
-        #image-modal:not(.opacity-100) #modal-image { transform: scale(0.95); } 
-        #image-modal.opacity-100 #modal-image { transform: scale(1); } 
+        #image-modal:not(.opacity-100) #modal-image { transform: scale(0.95); }
+        #image-modal.opacity-100 #modal-image { transform: scale(1); }
     </style>
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-        
+
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
@@ -31,7 +30,7 @@
             <main class="container mx-auto p-4 md:p-8">
                 <div class="text-center mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Analysis Gallery</h1>
-                     <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse the latest market analysis charts and images from the Finex team.</p>
+                    <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse the latest market analysis charts and images from the Finex team.</p>
                 </div>
                 <div id="analysis-container" class="space-y-12">
                     <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
@@ -48,49 +47,36 @@
         </div>
 
     <script type="module" src="app.js"></script>
-    
+
     <script type="module">
-        // Import the core initializer and db instance from app.js
         import { initializeAppCore, db } from './app.js';
-        // Import Firestore functions needed specifically for this page
         import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // Define the function containing this page's unique JavaScript logic
         function initAnalysisPage(user, db) {
             console.log("Setting up Analysis page specific logic...");
 
-            // Get elements specific to this page
             const analysisContainer = document.getElementById('analysis-container');
             const modal = document.getElementById('image-modal');
             const modalImage = document.getElementById('modal-image');
             const closeModalBtn = document.getElementById('close-modal-btn');
-            const loadingMsg = document.getElementById('loading-message'); // Get loading message element
+            const loadingMsg = document.getElementById('loading-message');
 
-            // Check if essential elements exist
             if (!analysisContainer || !modal || !modalImage || !closeModalBtn || !loadingMsg) {
                  console.error("One or more elements required for the Analysis page were not found.");
                  if(analysisContainer) analysisContainer.innerHTML = "<p class='text-red-500 text-center'>Error: Page elements missing.</p>";
                  return;
             }
 
-            // --- Fetch and Display Analysis Items ---
             function fetchAnalysis() {
-                // Query Firestore for analysis items, ordered by creation date descending
                 onSnapshot(query(collection(db, "analysis"), orderBy("createdAt", "desc")), (snapshot) => {
-                    
-                    loadingMsg.style.display = 'none'; // Hide loading message once data arrives (or doesn't)
-                    
-                    // Handle empty results
-                    if (snapshot.empty) { 
-                        analysisContainer.innerHTML = '<p class="text-center text-color-muted">No analysis has been posted yet.</p>'; 
-                        return; 
+                    loadingMsg.style.display = 'none';
+                    if (snapshot.empty) {
+                        analysisContainer.innerHTML = '<p class="text-center text-color-muted">No analysis has been posted yet.</p>';
+                        return;
                     }
-                    
-                    // Group items by date
                     const groupedByDate = {};
                     snapshot.forEach(doc => {
                         const item = doc.data();
-                        // Ensure createdAt is a Firestore Timestamp before converting
                         if (item.createdAt && typeof item.createdAt.toDate === 'function') {
                             const date = item.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                             if (!groupedByDate[date]) groupedByDate[date] = [];
@@ -99,10 +85,7 @@
                             console.warn("Analysis item missing or has invalid 'createdAt' field:", item);
                         }
                     });
-                    
-                    analysisContainer.innerHTML = ''; // Clear previous content
-                    
-                    // Render items grouped by date
+                    analysisContainer.innerHTML = '';
                     for (const date in groupedByDate) {
                         const dateGroupEl = document.createElement('div');
                         let imageGridHTML = groupedByDate[date].map(item => `
@@ -110,7 +93,6 @@
                                 <img src="${item.imageUrl}" alt="${item.title || 'Analysis Image'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
                                 <div class="p-4"><p class="font-semibold text-color-base truncate" title="${item.title || ''}">${item.title || 'Untitled Analysis'}</p></div>
                             </div>`).join('');
-                            
                         dateGroupEl.innerHTML = `
                             <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">${date}</h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,46 +107,39 @@
                 });
             }
 
-            // --- Modal Logic ---
-            function openModal(imageUrl, altText) { 
-                modalImage.src = imageUrl; 
-                modalImage.alt = altText || 'Analysis Image'; 
-                modal.classList.add('opacity-100'); // Use opacity for transition
-                modal.classList.remove('pointer-events-none'); 
+            function openModal(imageUrl, altText) {
+                modalImage.src = imageUrl;
+                modalImage.alt = altText || 'Analysis Image';
+                modal.classList.add('opacity-100');
+                modal.classList.remove('pointer-events-none');
             }
-            function closeModal() { 
-                modal.classList.remove('opacity-100'); 
-                modal.classList.add('pointer-events-none'); 
-                // Delay clearing src to avoid visual glitch during fade out
-                setTimeout(() => { modalImage.src = ""; modalImage.alt = ""; }, 300); // Match CSS transition duration
+            function closeModal() {
+                modal.classList.remove('opacity-100');
+                modal.classList.add('pointer-events-none');
+                setTimeout(() => { modalImage.src = ""; modalImage.alt = ""; }, 300);
             }
 
-            // --- Event Listeners ---
-            analysisContainer.addEventListener('click', (e) => { 
-                const card = e.target.closest('[data-full-src]'); 
+            analysisContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('[data-full-src]');
                 if (card) {
-                    openModal(card.dataset.fullSrc, card.dataset.title); 
+                    openModal(card.dataset.fullSrc, card.dataset.title);
                 }
             });
             closeModalBtn.addEventListener('click', closeModal);
-            // Close modal if clicking outside the image area
-            modal.addEventListener('click', (e) => { 
-                if (e.target === modal) { // Check if the click was directly on the background overlay
-                    closeModal(); 
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
                 }
-            }); 
-            // Close modal on Escape key press
-            document.addEventListener('keydown', (e) => { 
-                if (e.key === 'Escape' && modal.classList.contains('opacity-100')) { // Check if modal is open
-                    closeModal(); 
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('opacity-100')) {
+                    closeModal();
                 }
             });
 
-            // Initial fetch of analysis data
-            fetchAnalysis(); 
+            fetchAnalysis();
         }
 
-        // Initialize the app core, passing in the page-specific setup function
         initializeAppCore(initAnalysisPage);
     </script>
 </body>
