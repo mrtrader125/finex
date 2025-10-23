@@ -2,18 +2,6 @@
         html { scrollbar-width: none; -ms-overflow-style: none; }
         html::-webkit-scrollbar { display: none; }
        /* Add these rules to main.css */
-
-/* Hide default arrows on number inputs - Chrome, Safari, Edge, Opera */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Hide default arrows on number inputs - Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
-} 
         /* Base styles */
         body { 
             font-family: 'Source Sans Pro', sans-serif; 
