@@ -10,16 +10,92 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        html { -ms-overflow-style: none; scrollbar-width: none; }
+        html { scrollbar-width: none; -ms-overflow-style: none; }
         html::-webkit-scrollbar { display: none; }
-        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        
+        /* Base styles */
+        body { 
+            font-family: 'Source Sans Pro', sans-serif; 
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        #constellation-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .glass-card { background: rgba(255, 255, 255, 0.05); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; transition: all 0.3s ease; }
+        
+        /* --- Light Theme (Main Content) --- */
+        body { 
+            background-color: #f4f6f9; /* Light gray background */
+            color: #1f2937; /* Dark text */
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.8); /* Lighter white */
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(0, 0, 0, 0.08); 
+            border-radius: 1.5rem; 
+            color: #1f2937; /* Dark text for cards */
+        }
+         .header { /* Header style for light mode */
+             background-color: #f9fafb/30; /* Very light gray header */
+         }
+        .form-input, .form-switch-bg { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937; }
+        .text-color-base { color: #1f2937; }
+        .text-color-muted { color: #4b5563; }
+        .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
+        .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
         .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; }
         .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
-        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
-        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+        /* Background pattern for light mode */
+        .textured-background {
+             background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+             background-size: 2rem 2rem;
+        }
+
+        /* --- Dark Theme (Main Content) --- */
+        .dark body { 
+            background-color: #0c111e; 
+            color: #f4f6f9; 
+        }
+        .dark .glass-card { 
+            background: rgba(17, 24, 39, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #f4f6f9; 
+        }
+         .dark .header { /* Header style for dark mode */
+             background-color: #111827/30;
+         }
+        .dark .form-input, .dark .form-switch-bg { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
+        .dark .text-color-base { color: #f4f6f9; }
+        .dark .text-color-muted { color: #a9a9b3; }
+        .dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
+        .dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .dark .main-button { background-color: #0052cc; color: white; }
+        .dark .main-button:hover { background-color: #0065ff; }
+        /* Background pattern for dark mode */
+        .dark .textured-background {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+             background-size: 2rem 2rem;
+        }
+
+        /* --- Sidebar Styles (Static - Always Dark) --- */
+        /* Use the styles from the 'articles.html' version */
+        .sidebar-link { 
+            transition: all 0.2s ease; 
+            color: #a9a9b3; /* Default text color (was text-gray-300 in some versions, adjust if needed) */
+        }
+        .sidebar-link:hover, .sidebar-link.active { 
+            color: #ffffff; /* White text on hover/active */
+            background-color: rgba(255, 255, 255, 0.08); /* Subtle white background */
+        }
+        /* Styles for the sidebar container itself are handled by Tailwind classes in _sidebar.html */
+        /* Styles for the logout link are handled by Tailwind classes in _sidebar.html */
+        
+        /* General styles */
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+        .form-switch { display: inline-flex; align-items: center; cursor: pointer; }
+        .form-switch-bg { width: 40px; height: 20px; border-radius: 9999px; position: relative; transition: background-color 0.2s ease; }
+        .form-switch-knob { width: 16px; height: 16px; background-color: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s ease; }
+        .form-switch input:checked + .form-switch-bg { background-color: #0052cc; } /* Use blue for checked */
+        .form-switch input:checked + .form-switch-bg .form-switch-knob { transform: translateX(20px); }
+        .checkbox-label { user-select: none; } 
     </style>
 </head>
 <body class="antialiased">
