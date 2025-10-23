@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Articles | Finex</title> 
+    <title>Our Articles | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,52 +17,68 @@
         .page-view { display: none; }
         .page-view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Style for article content headings */
-        .article-content h2, .article-content h3 { 
-            border-top: 1px solid; /* Use border-color-base from main.css */
-            @apply border-color-base pt-6 mt-8 text-2xl font-bold; /* Apply theme colors and spacing */
+        .article-content h2, .article-content h3 {
+            border-top: 1px solid;
+            @apply border-color-base pt-6 mt-8 text-2xl font-bold;
          }
         .article-content p, .article-content li {
-            @apply text-color-muted leading-relaxed mb-4; /* Consistent text styling */
+            @apply text-color-muted leading-relaxed mb-4;
         }
          .article-content a {
             @apply text-blue-500 hover:underline;
          }
           .article-content ul {
-             @apply list-disc list-inside space-y-2 mb-4;
+             @apply list-disc list-inside space-y-2 mb-4 ml-4; /* Added margin */
           }
           .article-content ol {
-             @apply list-decimal list-inside space-y-2 mb-4;
+             @apply list-decimal list-inside space-y-2 mb-4 ml-4; /* Added margin */
           }
+           .article-content blockquote {
+               @apply border-l-4 border-blue-500 pl-4 italic text-color-muted my-4;
+           }
+            .article-content pre {
+               @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .article-content code {
+                 @apply font-mono text-sm;
+            }
+            .article-content pre code {
+                 background-color: transparent !important; /* Override potential conflicts */
+                 padding: 0 !important;
+            }
+             .article-content img {
+                 @apply rounded-lg my-4 max-w-full h-auto mx-auto; /* Center images */
+             }
     </style>
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-        
+
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
         <main class="container mx-auto p-4 md:p-8">
             <div id="articles-list-view" class="page-view active">
                 <div class="text-center mb-12">
-                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Finex Guides</h1>
+                    <h1 class="text-4xl md:text-5xl font-bold text-color-base">Finex Guides</h1>
                     <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse our library of in-depth guides and strategies, published by our team.</p>
                 </div>
                 <div id="articles-container" class="space-y-6 max-w-4xl mx-auto">
                     <p class="text-center text-color-muted">Loading articles...</p>
                 </div>
             </div>
-            
+
             <div id="full-article-view" class="page-view">
                 <div class="max-w-4xl mx-auto">
-                    <button id="back-to-list-btn" class="text-blue-500 hover:text-blue-400 mb-6 inline-block">
-                        <i class="fas fa-arrow-left mr-2"></i>Back to All Articles
+                    <button id="back-to-list-btn" class="text-blue-500 hover:text-blue-400 mb-6 inline-flex items-center group">
+                        <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>Back to All Articles
                     </button>
                     <div class="glass-card p-6 md:p-10">
                         <h1 id="article-title-full" class="text-4xl md:text-5xl font-bold leading-tight mb-4"></h1>
                         <div id="article-meta-full" class="flex flex-wrap items-center text-sm text-color-muted mb-8 space-x-2">
-                            </div>
-                        <article id="article-content-full" class="article-content space-y-6"></article>
+                            {/* Meta info */}
+                        </div>
+                        <article id="article-content-full" class="article-content prose dark:prose-invert max-w-none"></article> {/* Added prose classes for better default styling */}
                     </div>
                 </div>
             </div>
@@ -70,14 +86,11 @@
         </div>
 
     <script type="module" src="app.js"></script>
-    
-    <script type="module">
-        // Import the core initializer and db instance from app.js
-        import { initializeAppCore, db } from './app.js';
-        // Import Firestore functions needed specifically for this page
-        import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"; // Removed getFirestore as db is imported
 
-        // Define the function containing this page's unique JavaScript logic
+    <script type="module">
+        import { initializeAppCore, db } from './app.js';
+        import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
         function initArticlesPage(user, db) {
             console.log("Setting up Articles page specific logic...");
 
@@ -85,21 +98,19 @@
             const fullArticleView = document.getElementById('full-article-view');
             const articlesContainer = document.getElementById('articles-container');
             const backToListBtn = document.getElementById('back-to-list-btn');
-            
-            // Check if essential elements exist
+
             if (!articlesListView || !fullArticleView || !articlesContainer || !backToListBtn) {
                  console.error("One or more essential article elements not found!");
                  return;
             }
 
-            let allArticles = []; // Cache fetched articles
+            let allArticles = [];
 
-            // --- Firestore Listener ---
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
             onSnapshot(q, (querySnapshot) => {
-                articlesContainer.innerHTML = ''; // Clear previous list
-                allArticles = []; // Reset cache
-                
+                articlesContainer.innerHTML = '';
+                allArticles = [];
+
                 if (querySnapshot.empty) {
                     articlesContainer.innerHTML = '<p class="text-center text-color-muted">No articles published yet.</p>';
                     return;
@@ -107,20 +118,20 @@
 
                 querySnapshot.forEach(doc => {
                     const article = { id: doc.id, ...doc.data() };
-                    allArticles.push(article); // Add to cache
-                    
+                    allArticles.push(article);
+
                     const articleEl = document.createElement('a');
-                    articleEl.href = '#'; // Use href="#" for JS navigation
-                    articleEl.className = 'glass-card block p-6 md:p-8 hover:border-blue-500/50 transition duration-300 ease-in-out transform hover:-translate-y-1'; // Added hover effect
-                    articleEl.dataset.id = article.id; // Store ID for click handling
-                    
+                    articleEl.href = '#';
+                    articleEl.className = 'glass-card block p-6 md:p-8 hover:border-blue-500/50 transition duration-300 ease-in-out transform hover:-translate-y-1';
+                    articleEl.dataset.id = article.id;
+
                     const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
-                    
+
                     articleEl.innerHTML = `
                         <div class="md:flex justify-between items-center">
                             <div>
                                 <h2 class="text-2xl font-bold mb-2">${article.title}</h2>
-                                <p class="text-color-muted mb-4 md:mb-0">By ${article.author || 'Finex Team'}</p> 
+                                <p class="text-color-muted text-sm mb-4 md:mb-0">By ${article.author || 'Finex Team'}</p> {/* Updated Brand */}
                             </div>
                             <div class="text-color-muted text-sm text-left md:text-right flex-shrink-0 mt-2 md:mt-0">
                                 <span>${formattedDate}</span>
@@ -134,55 +145,45 @@
                  articlesContainer.innerHTML = '<p class="text-center text-red-500">Could not load articles.</p>';
             });
 
-            // --- View Switching Logic ---
             function showListView() {
                 fullArticleView.classList.remove('active');
                 articlesListView.classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' }); // Smooth scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
             function showFullArticleView(articleId) {
                 const article = allArticles.find(a => a.id === articleId);
-                if (!article) {
-                    console.error(`Article with ID ${articleId} not found in cache.`);
-                    return; // Should not happen if cache is up-to-date
-                }
-                
-                // Populate the full article view elements
+                if (!article) return;
+
                 document.getElementById('article-title-full').textContent = article.title;
                 const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
                 document.getElementById('article-meta-full').innerHTML = `
-                     <span>By ${article.author || 'Finex Team'}</span> 
+                    <span>By ${article.author || 'Finex Team'}</span> {/* Updated Brand */}
                     <span class="mx-2">&bull;</span>
                     <span>${formattedDate}</span>
                     ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
                 `;
-                document.getElementById('article-content-full').innerHTML = article.content; // Assumes content is safe HTML
-                
-                // Switch views
+                document.getElementById('article-content-full').innerHTML = article.content; // Assumes safe HTML from Firestore
+
                 articlesListView.classList.remove('active');
                 fullArticleView.classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            // --- Event Listeners ---
             articlesContainer.addEventListener('click', (e) => {
-                // Find the closest ancestor anchor tag with a data-id
                 const articleLink = e.target.closest('a[data-id]');
                 if (articleLink) {
-                    e.preventDefault(); // Prevent default anchor behavior
-                    const articleId = articleLink.dataset.id;
-                    showFullArticleView(articleId);
+                    e.preventDefault();
+                    showFullArticleView(articleLink.dataset.id);
                 }
             });
 
             backToListBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent default anchor behavior
+                e.preventDefault();
                 showListView();
             });
         }
 
-        // Initialize the app core, passing in the page-specific setup function
         initializeAppCore(initArticlesPage);
     </script>
 </body>
