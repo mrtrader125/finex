@@ -35,7 +35,7 @@
                     <a href="member_dashboard.html" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10" title="Back to Dashboard"><i class="fas fa-arrow-left fa-lg"></i></a>
                     <div class="text-2xl font-bold tracking-wider text-white" id="logo"><a href="member_dashboard.html">FINCLARITY</a></div>
                 </div>
-                <nav class="flex items-center gap-4"><span class="hidden sm:inline text-gray-300">Welcome, Member</span><a href="#" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a></nav>
+                <nav class="flex items-center gap-4"><span id="user-email" class="hidden sm:inline text-gray-300"></span><a href="settings.html" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a></nav>
             </div>
         </header>
 
@@ -123,6 +123,7 @@
         const appWrapper = document.getElementById('app-wrapper');
         const weekIdentifier = document.getElementById('week-identifier');
         const saveStatus = document.getElementById('save-status');
+        const userEmailSpan = document.getElementById('user-email'); // Added this
         
         // Form Elements
         const pairsAnalyzedInput = document.getElementById('pairs-analyzed');
@@ -150,6 +151,7 @@
                 weekIdentifier.textContent = `Checklist for ${currentWeekId.replace('-', ', Week ')}`;
                 checklistDocRef = doc(db, `users/${currentUserId}/weeklyChecklists`, currentWeekId);
                 
+                userEmailSpan.textContent = user.email; // Added this
                 loadingContainer.style.display = 'none';
                 appWrapper.style.display = 'block';
                 
@@ -198,57 +200,51 @@
         async function saveData(field, value) {
             if (!checklistDocRef) return;
             
-            // Show saving indicator
             saveStatus.textContent = 'Saving...';
             
             const dataToSave = {};
             dataToSave[field] = value;
-            dataToSave.lastUpdated = serverTimestamp(); // Always update timestamp
+            dataToSave.lastUpdated = serverTimestamp();
 
             try {
-                // Use setDoc with merge to create or update the document
                 await setDoc(checklistDocRef, dataToSave, { merge: true });
                 saveStatus.textContent = 'Saved.';
-                setTimeout(() => saveStatus.textContent = '', 2000); // Clear status after 2s
+                setTimeout(() => saveStatus.textContent = '', 2000);
             } catch (error) {
                 console.error("Error saving data: ", error);
                 saveStatus.textContent = 'Error saving.';
             }
         }
         
-        // Debounced save for text inputs/textareas
         function debouncedSave(field, value) {
             clearTimeout(debounceTimer);
-            saveStatus.textContent = 'Typing...'; // Indicate typing
+            saveStatus.textContent = 'Typing...';
             debounceTimer = setTimeout(() => {
                 saveData(field, value);
-            }, 1000); // Save 1 second after user stops typing
+            }, 1000);
         }
 
         function listenForChecklistData() {
             onSnapshot(checklistDocRef, (doc) => {
                 if (doc.exists()) {
                     checklistData = doc.data();
-                    // Populate form fields from checklistData
                     pairsAnalyzedInput.value = checklistData.pairsAnalyzed || '';
                     otherPairsInput.value = checklistData.otherPairs || '';
                     topPairsFocusInput.value = checklistData.topPairsFocus || '';
                     weeklyPlInput.value = checklistData.weeklyPL || '';
                     lessonsLearnedInput.value = checklistData.lessonsLearned || '';
 
-                    // Update checkboxes
                     const selectedPairs = checklistData.watchlist || [];
                     document.querySelectorAll('.watchlist-checkbox').forEach(checkbox => {
                          checkbox.checked = selectedPairs.includes(checkbox.value);
                     });
                     
-                    // Display trade log
                     displayTradeLog(checklistData.trades);
 
                 } else {
                     console.log("No checklist data for this week yet.");
-                    checklistData = {}; // Reset cache if document doesn't exist
-                    displayTradeLog([]); // Ensure log is cleared
+                    checklistData = {};
+                    displayTradeLog([]);
                 }
             });
         }
@@ -261,7 +257,6 @@
             weeklyPlInput.addEventListener('input', (e) => debouncedSave('weeklyPL', e.target.value));
             lessonsLearnedInput.addEventListener('input', (e) => debouncedSave('lessonsLearned', e.target.value));
 
-            // Handle checkbox changes immediately
              watchlistContainer.addEventListener('change', (e) => {
                 if (e.target.classList.contains('watchlist-checkbox')) {
                     const selectedPairs = Array.from(document.querySelectorAll('.watchlist-checkbox:checked')).map(cb => cb.value);
@@ -269,32 +264,29 @@
                 }
             });
 
-            // Handle adding a trade
             addTradeForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const tradeData = {
                     pair: document.getElementById('trade-pair').value,
                     notes: document.getElementById('trade-notes').value,
                     outcome: document.getElementById('trade-outcome').value,
-                    loggedAt: serverTimestamp() // Add timestamp for the trade itself
+                    loggedAt: serverTimestamp()
                 };
 
                 saveStatus.textContent = 'Adding trade...';
                  try {
-                    // Use updateDoc with arrayUnion to add to the trades array
                     await updateDoc(checklistDocRef, {
                         trades: arrayUnion(tradeData),
                         lastUpdated: serverTimestamp() 
                     });
-                    addTradeForm.reset(); // Clear the form
+                    addTradeForm.reset();
                     saveStatus.textContent = 'Trade added.';
                      setTimeout(() => saveStatus.textContent = '', 2000);
                  } catch (error) {
-                     // If the document doesn't exist yet, create it first then add the trade
                     if (error.code === 'not-found') {
                          try {
                              await setDoc(checklistDocRef, { 
-                                 trades: [tradeData], // Start with this trade
+                                 trades: [tradeData],
                                  lastUpdated: serverTimestamp() 
                              });
                              addTradeForm.reset();
