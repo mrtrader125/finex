@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clarity, Not Chaos | Your Financial Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; }
+        html::-webkit-scrollbar { display: none; }
+        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; transition: all 0.3s ease; }
+        .glass-card:hover { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); transform: translateY(-5px); }
+        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; }
+        .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
+        .secondary-button { background-color: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; }
+        .secondary-button:hover { background-color: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.3); }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="fixed top-0 left-0 right-0 z-50 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-2xl font-bold tracking-wider text-white" id="logo">
+                <a href="index.html">FINCLARITY</a>
+            </div>
+            <nav class="flex items-center space-x-4">
+                 <a href="guest_dashboard.html" class="secondary-button font-semibold py-2 px-5 rounded-lg">Guest Preview</a>
+                 <a href="login.html" class="main-button font-semibold py-2 px-5 rounded-lg">Member Login</a>
+            </nav>
+        </div>
+    </div>
+    <main>
+        <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4">
+            <div class="relative z-10">
+                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-4">Clarity, Not Chaos.</h1>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-300 mb-8">
+                    Stop chasing financial trends. Start building a personalized roadmap to sustainable wealth. We help you understand the landscape, analyze your position, and choose the right path.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="login.html" class="main-button font-bold text-lg py-3 px-8 rounded-full shadow-lg">Get Started (Join)</a>
+                    <a href="guest_dashboard.html" class="secondary-button font-bold text-lg py-3 px-8 rounded-full shadow-lg">Explore as Guest</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
