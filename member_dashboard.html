@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,164 +9,140 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <style>
-        html { scroll-behavior: smooth; }
-        body { background-color: #0c111e; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px), radial-gradient(circle at top left, rgba(26, 35, 54, 0.8), transparent 40%), radial-gradient(circle at bottom right, rgba(26, 35, 54, 0.8), transparent 40%); background-size: 2rem 2rem, 2rem 2rem, 100% 100%, 100% 100%; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        html { scrollbar-width: none; -ms-overflow-style: none; }
+        html::-webkit-scrollbar { display: none; }
+        body { font-family: 'Source Sans Pro', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        .glass-card { background: rgba(17, 24, 39, 0.6); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
+        /* Light Theme */
+        body { background-color: #f4f6f9; color: #1f2937; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 1.5rem; color: #1f2937; }
+        .sidebar { background-color: #e5e7eb/80; color: #374151; }
+        .header { background-color: #f9fafb/30; }
+        .sidebar-link { color: #4b5563; }
+        .sidebar-link:hover, .sidebar-link.active { color: #0052cc; background-color: rgba(0, 82, 204, 0.08); }
+        .logout-link { color: #dc2626; }
+        .logout-link:hover { color: #b91c1c; background-color: rgba(220, 38, 38, 0.1); }
+        .form-input, .form-switch-bg { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937; }
+        .text-color-base { color: #1f2937; }
+        .text-color-muted { color: #4b5563; }
+        .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
+        .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
         .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; }
         .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
-        #sidebar { transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
-        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
-        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+        .textured-background { background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px); background-size: 2rem 2rem; }
+        /* Dark Theme */
+        .dark body { background-color: #0c111e; color: #f4f6f9; }
+        .dark .glass-card { background: rgba(17, 24, 39, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
+        .dark .sidebar { background-color: #111827/80; color: #a9a9b3; }
+        .dark .header { background-color: #111827/30; }
+        .dark .sidebar-link { color: #a9a9b3; }
+        .dark .sidebar-link:hover, .dark .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+        .dark .logout-link { color: #f87171; }
+        .dark .logout-link:hover { color: #ef4444; background-color: rgba(248, 113, 113, 0.1); }
+        .dark .form-input, .dark .form-switch-bg { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
+        .dark .text-color-base { color: #f4f6f9; }
+        .dark .text-color-muted { color: #a9a9b3; }
+        .dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
+        .dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .dark .main-button { background-color: #0052cc; color: white; }
+        .dark .main-button:hover { background-color: #0065ff; }
+        .dark .textured-background { background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 2rem 2rem; }
+        /* General */
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
     </style>
 </head>
-<body class="antialiased">
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50">
-        <div class="p-6 flex flex-col h-full">
-            <div class="flex justify-between items-center mb-8">
-                <div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINCLARITY</a></div>
-                <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
-            </div>
-            <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
-                <a href="member_dashboard.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
-                <a href="portfolio.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-wallet fa-fw w-6"></i><span>Portfolio</span></a>
-                <a href="articles.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
-                <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
-                <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
-                <a href="real_results.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
-                <a href="market_screener.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-search-dollar fa-fw w-6"></i><span>Market Screener</span></a>
-                <a href="news.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-newspaper fa-fw w-6"></i><span>Live News Feed</span></a>
-                <a href="economic_calendar.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-calendar-alt fa-fw w-6"></i><span>Economic Calendar</span></a>
-                <a href="trading_journal.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book fa-fw w-6"></i><span>Trading Journal</span></a>
-                <a href="tools_calculators.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools</span></a>
-                <a href="settings.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Settings</span></a>
-            </nav>
-            <div class="mt-auto">
-                <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw"></i><span>Log Out</span></a>
-            </div>
-        </div>
-    </aside>
-    <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30">
-        <div class="container mx-auto flex justify-between items-center p-4">
-            <div class="flex items-center gap-4">
-                <button id="open-sidebar-btn" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
-                <div class="text-2xl font-bold tracking-wider text-white" id="logo"><a href="member_dashboard.html">FINCLARITY</a></div>
-            </div>
-            <nav class="flex items-center gap-4"><span id="user-email" class="hidden sm:inline text-gray-300"></span><a href="settings.html" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a></nav>
-        </div>
-    </header>
-    <main class="container mx-auto">
-        <section class="h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
-            <div class="max-w-3xl">
-                <h1 class="text-4xl md:text-6xl font-bold">Welcome back, Member.</h1>
-                <p class="text-lg md:text-xl text-gray-300 mt-4 max-w-xl mx-auto">Clarity is the key to financial growth. What will you learn today?</p>
-            </div>
-            <div class="absolute bottom-10 left-1/2 -translate-x-1/2"><a href="#dashboard-content" class="text-gray-400 animate-bounce"><i class="fas fa-chevron-down fa-2x"></i></a></div>
-        </section>
-        <section id="dashboard-content" class="p-4 md:py-16">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-8">
-                    <div class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
-                        <div class="text-7xl text-blue-500 flex-shrink-0"><i class="fas fa-book-open"></i></div>
-                        <div>
-                            <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-                            <h2 class="text-3xl font-bold mt-2 mb-3">Unlock The 5 Pillars of Wealth</h2>
-                            <p class="text-gray-300 mb-6">You have full access. Dive deep into the core principles that form the foundation of your entire financial journey.</p>
-                            <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Reading</a>
+<body class="antialiased textured-background">
+    <div id="app-wrapper" style="display: none;">
+        
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
+
+        <main class="container mx-auto">
+            <section class="h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, Member.</h1>
+                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Clarity is the key to financial growth. What will you learn today?</p>
+                </div>
+                <div class="absolute bottom-10 left-1/2 -translate-x-1/2"><a href="#dashboard-content" class="text-color-muted animate-bounce"><i class="fas fa-chevron-down fa-2x"></i></a></div>
+            </section>
+            
+            <section id="dashboard-content" class="p-4 md:py-16">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-8">
+                        <div class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
+                            <div class="text-7xl text-blue-500 flex-shrink-0"><i class="fas fa-book-open"></i></div>
+                            <div>
+                                <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
+                                <h2 class="text-3xl font-bold mt-2 mb-3">Unlock The 5 Pillars of Wealth</h2>
+                                <p class="text-color-muted mb-6">You have full access. Dive deep into the core principles that form the foundation of your entire financial journey.</p>
+                                <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Reading</a>
+                            </div>
+                        </div>
+                        <div class="glass-card p-8">
+                            <h3 class="text-2xl font-bold mb-4">Latest Articles</h3>
+                            <div id="latest-articles-list" class="space-y-2"><p class="text-color-muted text-center">Loading latest articles...</p></div>
                         </div>
                     </div>
-                    <div class="glass-card p-8">
-                        <h3 class="text-2xl font-bold mb-4">Latest Articles</h3>
-                        <div id="latest-articles-list" class="space-y-2"><p class="text-gray-400 text-center">Loading latest articles...</p></div>
-                    </div>
-                </div>
-                <div class="space-y-8">
-                     <div class="glass-card p-8">
-                        <h3 class="text-2xl font-bold mb-6">New Results</h3>
-                        <div class="space-y-6">
-                            <div class="flex items-start gap-4 group">
-                                <i class="fas fa-chart-pie text-green-400 mt-1"></i>
-                                <div>
-                                    <a href="real_results.html" class="font-semibold text-white group-hover:text-blue-400 transition-colors">Case Study: $0 to $1,500/mo</a><p class="text-sm text-gray-400">Analysis of a 12-month journey.</p>
+                    <div class="space-y-8">
+                         <div class="glass-card p-8">
+                            <h3 class="text-2xl font-bold mb-6">New Results</h3>
+                            <div class="space-y-6">
+                                <div class="flex items-start gap-4 group">
+                                    <i class="fas fa-chart-pie text-green-400 mt-1"></i>
+                                    <div>
+                                        <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-400 transition-colors">Case Study: $0 to $1,500/mo</a><p class="text-sm text-color-muted">Analysis of a 12-month journey.</p>
+                                    </div>
+                                </div>
+                                 <div class="flex items-start gap-4 group">
+                                     <i class="fas fa-wallet text-green-400 mt-1"></i>
+                                    <div>
+                                         <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-400 transition-colors">Member Spotlight: Tripling Portfolio</a><p class="text-sm text-color-muted">How one member used our dividend strategy.</p>
+                                     </div>
                                 </div>
                             </div>
-                             <div class="flex items-start gap-4 group">
-                                 <i class="fas fa-wallet text-green-400 mt-1"></i>
-                                <div>
-                                     <a href="real_results.html" class="font-semibold text-white group-hover:text-blue-400 transition-colors">Member Spotlight: Tripling Portfolio</a><p class="text-sm text-gray-400">How one member used our dividend strategy.</p>
-                                 </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-    </main>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const openSidebarBtn = document.getElementById('open-sidebar-btn');
-            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarNav = document.getElementById('sidebar-nav');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
-            function openSidebar() { sidebar.style.transform = 'translateX(0)'; sidebarOverlay.classList.remove('hidden'); }
-            function closeSidebar() { sidebar.style.transform = 'translateX(-100%)'; sidebarOverlay.classList.add('hidden'); }
-            openSidebarBtn.addEventListener('click', openSidebar);
-            closeSidebarBtn.addEventListener('click', closeSidebar);
-            sidebarOverlay.addEventListener('click', closeSidebar);
-            // Added check for sidebarNav
-            if (sidebarNav) {
-                sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
-            }
-        });
-    </script>
+            </section>
+        </main>
+        </div>
+
+    <script type="module" src="app.js"></script>
+    
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { initializeAppCore, db } from './app.js';
+        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const userEmailSpan = document.getElementById('user-email');
-
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                if (userEmailSpan) {
-                    userEmailSpan.textContent = user.email;
-                }
-            } else {
-                window.location.href = 'login.html';
-            }
-        });
-
-        const articlesListContainer = document.getElementById('latest-articles-list');
-        onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3)), (snapshot) => {
-            articlesListContainer.innerHTML = snapshot.empty ? '<p class="text-gray-400 text-center">No articles available yet.</p>' : '';
-            snapshot.forEach((doc, index) => {
-                const article = { id: doc.id, ...doc.data() };
-                const articleDiv = document.createElement('div');
-                articleDiv.className = 'p-4 rounded-lg group hover:bg-white/5 transition-colors';
-                articleDiv.innerHTML = `<a href="articles.html" class="text-lg font-semibold text-white group-hover:text-blue-400">${article.title}</a><p class="text-gray-400 text-sm">${article.readTime} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>`;
-                articlesListContainer.appendChild(articleDiv);
-                if (index < snapshot.docs.length - 1) { const divider = document.createElement('hr'); divider.className = 'border-white/10 mx-4'; articlesListContainer.appendChild(divider); }
-            });
-        });
-
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                signOut(auth).then(() => {
-                    window.location.href = 'index.html';
-                }).catch((error) => {
-                    console.error('Sign out error', error);
+        // This function will be passed to the core initializer
+        function initDashboardPage(user, db) {
+            console.log("Setting up Dashboard specific logic...");
+            const articlesListContainer = document.getElementById('latest-articles-list');
+            if (articlesListContainer) { 
+                onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3)), (snapshot) => {
+                    articlesListContainer.innerHTML = snapshot.empty ? '<p class="text-color-muted text-center">No articles available yet.</p>' : '';
+                    snapshot.forEach((doc, index) => {
+                        const article = { id: doc.id, ...doc.data() };
+                        const articleDiv = document.createElement('div');
+                        articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
+                        articleDiv.innerHTML = `<a href="articles.html" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a><p class="text-color-muted text-sm">${article.readTime} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>`;
+                        articlesListContainer.appendChild(articleDiv);
+                        if (index < snapshot.docs.length - 1) { 
+                            const divider = document.createElement('hr'); 
+                            divider.className = 'border-color-base mx-4';
+                            articlesListContainer.appendChild(divider); 
+                        }
+                    });
                 });
-            });
+            }
         }
+
+        // Initialize the app, passing in our page-specific function
+        initializeAppCore(initDashboardPage);
     </script>
 </body>
 </html>
