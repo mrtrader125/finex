@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Articles | Finclarity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        html { scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth; }
+        html::-webkit-scrollbar { display: none; }
+        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
+        .glass-card-hover:hover { border-color: rgba(0, 82, 204, 0.5); transform: translateY(-5px); transition: all 0.3s ease; }
+        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
+        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+        .page-view { display: none; }
+        .page-view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .article-content h2, .article-content h3 { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.5rem; margin-top: 2rem; }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app-wrapper" style="display: block;">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
+            <div class="p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINCLARITY</a></div>
+                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+                </div>
+                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg">
+                    <a href="member_dashboard.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tachometer-alt fa-fw w-6"></i><span>Dashboard</span></a>
+                    <a href="articles.html" class="sidebar-link active flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-book-reader fa-fw w-6"></i><span>Articles</span></a>
+                    <a href="analysis.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-image fa-fw w-6"></i><span>Analysis</span></a>
+                    <a href="weekly_checklist.html" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-clipboard-check fa-fw w-6"></i><span>Weekly Checklist</span></a>
+                    <a href="#" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-chart-line fa-fw w-6"></i><span>Real-World Results</span></a>
+                    <a href="#" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-tools fa-fw w-6"></i><span>Tools & Calculators</span></a>
+                    <a href="#" class="sidebar-link flex items-center gap-4 p-3 rounded-lg"><i class="fas fa-user-cog fa-fw w-6"></i><span>Account Settings</span></a>
+                </nav>
+                <div class="mt-auto">
+                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw w-6"></i><span>Log Out</span></a>
+                </div>
+            </div>
+        </aside>
+
+        <div>
+            <header id="header" class="bg-transparent backdrop-blur-md sticky top-0 z-30">
+                <div class="container mx-auto flex justify-between items-center p-4">
+                     <div class="flex items-center gap-4">
+                        <button id="open-sidebar-btn" class="text-white hover:text-blue-400 p-2 rounded-full hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
+                        <div class="text-2xl font-bold tracking-wider text-white">Our Articles</div>
+                    </div>
+                    <nav class="flex items-center gap-4">
+                         <span id="user-email" class="hidden sm:inline text-gray-300"></span>
+                         <a href="#" class="text-white p-2 rounded-full hover:bg-white/10"><i class="fas fa-user-circle fa-lg"></i></a>
+                    </nav>
+                </div>
+            </header>
+
+            <main class="container mx-auto p-4 md:p-8">
+                <div id="articles-list-view" class="page-view active">
+                    <div class="text-center mb-12">
+                        <h1 class="text-4xl md:text-5xl font-bold">Finclarity Guides</h1>
+                        <p class="text-lg text-gray-400 mt-4 max-w-2xl mx-auto">Browse our library of in-depth guides and strategies, published by our team.</p>
+                    </div>
+                    <div id="articles-container" class="space-y-6 max-w-4xl mx-auto">
+                        <p class="text-center text-gray-400">Loading articles...</p>
+                    </div>
+                </div>
+                <div id="full-article-view" class="page-view">
+                    <div class="max-w-4xl mx-auto">
+                        <a href="#" id="back-to-list-btn" class="text-blue-400 hover:text-blue-300 mb-6 inline-block">&larr; Back to All Articles</a>
+                        <div class="glass-card p-6 md:p-10">
+                            <h1 id="article-title-full" class="text-4xl md:text-5xl font-bold leading-tight mb-4"></h1>
+                            <div id="article-meta-full" class="flex items-center text-gray-400 mb-8"></div>
+                            <article id="article-content-full" class="article-content text-gray-300 space-y-6"></article>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Added full Firebase, Auth, and Sidebar JS
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const appWrapper = document.getElementById('app-wrapper');
+        const userEmailSpan = document.getElementById('user-email');
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                appWrapper.style.display = 'block';
+                userEmailSpan.textContent = user.email;
+            } else {
+                window.location.replace(new URL('login.html', window.location.href).href);
+            }
+        });
+
+        // Sidebar JS
+        const openSidebarBtn = document.getElementById('open-sidebar-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
+        function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
+        openSidebarBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebarNav.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth < 1024) { closeSidebar(); } });
+        
+        // Logout JS
+        document.getElementById('logout-btn').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            signOut(auth).then(() => window.location.href = 'index.html'); 
+        });
+
+        // Original Article-fetching logic
+        const articlesListView = document.getElementById('articles-list-view');
+        const fullArticleView = document.getElementById('full-article-view');
+        const articlesContainer = document.getElementById('articles-container');
+        const backToListBtn = document.getElementById('back-to-list-btn');
+        let allArticles = [];
+
+        const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (querySnapshot) => {
+            articlesContainer.innerHTML = '';
+            allArticles = [];
+            
+            if (querySnapshot.empty) {
+                articlesContainer.innerHTML = '<p class="text-center text-gray-400">No articles published yet.</p>';
+                return;
+            }
+
+            querySnapshot.forEach(doc => {
+                const article = { id: doc.id, ...doc.data() };
+                allArticles.push(article);
+                const articleEl = document.createElement('a');
+                articleEl.href = '#';
+                articleEl.className = 'glass-card glass-card-hover block p-6 md:p-8';
+                articleEl.dataset.id = article.id;
+                const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
+                articleEl.innerHTML = `
+                    <div class="md:flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">${article.title}</h2>
+                            <p class="text-gray-400 mb-4 md:mb-0">By ${article.author}</p>
+                        </div>
+                        <div class="text-gray-400 text-sm text-left md:text-right flex-shrink-0">
+                            <span>${formattedDate}</span><span class="mx-2">&bull;</span><span>${article.readTime}</span>
+                        </div>
+                    </div>`;
+                articlesContainer.appendChild(articleEl);
+            });
+        });
+
+        function showListView() {
+            fullArticleView.classList.remove('active');
+            articlesListView.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        function showFullArticleView(articleId) {
+            const article = allArticles.find(a => a.id === articleId);
+            if (!article) return;
+            document.getElementById('article-title-full').textContent = article.title;
+            const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
+            document.getElementById('article-meta-full').innerHTML = `<span>By ${article.author}</span><span class="mx-2">&bull;</span><span>${formattedDate}</span><span class="mx-2">&bull;</span><span>${article.readTime}</span>`;
+            document.getElementById('article-content-full').innerHTML = article.content;
+            articlesListView.classList.remove('active');
+            fullArticleView.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        articlesContainer.addEventListener('click', (e) => {
+            const articleLink = e.target.closest('a[data-id]');
+            if (articleLink) {
+                e.preventDefault();
+                showFullArticleView(articleLink.dataset.id);
+            }
+        });
+
+        backToListBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showListView();
+        });
+    </script>
+</body>
+</html>
