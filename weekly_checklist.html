@@ -18,6 +18,13 @@
         .loader { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #0052cc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         .dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- ADD THIS RULE --- */
+        /* Hide the sidebar toggle button specifically on this page */
+        #open-sidebar-btn {
+            display: none !important; 
+        }
+        /* --- END ADDED RULE --- */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -33,7 +40,6 @@
                 <h1 class="text-4xl md:text-5xl font-bold text-color-base">Weekly Trading Checklist</h1>
                 <p id="week-identifier" class="text-lg text-color-muted mt-4">Plan and review your trading week.</p>
             </div>
-
             <div class="max-w-4xl mx-auto space-y-8">
                 <div class="glass-card p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-4">1. Weekly Analysis</h2>
@@ -42,7 +48,6 @@
                         <input type="number" id="pairs-analyzed" min="0" class="form-input w-full md:w-1/2">
                     </div>
                 </div>
-
                 <div class="glass-card p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-4">2. Watchlist for the Week</h2>
                     <p class="text-color-muted mb-4">Select the pairs/instruments you plan to focus on.</p>
@@ -52,43 +57,26 @@
                         <input type="text" id="other-pairs" class="form-input w-full" placeholder="e.g., XAU/USD, SPX500">
                     </div>
                 </div>
-
                  <div class="glass-card p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-4">3. Top Pairs Focus</h2>
                     <p class="text-color-muted mb-4">List the 1-3 pairs you consider the highest probability setups for the week and why.</p>
                     <textarea id="top-pairs-focus" rows="4" class="form-textarea w-full" placeholder="e.g., EUR/USD - Strong uptrend on H4, waiting for pullback to support.&#10;GBP/JPY - Potential reversal pattern forming on Daily chart."></textarea>
                 </div>
-
                 <div class="glass-card p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-6">4. Trade Log</h2>
-                    <div id="trade-log-list" class="space-y-4 mb-6">
-                        <p class="text-color-muted text-center">No trades logged yet for this week.</p>
-                    </div>
+                    <div id="trade-log-list" class="space-y-4 mb-6"><p class="text-color-muted text-center">No trades logged yet for this week.</p></div>
                     <form id="add-trade-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-color-base pt-6">
                         <input type="text" id="trade-pair" placeholder="Pair/Instrument" required class="form-input">
                         <input type="text" id="trade-notes" placeholder="Setup Notes" required class="form-input">
-                        <select id="trade-outcome" required class="form-select w-full">
-                            <option value="" disabled selected>Select Outcome</option>
-                            <option value="Profit">Profit</option>
-                            <option value="Loss">Loss</option>
-                            <option value="Break Even">Break Even</option>
-                            <option value="Missed">Missed Entry</option>
-                        </select>
+                        <select id="trade-outcome" required class="form-select w-full"><option value="" disabled selected>Select Outcome</option><option value="Profit">Profit</option><option value="Loss">Loss</option><option value="Break Even">Break Even</option><option value="Missed">Missed Entry</option></select>
                         <button type="submit" class="main-button font-bold py-2 px-4 md:col-span-3">Add Trade to Log</button>
                     </form>
                 </div>
-
                 <div class="glass-card p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-4">5. Weekly Summary</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div>
-                            <label for="weekly-pl" class="form-label">Total Profit/Loss for the week ($ or %)</label>
-                            <input type="text" id="weekly-pl" class="form-input w-full" placeholder="e.g., +$500 or +2.5%">
-                        </div>
-                        <div>
-                            <label for="lessons-learned" class="form-label">Key Lessons Learned / Reflections</label>
-                            <textarea id="lessons-learned" rows="3" class="form-textarea w-full" placeholder="What went well? What could be improved?"></textarea>
-                        </div>
+                         <div><label for="weekly-pl" class="form-label">Total Profit/Loss for the week ($ or %)</label><input type="text" id="weekly-pl" class="form-input w-full" placeholder="e.g., +$500 or +2.5%"></div>
+                         <div><label for="lessons-learned" class="form-label">Key Lessons Learned / Reflections</label><textarea id="lessons-learned" rows="3" class="form-textarea w-full" placeholder="What went well? What could be improved?"></textarea></div>
                     </div>
                 </div>
                 <p id="save-status" class="text-center text-sm text-color-muted h-4 mt-4"></p>
@@ -103,6 +91,13 @@
 
         function initChecklistPage(user, db) {
             console.log("Setting up Weekly Checklist specific logic...");
+
+            // --- ADD THIS LINE ---
+            // Manually set the header title for this page
+            const pageTitleEl = document.getElementById('page-title');
+            if(pageTitleEl) pageTitleEl.textContent = "Weekly Checklist";
+            // --- END ADDED LINE ---
+
             const loadingContainer = document.getElementById('loading-container');
             const weekIdentifier = document.getElementById('week-identifier');
             const saveStatus = document.getElementById('save-status');
@@ -120,6 +115,19 @@
                  if(loadingContainer) loadingContainer.innerHTML = "<p class='text-red-500'>Error loading page elements.</p>";
                  return;
              }
+             
+            // ... (Rest of the initChecklistPage function remains exactly the same as the previous correct version) ...
+            // Includes:
+            // let currentUserId = user.uid;
+            // let currentWeekId = ''; etc...
+            // function getWeekId(date) { ... }
+            // function populateWatchlistCheckboxes() { ... }
+            // function displayTradeLog(trades = []) { ... }
+            // async function saveData(field, value) { ... }
+            // function debouncedSave(field, value) { ... }
+            // function listenForChecklistData() { ... }
+            // function setupEventListeners() { ... }
+            // Initial setup calls (currentWeekId, checklistDocRef, populate, listen, setup)
 
             let currentUserId = user.uid;
             let currentWeekId = '';
@@ -175,7 +183,7 @@
                 debounceTimer = setTimeout(() => { saveData(field, value); }, 1000);
             }
 
-            function listenForChecklistData() {
+             function listenForChecklistData() {
                  onSnapshot(checklistDocRef, (doc) => {
                     if (doc.exists()) {
                         checklistData = doc.data();
@@ -196,58 +204,70 @@
                         document.querySelectorAll('.watchlist-checkbox').forEach(checkbox => checkbox.checked = false);
                         displayTradeLog([]);
                     }
-                    loadingContainer.style.display = 'none';
+                    // Only hide loader once listener provides initial data (or confirms no data)
+                    if(loadingContainer) loadingContainer.style.display = 'none';
+
                 }, (error) => {
-                     console.error("Error listening to checklist data:", error); loadingContainer.style.display = 'none';
+                     console.error("Error listening to checklist data:", error);
+                     if(loadingContainer) loadingContainer.style.display = 'none'; // Hide on error too
                      const mainContent = document.querySelector('main');
                      if(mainContent) mainContent.innerHTML = "<p class='text-red-500 text-center p-8'>Could not load checklist data.</p>";
                 });
             }
 
+
             function setupEventListeners() {
-                 pairsAnalyzedInput.addEventListener('input', (e) => debouncedSave('pairsAnalyzed', parseInt(e.target.value) || 0));
-                 otherPairsInput.addEventListener('input', (e) => debouncedSave('otherPairs', e.target.value));
-                 topPairsFocusInput.addEventListener('input', (e) => debouncedSave('topPairsFocus', e.target.value));
-                 weeklyPlInput.addEventListener('input', (e) => debouncedSave('weeklyPL', e.target.value));
-                 lessonsLearnedInput.addEventListener('input', (e) => debouncedSave('lessonsLearned', e.target.value));
-                 watchlistContainer.addEventListener('change', (e) => {
+                 pairsAnalyzedInput?.addEventListener('input', (e) => debouncedSave('pairsAnalyzed', parseInt(e.target.value) || 0));
+                 otherPairsInput?.addEventListener('input', (e) => debouncedSave('otherPairs', e.target.value));
+                 topPairsFocusInput?.addEventListener('input', (e) => debouncedSave('topPairsFocus', e.target.value));
+                 weeklyPlInput?.addEventListener('input', (e) => debouncedSave('weeklyPL', e.target.value));
+                 lessonsLearnedInput?.addEventListener('input', (e) => debouncedSave('lessonsLearned', e.target.value));
+                 watchlistContainer?.addEventListener('change', (e) => {
                      if (e.target.classList.contains('watchlist-checkbox')) {
                          const selectedPairs = Array.from(document.querySelectorAll('.watchlist-checkbox:checked')).map(cb => cb.value);
                          saveData('watchlist', selectedPairs);
                      }
                  });
-                 addTradeForm.addEventListener('submit', async (e) => {
+                 addTradeForm?.addEventListener('submit', async (e) => {
                      e.preventDefault();
+                     // Ensure elements exist before getting values
+                     const pairInput = document.getElementById('trade-pair');
+                     const notesInput = document.getElementById('trade-notes');
+                     const outcomeInput = document.getElementById('trade-outcome');
+                     if(!pairInput || !notesInput || !outcomeInput) return;
+
                      const tradeData = {
-                         pair: document.getElementById('trade-pair').value,
-                         notes: document.getElementById('trade-notes').value,
-                         outcome: document.getElementById('trade-outcome').value,
+                         pair: pairInput.value,
+                         notes: notesInput.value,
+                         outcome: outcomeInput.value,
                          loggedAt: serverTimestamp()
                      };
-                     saveStatus.textContent = 'Adding trade...';
+                     if(saveStatus) saveStatus.textContent = 'Adding trade...';
                      try {
                          await updateDoc(checklistDocRef, { trades: arrayUnion(tradeData), lastUpdated: serverTimestamp() });
-                         addTradeForm.reset(); saveStatus.textContent = 'Trade added.';
-                         setTimeout(() => saveStatus.textContent = '', 2000);
+                         addTradeForm.reset(); if(saveStatus) saveStatus.textContent = 'Trade added.';
+                         setTimeout(() => { if(saveStatus) saveStatus.textContent = ''; }, 2000);
                      } catch (error) {
                          if (error.code === 'not-found' || error.message.includes("No document to update")) {
                              try {
                                  await setDoc(checklistDocRef, { trades: [tradeData], createdAt: serverTimestamp(), lastUpdated: serverTimestamp() });
-                                 addTradeForm.reset(); saveStatus.textContent = 'Checklist created & trade added.';
-                                 setTimeout(() => saveStatus.textContent = '', 2000);
-                             } catch (createError) { console.error("Error creating document:", createError); saveStatus.textContent = 'Error adding trade.'; }
-                         } else { console.error("Error adding trade:", error); saveStatus.textContent = 'Error adding trade.'; }
+                                 addTradeForm.reset(); if(saveStatus) saveStatus.textContent = 'Checklist created & trade added.';
+                                 setTimeout(() => { if(saveStatus) saveStatus.textContent = ''; }, 2000);
+                             } catch (createError) { console.error("Error creating document:", createError); if(saveStatus) saveStatus.textContent = 'Error adding trade.'; }
+                         } else { console.error("Error adding trade:", error); if(saveStatus) saveStatus.textContent = 'Error adding trade.'; }
                      }
                  });
             }
 
             currentWeekId = getWeekId(new Date());
-            weekIdentifier.textContent = `Checklist for ${currentWeekId.replace('-', ', Week ')}`;
+            if(weekIdentifier) weekIdentifier.textContent = `Checklist for ${currentWeekId.replace('-', ', Week ')}`;
             checklistDocRef = doc(db, `users/${currentUserId}/weeklyChecklists`, currentWeekId);
+
             populateWatchlistCheckboxes();
-            listenForChecklistData();
+            listenForChecklistData(); // Handles hiding loader
             setupEventListeners();
         }
+
         initializeAppCore(initChecklistPage);
     </script>
 </body>
