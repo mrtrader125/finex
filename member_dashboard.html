@@ -16,7 +16,6 @@
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
@@ -71,32 +70,26 @@
         </div>
 
     <script type="module" src="app.js"></script>
-
     <script type="module">
         import { initializeAppCore, db } from './app.js';
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initDashboardPage(user, db) {
             console.log("Setting up Dashboard specific logic...");
-
             const articlesListContainer = document.getElementById('latest-articles-list');
-
             if (articlesListContainer) {
                 onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3)), (snapshot) => {
                     articlesListContainer.innerHTML = snapshot.empty
-                        ? '<p class="text-color-muted text-center">No articles available yet.</p>'
-                        : '';
-
+                        ? '<p class="text-color-muted text-center">No articles available yet.</p>' : '';
                     snapshot.forEach((doc, index) => {
                         const article = { id: doc.id, ...doc.data() };
                         const articleDiv = document.createElement('div');
                         articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
                         articleDiv.innerHTML = `
                             <a href="articles.html" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
-                            <p class="text-color-muted text-sm">${article.readTime} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
-                        `;
+                            <p class="text-color-muted text-sm">${article.readTime || '? min read'} &bull; Published on ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+                        `; // Added fallback for readTime
                         articlesListContainer.appendChild(articleDiv);
-
                         if (index < snapshot.docs.length - 1) {
                             const divider = document.createElement('hr');
                             divider.className = 'border-color-base mx-4';
@@ -108,10 +101,9 @@
                      articlesListContainer.innerHTML = '<p class="text-red-500 text-center">Could not load articles.</p>';
                 });
             } else {
-                 console.warn("Element with ID 'latest-articles-list' not found on this page.");
+                 console.warn("Element with ID 'latest-articles-list' not found.");
             }
         }
-
         initializeAppCore(initDashboardPage);
     </script>
 </body>
