@@ -39,20 +39,20 @@ export const allSidebarItems = [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
             { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' } ] },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
-    { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
-    // *** NEW Market Data Dropdown ***
+    // *** UPDATED Market Data Dropdown ***
     {
-        id: 'marketData',           // ID for the dropdown parent
-        icon: 'fa-chart-bar',       // Example icon (you can change this)
-        text: 'Market Data',        // Dropdown title
+        id: 'marketData',
+        icon: 'fa-chart-bar',
+        text: 'Market Data',
         subItems: [
+            // *** MOVED Screener Here ***
+            { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
             { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
             { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' }
         ]
     },
-    // *** REMOVED original 'news' and 'calendar' items ***
-    // { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
-    // { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' },
+    // *** REMOVED original 'screener' item ***
+    // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
@@ -60,9 +60,8 @@ export const allSidebarItems = [
 let userPreferences = { theme: 'dark', sidebarItems: {} };
 function initializeDefaultVisibility(items) {
      items.forEach(item => {
-         userPreferences.sidebarItems[item.id] = true; // Set parent/item default visibility
+         userPreferences.sidebarItems[item.id] = true;
          if (item.subItems) {
-             // Ensure subitems have a default visibility tracked if needed later
              item.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = true);
          }
      });
@@ -70,7 +69,7 @@ function initializeDefaultVisibility(items) {
 initializeDefaultVisibility(allSidebarItems);
 
 
-// --- Main App Initialization --- (No changes needed)
+// --- Main App Initialization --- (No changes)
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -93,7 +92,7 @@ export async function initializeAppCore(pageSpecificInit) {
     });
 }
 
-// --- HTML Component Loader --- (No changes needed)
+// --- HTML Component Loader --- (No changes)
 async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
@@ -106,7 +105,7 @@ async function loadCommonComponents() {
     } catch (error) { console.error("Error loading common components:", error); /* ... error display ... */ }
  }
 
-// --- Preference Management --- (No changes needed)
+// --- Preference Management --- (No changes)
 async function loadPreferences(settingsDocRef) {
      try {
         const docSnap = await getDoc(settingsDocRef);
@@ -122,7 +121,7 @@ async function loadPreferences(settingsDocRef) {
     } catch (error) { console.error("Error loading preferences:", error); userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems); }
 }
 
-// --- Theme Application --- (No changes needed)
+// --- Theme Application --- (No changes)
 export function applyTheme(theme) {
     if (theme === 'light') { document.documentElement.classList.remove('dark'); } else { document.documentElement.classList.add('dark'); }
     const themeToggle = document.getElementById('theme-toggle'); if (themeToggle) { themeToggle.checked = (theme === 'dark'); }
