@@ -147,4 +147,54 @@
         .tag:hover, .tag.active { background-color: #0052cc; }
         .dark .tag { background-color: rgba(255, 255, 255, 0.1); }
         .dark .tag:hover, .dark .tag.active { background-color: #0052cc; }
+/* === Dropdown Sidebar Styles === */
+
+/* Style for the dropdown toggle button */
+button[data-toggle].sidebar-link {
+    cursor: pointer;
+}
+
+/* Style for the parent item when its dropdown is open or a child is active */
+.sidebar-link.active-parent {
+    color: #ffffff; /* White text like active links */
+    background-color: rgba(255, 255, 255, 0.05); /* Slightly different background? Or same as active? */
+}
+/* Ensure hover works correctly too */
+button[data-toggle].sidebar-link:hover {
+     color: #ffffff;
+     background-color: rgba(255, 255, 255, 0.08);
+}
+
+
+/* Submenu container - transition max-height */
+.sidebar-submenu {
+    max-height: 0; /* Hidden by default */
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out; /* Smooth transition */
+}
+
+/* Style for links within the submenu */
+.sidebar-submenu a.sidebar-link {
+    /* Base styles inherited */
+    font-size: 0.9rem; /* Slightly smaller text */
+    padding-top: 0.5rem; /* Adjust padding */
+    padding-bottom: 0.5rem;
+    padding-left: 0.75rem; /* Indentation handled by parent div's pl-6 */
+    color: #a9a9b3; /* Default color */
+}
+
+/* Hover/Active for submenu links */
+.sidebar-submenu a.sidebar-link:hover,
+.sidebar-submenu a.sidebar-link.active {
+    color: #ffffff; /* White */
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly more prominent background */
+}
+
+/* Chevron icon rotation */
+.sidebar-link .fa-chevron-down {
+    transition: transform 0.2s ease-in-out;
+}
+.sidebar-link .fa-chevron-down.rotate-180 {
+    transform: rotate(180deg);
+}
     </style>
