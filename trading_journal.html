@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Journal | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,16 +14,7 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
-    <style>
-        /* Add smooth rotation for the details summary icon */
-        details[open] > summary .chevron-icon {
-            transform: rotate(180deg);
-        }
-        summary .chevron-icon {
-            transition: transform 0.2s ease-in-out;
-        }
-    </style>
-    </head>
+</head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
         <div id="sidebar-placeholder"></div>
@@ -33,7 +24,6 @@
             <main class="container mx-auto p-4 md:p-8 flex-grow">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-1 space-y-8">
-                        <!-- Performance Analytics Card -->
                         <div class="glass-card p-6">
                             <h2 class="text-2xl font-bold text-center mb-4">Performance Analytics</h2>
                             <div class="grid grid-cols-2 gap-4 text-center">
@@ -44,130 +34,72 @@
                                 <div class="glass-card p-3 col-span-2"><span class="text-sm text-color-muted block">Avg Win / Loss</span><span id="avg-win-loss" class="text-lg font-bold">-$-- / -$--</span></div>
                             </div>
                         </div>
-                        <!-- Equity Curve Card -->
                         <div class="glass-card p-6">
                             <h2 class="text-2xl font-bold mb-4">Equity Curve</h2>
                             <div style="height: 250px;">
                                <canvas id="equity-curve-chart"></canvas>
                             </div>
                         </div>
-                        <!-- Tags Card -->
                         <div class="glass-card p-6">
                             <h2 class="text-2xl font-bold mb-4">Filter by Tag</h2>
                             <div id="tags-container" class="flex flex-wrap gap-2">
-                                <p class="text-color-muted text-sm">No trades with tags yet.</p>
+                                <p class="text-color-muted text-sm">Loading tags...</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Right Column -->
                     <div class="lg:col-span-2 space-y-8">
-                        
-                        <!-- *** MOVED THIS BLOCK UP *** -->
-                        <!-- *** MODIFIED: Log a New Trade Card (Collapsible) *** -->
-                        <div class="glass-card">
-                            <details class="group" open>
-                                <summary class="p-6 cursor-pointer flex justify-between items-center list-none group-open:border-b group-open:border-color-base">
-                                    <h2 class="text-2xl font-bold">Log a New Trade</h2>
-                                    <i class="fas fa-chevron-down chevron-icon"></i>
-                                </summary>
-                                <form id="trade-form" class="space-y-4 p-6">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div><label class="text-sm text-color-muted block mb-1">Symbol</label><input type="text" id="trade-symbol" required class="form-input w-full" placeholder="e.g., EUR/USD"></div>
-                                        <div><label class="text-sm text-color-muted block mb-1">Direction</label><select id="trade-direction" class="form-select w-full"><option value="long">Long</option><option value="short">Short</option></select></div>
-                                    </div>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div><label class="text-sm text-color-muted block mb-1">Entry</label><input type="number" step="any" id="trade-entry" required class="form-input w-full"></div>
-                                        <div><label class="text-sm text-color-muted block mb-1">Exit</label><input type="number" step="any" id="trade-exit" required class="form-input w-full"></div>
-                                        <div><label class="text-sm text-color-muted block mb-1">Size</label><input type="number" step="any" id="trade-size" required class="form-input w-full" placeholder="Shares/Lots"></div>
-                                        <div><label class="text-sm text-color-muted block mb-1">P/L ($)</label><input type="text" id="trade-pl-display" readonly class="form-input w-full bg-black/10 dark:bg-white/5 cursor-not-allowed"></div>
-                                    </div>
-                                    <div><label class="text-sm text-color-muted block mb-1">Chart Screenshot URL</label><input type="url" id="trade-image" class="form-input w-full" placeholder="Paste image link here..."></div>
-                                    <div><label class="text-sm text-color-muted block mb-1">Tags (comma-separated)</label><input type="text" id="trade-tags" class="form-input w-full" placeholder="#breakout, #followed_plan..."></div>
-                                    <div><label class="text-sm text-color-muted block mb-1">Notes / Setup</label><textarea id="trade-notes" rows="3" class="form-textarea w-full" placeholder="Why did you take this trade? What was your mindset?"></textarea></div>
-                                    <button type="submit" id="save-trade-btn" class="main-button w-full font-bold py-3">Save Trade</button>
-                                    <p id="form-message" class="text-center text-sm mt-3 h-4"></p>
-                                </form>
-                            </details>
-                        </div>
-                        <!-- *** END MODIFIED CARD *** -->
-
-                        <!-- *** THIS WEEK'S PLAN CARD (From previous update) *** -->
-                        <div id="weekly-plan-card" class="glass-card p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-2xl font-bold">This Week's Plan</h2>
-                                <a href="weekly_checklist.html" class="text-sm main-button-ghost py-1 px-3 rounded-lg hover:bg-white/10">
-                                    Edit <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                            <!-- Loading State -->
-                            <div id="weekly-plan-loading">
-                                <p class="text-color-muted text-sm">Loading weekly plan...</p>
-                            </div>
-                            <!-- Content State -->
-                            <div id="weekly-plan-content" class="hidden space-y-4">
-                                <div>
-                                    <h3 class="font-semibold text-color-base mb-2">Top Pairs Focus</h3>
-                                    <p id="weekly-plan-focus" class="text-color-muted text-sm whitespace-pre-wrap rounded-lg bg-black/10 dark:bg-white/5 p-3">No focus set.</p>
+                        <div class="glass-card p-6">
+                            <h2 class="text-2xl font-bold mb-4">Log a New Trade</h2>
+                            <form id="trade-form" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label class="text-sm text-color-muted block mb-1">Symbol</label><input type="text" id="trade-symbol" required class="form-input w-full" placeholder="e.g., AAPL"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">Direction</label><select id="trade-direction" class="form-select w-full"><option value="long">Long</option><option value="short">Short</option></select></div>
                                 </div>
-                                <div>
-                                    <h3 class="font-semibold text-color-base mb-2">Watchlist</h3>
-                                    <div id="weekly-plan-watchlist" class="flex flex-wrap gap-2">
-                                        <p class="text-color-muted text-sm">No watchlist set.</p>
-                                    </div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div><label class="text-sm text-color-muted block mb-1">Entry</label><input type="number" step="any" id="trade-entry" required class="form-input w-full"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">Exit</label><input type="number" step="any" id="trade-exit" required class="form-input w-full"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">Size</label><input type="number" step="any" id="trade-size" required class="form-input w-full" placeholder="Shares/Lots"></div>
+                                    <div><label class="text-sm text-color-muted block mb-1">P/L ($)</label><input type="text" id="trade-pl-display" readonly class="form-input w-full bg-black/10 dark:bg-white/5 cursor-not-allowed"></div>
                                 </div>
-                            </div>
-                            <!-- Empty State -->
-                            <div id="weekly-plan-empty" class="hidden">
-                                <p class="text-color-muted text-sm">
-                                    No weekly plan found. 
-                                    <a href="weekly_checklist.html" class="text-blue-500 hover:underline">Create one now</a> to see it here.
-                                </p>
-                            </div>
+                                <div><label class="text-sm text-color-muted block mb-1">Chart Screenshot URL</label><input type="url" id="trade-image" class="form-input w-full" placeholder="Paste image link here..."></div>
+                                <div><label class="text-sm text-color-muted block mb-1">Tags (comma-separated)</label><input type="text" id="trade-tags" class="form-input w-full" placeholder="#breakout, #followed_plan..."></div>
+                                <div><label class="text-sm text-color-muted block mb-1">Notes / Setup</label><textarea id="trade-notes" rows="3" class="form-textarea w-full" placeholder="Why did you take this trade? What was your mindset?"></textarea></div>
+                                <button type="submit" id="save-trade-btn" class="main-button w-full font-bold py-3">Save Trade</button>
+                                <p id="form-message" class="text-center text-sm mt-3 h-4"></p>
+                            </form>
                         </div>
-                        <!-- *** END WEEKLY PLAN CARD *** -->
-
-                        <!-- *** MOVED THIS BLOCK DOWN *** -->
-                        <!-- *** MODIFIED: Log a New Trade Card (Collapsible) *** -->
-                        <!-- <div class="glass-card"> ... (This block was moved up) ... </div> -->
-                        <!-- *** END MODIFIED CARD *** -->
-                        
-                        <!-- Trade History Card -->
                         <div class="glass-card p-6">
                             <h2 class="text-2xl font-bold mb-4">Trade History</h2>
-                            <div id="trade-history" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                                <p class="text-center text-color-muted">No trades logged yet.</p>
+                            <div id="trade-history" class="space-y-3 max-h-[70vh] overflow-y-auto pr-2">
+                                <p class="text-center text-color-muted">Loading trades...</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </main>
         </div>
-        
-        <!-- Modals -->
         <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-70 dark:bg-opacity-80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
-            <div class="modal-content glass-card p-8 rounded-2xl w-full max-w-sm text-center transform scale-95">
-                <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
-                <p class="text-color-muted mb-6">Are you sure you want to permanently delete this trade?</p>
-                <div class="flex gap-4">
-                    <button id="cancel-delete-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 rounded-lg">Cancel</button>
-                    <button id="confirm-delete-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg">Delete</button>
-                </div>
-            </div>
+             <div class="modal-content glass-card p-8 rounded-2xl w-full max-w-sm text-center transform scale-95">
+                 <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
+                 <p class="text-color-muted mb-6">Are you sure you want to permanently delete this trade?</p>
+                 <div class="flex gap-4">
+                     <button id="cancel-delete-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 rounded-lg">Cancel</button>
+                     <button id="confirm-delete-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg">Delete</button>
+                 </div>
+             </div>
+         </div>
+         <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
+             <button id="close-image-modal" class="absolute top-4 right-6 text-white text-4xl hover:opacity-75">&times;</button>
+             <div class="modal-content w-full h-full flex items-center justify-center transform scale-95">
+                 <img id="modal-image-src" src="" alt="Trade Screenshot" class="max-w-[90vw] max-h-[90vh] rounded-lg">
+             </div>
+         </div>
         </div>
-        <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
-            <button id="close-image-modal" class="absolute top-4 right-6 text-white text-4xl hover:opacity-75">&times;</button>
-            <div class="modal-content w-full h-full flex items-center justify-center transform scale-95">
-                <img id="modal-image-src" src="" alt="Trade Screenshot" class="max-w-[90vw] max-h-[90vh] rounded-lg">
-            </div>
-        </div>
-    </div>
 
     <script type="module" src="app.js"></script>
     <script type="module">
-        // *** IMPORT getWeekId from app.js ***
-        import { initializeAppCore, db, auth, getWeekId } from './app.js';
-        import { collection, addDoc, serverTimestamp, onSnapshot, query, where, orderBy, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        import { initializeAppCore, db, auth } from './app.js';
+        import { collection, addDoc, serverTimestamp, onSnapshot, query, where, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initJournalPage(user, db) {
             console.log("Setting up Trading Journal specific logic...");
@@ -180,44 +112,52 @@
                 cancelDelete: document.getElementById('cancel-delete-btn'), confirmDelete: document.getElementById('confirm-delete-btn'),
                 imageModal: document.getElementById('image-modal'), closeImageModal: document.getElementById('close-image-modal'),
                 modalImageSrc: document.getElementById('modal-image-src'), tagsContainer: document.getElementById('tags-container'),
-                plDisplay: document.getElementById('trade-pl-display'), chartCanvas: document.getElementById('equity-curve-chart'),
-                // *** NEW WEEKLY PLAN ELEMENTS ***
-                weeklyPlanLoading: document.getElementById('weekly-plan-loading'),
-                weeklyPlanContent: document.getElementById('weekly-plan-content'),
-                weeklyPlanEmpty: document.getElementById('weekly-plan-empty'),
-                weeklyPlanFocus: document.getElementById('weekly-plan-focus'),
-                weeklyPlanWatchlist: document.getElementById('weekly-plan-watchlist'),
-            };
+                plDisplay: document.getElementById('trade-pl-display'), chartCanvas: document.getElementById('equity-curve-chart')
+             };
             let allTrades = []; let filteredTrades = []; let activeTag = null;
             let equityChart = null; let tradeToDeleteId = null; const userId = user.uid;
             const tradesCollectionRef = collection(db, "trades");
 
+            // *** Critical Check: Ensure all elements are found ***
             let missingElement = false;
-            for (const key in elements) { if (!elements[key]) { console.error(`Error: Element ID '${key}' not found!`); missingElement = true; } }
-            if(missingElement) { document.getElementById('app-wrapper').innerHTML = "<p class='text-red-500 text-center p-8'>Error initializing page.</p>"; return; }
+            for (const key in elements) {
+                if (!elements[key]) {
+                    console.error(`Error: Element ID '${key}' not found! Cannot initialize journal.`);
+                    missingElement = true;
+                }
+            }
+            if(missingElement) {
+                 const mainContent = document.querySelector('main'); // Try to find main content area
+                 if(mainContent) mainContent.innerHTML = "<p class='text-red-500 text-center p-8 text-lg'>Error: Could not initialize journal page elements. Please ensure all HTML IDs are correct.</p>";
+                 return; // Stop initialization
+            }
 
-            const calculatePL = () => { /* ... (same as before) ... */
-                if (!elements.tradeForm || !elements.plDisplay) return;
+            // --- P/L Calculation ---
+            const calculatePL = () => {
                 const entry = parseFloat(elements.tradeForm['trade-entry']?.value) || 0; const exit = parseFloat(elements.tradeForm['trade-exit']?.value) || 0;
                 const size = parseFloat(elements.tradeForm['trade-size']?.value) || 0; const direction = elements.tradeForm['trade-direction']?.value;
                 let pl = (direction === 'long' ? (exit - entry) : (entry - exit)) * size;
                 elements.plDisplay.value = isNaN(pl) ? '' : pl.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
-            };
-            function updateAnalytics(tradesToAnalyze) { /* ... (same as before) ... */
-                const total = tradesToAnalyze.length; const totalPL = tradesToAnalyze.reduce((sum, t) => sum + (t.pl || 0), 0);
-                const winners = tradesToAnalyze.filter(t => t.pl > 0); const losers = tradesToAnalyze.filter(t => t.pl < 0);
-                const winRate = total > 0 ? (winners.length / total) * 100 : 0; const grossProfit = winners.reduce((sum, t) => sum + t.pl, 0);
-                const grossLoss = Math.abs(losers.reduce((sum, t) => sum + t.pl, 0));
-                const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : (grossProfit > 0 ? Infinity : 0);
-                const avgWin = winners.length > 0 ? grossProfit / winners.length : 0; const avgLoss = losers.length > 0 ? grossLoss / losers.length : 0;
-                elements.totalPl.textContent = totalPL.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-                elements.totalPl.className = `text-xl font-bold ${totalPL >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`;
-                elements.totalTrades.textContent = total; elements.winRate.textContent = `${winRate.toFixed(1)}%`;
-                elements.profitFactor.textContent = isFinite(profitFactor) ? profitFactor.toFixed(2) : '∞';
-                elements.avgWinLoss.innerHTML = `<span class="text-green-500 dark:text-green-400">${avgWin.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span> / <span class="text-red-500 dark:text-red-400">${avgLoss.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span>`;
-                updateEquityCurve(tradesToAnalyze);
+             };
+
+            // --- Analytics Update ---
+            function updateAnalytics(tradesToAnalyze) {
+                 const total = tradesToAnalyze.length; const totalPL = tradesToAnalyze.reduce((sum, t) => sum + (t.pl || 0), 0);
+                 const winners = tradesToAnalyze.filter(t => t.pl > 0); const losers = tradesToAnalyze.filter(t => t.pl < 0);
+                 const winRate = total > 0 ? (winners.length / total) * 100 : 0; const grossProfit = winners.reduce((sum, t) => sum + t.pl, 0);
+                 const grossLoss = Math.abs(losers.reduce((sum, t) => sum + t.pl, 0));
+                 const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : (grossProfit > 0 ? Infinity : 0);
+                 const avgWin = winners.length > 0 ? grossProfit / winners.length : 0; const avgLoss = losers.length > 0 ? grossLoss / losers.length : 0;
+                 elements.totalPl.textContent = totalPL.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                 elements.totalPl.className = `text-xl font-bold ${totalPL >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`;
+                 elements.totalTrades.textContent = total; elements.winRate.textContent = `${winRate.toFixed(1)}%`;
+                 elements.profitFactor.textContent = isFinite(profitFactor) ? profitFactor.toFixed(2) : '∞';
+                 elements.avgWinLoss.innerHTML = `<span class="text-green-500 dark:text-green-400">${avgWin.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span> / <span class="text-red-500 dark:text-red-400">${avgLoss.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span>`;
+                 updateEquityCurve(tradesToAnalyze);
             }
-            function initEquityChart() { /* ... (same as before, including theme colors) ... */
+
+            // --- Equity Curve Chart ---
+             function initEquityChart() {
                 if (equityChart) { equityChart.destroy(); }
                 const ctx = elements.chartCanvas.getContext('2d');
                 const isDarkMode = document.documentElement.classList.contains('dark');
@@ -225,172 +165,112 @@
                 const tickColor = isDarkMode ? '#a9a9b3' : '#4b5563';
                 const lineColor = isDarkMode ? '#0065ff' : '#0052cc';
                 equityChart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: lineColor, tension: 0.1, fill: false, pointRadius: 0, pointHoverRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { display: false }, grid: { color: gridColor, drawBorder: false } }, y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor } } }, interaction: { intersect: false, mode: 'index' } } });
-            }
-            function updateEquityCurve(trades) { /* ... (same as before, includes starting point at 0) ... */
+             }
+             function updateEquityCurve(trades) {
                 if (!equityChart) return; let runningTotal = 0;
-                const sortedTrades = trades.slice().sort((a, b) => (a.createdAt?.toDate() ?? 0) - (b.createdAt?.toDate() ?? 0)); // Safer date sorting
+                // Ensure createdAt exists and is a timestamp before sorting
+                const sortedTrades = trades.slice().filter(t => t.createdAt?.toDate).sort((a, b) => a.createdAt.toDate() - b.createdAt.toDate());
                 const equityData = sortedTrades.map(trade => runningTotal += (trade.pl || 0));
                 const labels = sortedTrades.map((_, i) => i + 1);
-                equityChart.data.labels = [0, ...labels]; // Add 0 label
-                equityChart.data.datasets[0].data = [0, ...equityData]; // Start curve at 0 equity
-                equityChart.update();
+                equityChart.data.labels = [0, ...labels];
+                equityChart.data.datasets[0].data = [0, ...equityData];
+                equityChart.update('none'); // Update without animation
             }
 
-            // *** UPDATED: renderTrades function for clearer UI ***
+            // --- Render Trades & Tags ---
             function renderTrades(tradesToRender) {
-                 if (tradesToRender.length === 0) {
-                    elements.tradeHistory.innerHTML = `<p class="text-center text-color-muted">No trades ${activeTag ? `with tag #${activeTag}` : 'logged yet'}.</p>`;
-                    return;
-                 }
+                 if (tradesToRender.length === 0) { elements.tradeHistory.innerHTML = `<p class="text-center text-color-muted">No trades ${activeTag ? `with tag #${activeTag}` : 'logged yet'}.</p>`; return; }
                  elements.tradeHistory.innerHTML = tradesToRender.map(trade => {
                     const plColor = (trade.pl || 0) >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400';
                     const directionColor = trade.direction === 'long' ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400';
-                    const tagsHTML = Array.isArray(trade.tags) && trade.tags.length > 0 ? trade.tags.map(tag => `<span class="tag text-xs font-semibold py-1 px-3 mr-1 mb-1 inline-block">#${tag}</span>`).join('') : '<span class="text-xs text-color-muted">No tags</span>';
+                    const tagsHTML = Array.isArray(trade.tags) ? trade.tags.map(tag => `<span class="tag text-xs font-semibold py-1 px-3 mr-1 mb-1 inline-block">#${tag}</span>`).join('') : '';
                     const dateString = trade.createdAt?.toDate() ? trade.createdAt.toDate().toLocaleString() : 'Date unavailable';
-                    
                     return `
-                    <div class="glass-card-inset p-4 rounded-lg">
-                        <!-- Top Row: Symbol, Direction, P/L -->
-                        <div class="grid grid-cols-3 gap-4 mb-3">
-                            <div class="col-span-2 flex items-center gap-3">
-                                <span class="font-bold text-xl text-color-base">${trade.symbol?.toUpperCase() || 'N/A'}</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${directionColor}">${trade.direction?.toUpperCase() || 'N/A'}</span>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-xl ${plColor}">${(trade.pl || 0).toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Middle Row: Entry/Exit Info -->
-                        <div class="grid grid-cols-2 gap-4 text-xs text-color-muted mb-3">
+                    <div class="bg-gray-100 dark:bg-white/5 p-4 rounded-lg">
+                        <div class="flex justify-between items-start gap-4 flex-wrap">
                             <div>
-                                <span class_:"font-semibold">Entry/Exit:</span>
-                                <span>${trade.entryPrice ?? '?'} &rarr; ${trade.exitPrice ?? '?'} (Size: ${trade.positionSize ?? '?'})</span>
+                                <div class="flex items-center gap-3 flex-wrap mb-1">
+                                    <span class="font-bold text-lg text-color-base">${trade.symbol?.toUpperCase() || 'N/A'}</span>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${directionColor}">${trade.direction?.toUpperCase() || 'N/A'}</span>
+                                    ${trade.image ? `<button class="view-chart-btn text-color-muted hover:text-blue-500" data-img-src="${trade.image}"><i class="fas fa-image"></i></button>` : ''}
+                                </div>
+                                <p class="text-xs text-color-muted">${dateString}</p>
                             </div>
-                            <div class="text-right">
-                                <span class="font-semibold">Date:</span>
-                                <span>${dateString}</span>
+                            <div class="text-right flex-shrink-0">
+                                <p class="font-bold text-lg ${plColor}">${(trade.pl || 0).toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</p>
+                                <p class="text-xs text-color-muted">${trade.entryPrice ?? '?'} &rarr; ${trade.exitPrice ?? '?'} (Size: ${trade.positionSize ?? '?'})</p>
                             </div>
                         </div>
-
-                        <!-- Notes Section -->
-                        <p class="text-sm text-color-base bg-black/10 dark:bg-white/5 p-3 rounded-md mb-3 break-words">${trade.notes || '<i>No notes provided.</i>'}</p>
-
-                        <!-- Bottom Row: Tags & Actions -->
-                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-color-base">
+                        <p class="text-sm text-color-muted mt-2 break-words">${trade.notes || ''}</p>
+                        <div class="flex justify-between items-end mt-2 pt-2 border-t border-color-base">
                             <div class="flex gap-1 flex-wrap">${tagsHTML}</div>
-                            <div class="flex-shrink-0 flex gap-3">
-                                ${trade.image ? `<button class="view-chart-btn text-sm text-color-muted hover:text-blue-500" data-img-src="${trade.image}"><i class="fas fa-image mr-1"></i>View Chart</button>` : ''}
-                                <button data-id="${trade.id}" class="delete-trade-btn text-sm text-red-500 hover:text-red-400"><i class="fas fa-trash-alt mr-1"></i>Delete</button>
-                            </div>
+                            <button data-id="${trade.id}" class="delete-trade-btn text-xs text-red-500 hover:text-red-400 ml-2">Delete</button>
                         </div>
-                    </div>`; 
-                }).join('');
+                    </div>`; }).join('');
             }
-            // *** END UPDATED renderTrades ***
-
-            function renderTags() { /* ... (same as before) ... */
+             function renderTags() {
                 const allTags = new Set(allTrades.flatMap(t => t.tags || []));
                 if (allTags.size === 0) { elements.tagsContainer.innerHTML = '<p class="text-color-muted text-sm">No trades with tags yet.</p>'; return; }
                 elements.tagsContainer.innerHTML = `<button class="tag text-xs font-semibold py-1 px-3 ${!activeTag ? 'active' : ''}" data-tag="all">All</button>` + [...allTags].sort().map(tag => `<button class="tag text-xs font-semibold py-1 px-3 ${activeTag === tag ? 'active' : ''}" data-tag="${tag}">#${tag}</button>`).join('');
-            }
-            function applyFilters() { /* ... (same as before, sorts for history view) ... */
+             }
+
+            // --- Apply Filters ---
+            function applyFilters() {
                 filteredTrades = activeTag ? allTrades.filter(t => Array.isArray(t.tags) && t.tags.includes(activeTag)) : allTrades;
-                const sortedForHistory = filteredTrades.slice().sort((a, b) => (b.createdAt?.toDate() ?? 0) - (a.createdAt?.toDate() ?? 0)); // Safer date sorting
+                // Sort by date DESC for history view
+                const sortedForHistory = filteredTrades.slice().sort((a, b) => (b.createdAt?.toDate() ?? 0) - (a.createdAt?.toDate() ?? 0));
                 renderTrades(sortedForHistory);
-                updateAnalytics(filteredTrades);
-                renderTags();
-            }
-            function showFormMessage(message, isError = false) { /* ... (same as before) ... */
-                 elements.formMessage.textContent = message; elements.formMessage.className = `text-center text-sm mt-3 h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
-                 setTimeout(() => elements.formMessage.textContent = '', 3000);
-            }
-            function openModal(modal) { /* ... (same as before) ... */
-                 if(!modal) return; modal.classList.remove('opacity-0', 'pointer-events-none');
-                 modal.querySelector('.modal-content')?.classList.remove('scale-95');
-            }
-            function closeModal(modal) { /* ... (same as before, includes resets) ... */
-                 if(!modal) return; modal.classList.add('opacity-0', 'pointer-events-none');
-                 modal.querySelector('.modal-content')?.classList.add('scale-95');
-                 if (modal === elements.deleteModal) { tradeToDeleteId = null; }
-                 if (modal === elements.imageModal) { setTimeout(() => { elements.modalImageSrc.src = ''; }, 300); }
-            }
-            function setupEventListeners() { /* ... (same as before) ... */
-                elements.tradeForm.addEventListener('submit', async (e) => { e.preventDefault(); elements.saveBtn.disabled = true; elements.saveBtn.textContent = 'Saving...'; const tradeData = { userId, symbol: elements.tradeForm['trade-symbol'].value, direction: elements.tradeForm['trade-direction'].value, entryPrice: parseFloat(elements.tradeForm['trade-entry'].value), exitPrice: parseFloat(elements.tradeForm['trade-exit'].value), positionSize: parseFloat(elements.tradeForm['trade-size'].value), image: elements.tradeForm['trade-image'].value, tags: elements.tradeForm['trade-tags'].value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean), notes: elements.tradeForm['trade-notes'].value, createdAt: serverTimestamp() }; try { await addDoc(tradesCollectionRef, tradeData); elements.tradeForm.reset(); elements.plDisplay.value = ''; showFormMessage('Trade Saved!'); } catch (error) { console.error("Error adding trade:", error); showFormMessage('Error: Could not save trade.', true); } finally { elements.saveBtn.disabled = false; elements.saveBtn.textContent = 'Save Trade'; } });
-                ['trade-entry', 'trade-exit', 'trade-size', 'trade-direction'].forEach(id => { const el = elements.tradeForm[id]; if (el) el.addEventListener('input', calculatePL); });
-                elements.tradeHistory.addEventListener('click', (e) => { const delBtn = e.target.closest('.delete-trade-btn'); const chartBtn = e.target.closest('.view-chart-btn'); if (delBtn) { tradeToDeleteId = delBtn.dataset.id; openModal(elements.deleteModal); } else if (chartBtn) { elements.modalImageSrc.src = chartBtn.dataset.imgSrc; openModal(elements.imageModal); } });
-                elements.tagsContainer.addEventListener('click', e => { if (e.target.matches('.tag')) { const tag = e.target.dataset.tag; activeTag = tag === 'all' ? null : tag; applyFilters(); } });
-                [elements.cancelDelete, elements.closeImageModal].forEach(btn => { if(btn) btn.addEventListener('click', () => { closeModal(elements.deleteModal); closeModal(elements.imageModal); }); });
-                [elements.deleteModal, elements.imageModal].forEach(modal => { if(modal) modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); }); });
-                if(elements.confirmDelete) elements.confirmDelete.addEventListener('click', async () => { if (tradeToDeleteId) { try { elements.confirmDelete.textContent = "Deleting..."; elements.confirmDelete.disabled = true; await deleteDoc(doc(db, "trades", tradeToDeleteId)); console.log("Trade deleted:", tradeToDeleteId); } catch (error) { console.error("Error deleting trade:", error); alert("Error deleting trade."); } finally { elements.confirmDelete.textContent = "Delete"; elements.confirmDelete.disabled = false; closeModal(elements.deleteModal); } } });
-                document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (!elements.deleteModal?.classList.contains('opacity-0')) closeModal(elements.deleteModal); if (!elements.imageModal?.classList.contains('opacity-0')) closeModal(elements.imageModal); } });
-            }
-            function listenForTrades() { /* ... (same as before, includes P/L calculation) ... */
-                const q = query(tradesCollectionRef, where("userId", "==", userId), orderBy("createdAt", "desc"));
-                onSnapshot(q, (snapshot) => {
-                    allTrades = snapshot.docs.map(doc => {
-                         const data = doc.data(); const entry = Number(data.entryPrice) || 0; const exit = Number(data.exitPrice) || 0; const size = Number(data.positionSize) || 0;
-                         const pl = (data.direction === 'long' ? (exit - entry) : (entry - exit)) * size;
-                         return { id: doc.id, ...data, pl: isNaN(pl) ? 0 : pl };
-                    });
-                    applyFilters();
-                }, (error) => { console.error("Error fetching trades:", error); elements.tradeHistory.innerHTML = `<p class="text-center text-red-500">Error loading trades. ${error.code === 'failed-precondition' ? 'Index required.' : ''}</p>`; });
+                updateAnalytics(filteredTrades); // Analytics don't depend on history sort order
+                renderTags(); // Update active tag state
             }
 
-            // *** (Weekly Plan listener remains the same as before) ***
-            function listenForWeeklyPlan() {
-                const currentWeekId = getWeekId(new Date());
-                const checklistDocRef = doc(db, `users/${userId}/weeklyChecklists`, currentWeekId);
+             // --- UI Feedback & Modals ---
+             function showFormMessage(message, isError = false) { elements.formMessage.textContent = message; elements.formMessage.className = `text-center text-sm mt-3 h-4 ${isError ? 'text-red-400' : 'text-green-400'}`; setTimeout(() => elements.formMessage.textContent = '', 3000); }
+             function openModal(modal) { if(!modal) return; modal.classList.remove('opacity-0', 'pointer-events-none'); modal.querySelector('.modal-content')?.classList.remove('scale-95'); }
+             function closeModal(modal) { if(!modal) return; modal.classList.add('opacity-0', 'pointer-events-none'); modal.querySelector('.modal-content')?.classList.add('scale-95'); if (modal === elements.deleteModal) { tradeToDeleteId = null; } if (modal === elements.imageModal) { setTimeout(() => { elements.modalImageSrc.src = ''; }, 300); } }
 
-                onSnapshot(checklistDocRef, (doc) => {
-                    elements.weeklyPlanLoading.style.display = 'none';
-                    if (doc.exists()) {
-                        const data = doc.data();
-                        
-                        // Populate Top Pairs Focus
-                        if (data.topPairsFocus) {
-                            elements.weeklyPlanFocus.textContent = data.topPairsFocus;
-                        } else {
-                            elements.weeklyPlanFocus.textContent = 'No focus set for this week.';
-                        }
-
-                        // Populate Watchlist
-                        const watchlist = data.watchlist || [];
-                        const otherPairs = data.otherPairs ? data.otherPairs.split(',').map(p => p.trim()).filter(Boolean) : [];
-                        const allPairs = [...watchlist, ...otherPairs];
-
-                        if (allPairs.length > 0) {
-                            elements.weeklyPlanWatchlist.innerHTML = allPairs.map(pair => 
-                                `<span class="tag text-xs font-semibold py-1 px-3">${pair}</span>`
-                            ).join('');
-                        } else {
-                            elements.weeklyPlanWatchlist.innerHTML = '<p class="text-color-muted text-sm">No watchlist set for this week.</p>';
-                        }
-                        
-                        elements.weeklyPlanContent.classList.remove('hidden');
-                        elements.weeklyPlanEmpty.classList.add('hidden');
-                    } else {
-                        // No document found
-                        elements.weeklyPlanContent.classList.add('hidden');
-                        elements.weeklyPlanEmpty.classList.remove('hidden');
-                    }
-                }, (error) => {
-                    console.error("Error fetching weekly plan:", error);
-                    elements.weeklyPlanLoading.style.display = 'none';
-                    elements.weeklyPlanEmpty.classList.remove('hidden');
-                    elements.weeklyPlanEmpty.innerHTML = '<p class="text-red-500 text-sm">Error loading weekly plan.</p>';
-                });
+            // --- Event Listeners ---
+            function setupEventListeners() {
+                 elements.tradeForm.addEventListener('submit', async (e) => { /* ... (submit logic, same as before) ... */
+                     e.preventDefault(); elements.saveBtn.disabled = true; elements.saveBtn.textContent = 'Saving...';
+                     const tradeData = { userId, symbol: elements.tradeForm['trade-symbol'].value, direction: elements.tradeForm['trade-direction'].value, entryPrice: parseFloat(elements.tradeForm['trade-entry'].value), exitPrice: parseFloat(elements.tradeForm['trade-exit'].value), positionSize: parseFloat(elements.tradeForm['trade-size'].value), image: elements.tradeForm['trade-image'].value, tags: elements.tradeForm['trade-tags'].value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean), notes: elements.tradeForm['trade-notes'].value, createdAt: serverTimestamp() };
+                     try { await addDoc(tradesCollectionRef, tradeData); elements.tradeForm.reset(); elements.plDisplay.value = ''; showFormMessage('Trade Saved!'); } catch (error) { console.error("Error adding trade:", error); showFormMessage('Error: Could not save trade.', true); } finally { elements.saveBtn.disabled = false; elements.saveBtn.textContent = 'Save Trade'; }
+                  });
+                 ['trade-entry', 'trade-exit', 'trade-size', 'trade-direction'].forEach(id => { const el = elements.tradeForm[id]; if (el) el.addEventListener('input', calculatePL); });
+                 elements.tradeHistory.addEventListener('click', (e) => { /* ... (delete/view chart logic, same as before) ... */
+                    const delBtn = e.target.closest('.delete-trade-btn'); const chartBtn = e.target.closest('.view-chart-btn');
+                    if (delBtn) { tradeToDeleteId = delBtn.dataset.id; openModal(elements.deleteModal); } else if (chartBtn) { elements.modalImageSrc.src = chartBtn.dataset.imgSrc; openModal(elements.imageModal); }
+                  });
+                 elements.tagsContainer.addEventListener('click', e => { if (e.target.matches('.tag')) { const tag = e.target.dataset.tag; activeTag = tag === 'all' ? null : tag; applyFilters(); } });
+                 [elements.cancelDelete, elements.closeImageModal].forEach(btn => { if(btn) btn.addEventListener('click', () => { closeModal(elements.deleteModal); closeModal(elements.imageModal); }); });
+                 [elements.deleteModal, elements.imageModal].forEach(modal => { if(modal) modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); }); });
+                 if(elements.confirmDelete) elements.confirmDelete.addEventListener('click', async () => { /* ... (confirm delete logic, same as before) ... */
+                     if (tradeToDeleteId) { try { elements.confirmDelete.textContent = "Deleting..."; elements.confirmDelete.disabled = true; await deleteDoc(doc(db, "trades", tradeToDeleteId)); console.log("Trade deleted:", tradeToDeleteId); } catch (error) { console.error("Error deleting trade:", error); alert("Error deleting trade."); } finally { elements.confirmDelete.textContent = "Delete"; elements.confirmDelete.disabled = false; closeModal(elements.deleteModal); } }
+                 });
+                 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (!elements.deleteModal?.classList.contains('opacity-0')) closeModal(elements.deleteModal); if (!elements.imageModal?.classList.contains('opacity-0')) closeModal(elements.imageModal); } });
             }
+
+            // --- Firestore Listener Setup ---
+            function listenForTrades() {
+                 const q = query(tradesCollectionRef, where("userId", "==", userId), orderBy("createdAt", "desc"));
+                 onSnapshot(q, (snapshot) => {
+                     allTrades = snapshot.docs.map(doc => {
+                          const data = doc.data(); const entry = Number(data.entryPrice) || 0; const exit = Number(data.exitPrice) || 0; const size = Number(data.positionSize) || 0;
+                          const pl = (data.direction === 'long' ? (exit - entry) : (entry - exit)) * size;
+                          // Ensure createdAt is handled correctly
+                          const createdAt = data.createdAt; // Keep original timestamp
+                          return { id: doc.id, ...data, createdAt, pl: isNaN(pl) ? 0 : pl };
+                     });
+                     applyFilters(); // Apply filter and update UI
+                 }, (error) => { console.error("Error fetching trades:", error); elements.tradeHistory.innerHTML = `<p class="text-center text-red-500">Error loading trades. ${error.code === 'failed-precondition' ? 'Index required.' : ''}</p>`; });
+             }
 
             // --- Initial Setup ---
             initEquityChart();
             setupEventListeners();
-            listenForTrades();
-            listenForWeeklyPlan(); // *** CALL THE NEW FUNCTION ***
+            listenForTrades(); // Start listening *after* chart and listeners are ready
         }
         initializeAppCore(initJournalPage);
     </script>
 </body>
 </html>
-
-
