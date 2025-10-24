@@ -10,23 +10,123 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        tailwind.config = { darkMode: 'class' }
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    // Added for better article readability
+                    typography: (theme) => ({
+                        DEFAULT: {
+                            css: {
+                                'h2, h3': {
+                                    borderTopWidth: '1px',
+                                    borderColor: theme('colors.gray.200'),
+                                    paddingTop: theme('spacing.6'),
+                                    marginTop: theme('spacing.8'),
+                                    marginBottom: theme('spacing.4'),
+                                    color: theme('colors.gray.900'),
+                                },
+                                'p, li': {
+                                    color: theme('colors.gray.600'),
+                                    lineHeight: '1.7',
+                                    marginBottom: theme('spacing.4'),
+                                },
+                                a: {
+                                    color: theme('colors.blue.500'),
+                                    '&:hover': {
+                                        textDecoration: 'underline',
+                                    },
+                                },
+                                'ul, ol': {
+                                    listStylePosition: 'inside',
+                                    marginLeft: theme('spacing.4'),
+                                    marginBottom: theme('spacing.4'),
+                                },
+                                blockquote: {
+                                    borderLeftWidth: '4px',
+                                    borderColor: theme('colors.blue.500'),
+                                    paddingLeft: theme('spacing.4'),
+                                    fontStyle: 'italic',
+                                    color: theme('colors.gray.600'),
+                                    margin: theme('spacing.4_0'),
+                                },
+                                'pre, code': {
+                                    fontFamily: theme('fontFamily.mono'),
+                                    fontSize: theme('fontSize.sm'),
+                                },
+                                pre: {
+                                    backgroundColor: theme('colors.gray.100'),
+                                    padding: theme('spacing.4'),
+                                    borderRadius: theme('borderRadius.lg'),
+                                    overflowX: 'auto',
+                                    margin: theme('spacing.4_0'),
+                                },
+                                'pre code': {
+                                    backgroundColor: 'transparent !important',
+                                    padding: '0 !important',
+                                },
+                                img: {
+                                    borderRadius: theme('borderRadius.lg'),
+                                    margin: '1.5rem auto',
+                                    maxWidth: '100%',
+                                    height: 'auto',
+                                    boxShadow: theme('boxShadow.md'),
+                                },
+                            },
+                        },
+                        invert: { // Dark mode styles for prose
+                            css: {
+                                'h2, h3': {
+                                    borderColor: theme('colors.gray.700'),
+                                    color: theme('colors.gray.100'),
+                                },
+                                'p, li, blockquote': {
+                                    color: theme('colors.gray.400'),
+                                },
+                                pre: {
+                                    backgroundColor: theme('colors.gray.800'),
+                                },
+                            },
+                        },
+                    }),
+                },
+            },
+            plugins: [
+                require('@tailwindcss/typography'), // Added for prose styles
+            ],
+        }
     </script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script> <!-- Load typography plugin -->
     <link rel="stylesheet" href="main.css">
     <style>
         .page-view { display: none; }
         .page-view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .article-content h2, .article-content h3 { border-top: 1px solid; @apply border-color-base pt-6 mt-8 text-2xl font-bold; }
-        .article-content p, .article-content li { @apply text-color-muted leading-relaxed mb-4; }
-        .article-content a { @apply text-blue-500 hover:underline; }
-        .article-content ul { @apply list-disc list-inside space-y-2 mb-4 ml-4; }
-        .article-content ol { @apply list-decimal list-inside space-y-2 mb-4 ml-4; }
-        .article-content blockquote { @apply border-l-4 border-blue-500 pl-4 italic text-color-muted my-4; }
-        .article-content pre { @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm my-4; }
-        .article-content code { @apply font-mono text-sm; }
-        .article-content pre code { background-color: transparent !important; padding: 0 !important; }
-        .article-content img { @apply rounded-lg my-4 max-w-full h-auto mx-auto shadow-md; } /* Added shadow */
+        
+        /* New styles for article content */
+        .article-content { @apply prose dark:prose-invert max-w-prose mx-auto; }
+
+        /* New styles for ToC */
+        #toc-container {
+            @apply hidden lg:block w-64 flex-shrink-0;
+        }
+        #toc-sticky-wrapper {
+            @apply sticky top-24; /* top-24 assumes header height */
+        }
+        #toc-list a {
+            @apply block text-sm py-1.5 text-color-muted hover:text-blue-500 transition-colors;
+        }
+        #toc-list a.level-2 { @apply font-semibold text-color-base; }
+        #toc-list a.level-3 { @apply pl-4; }
+
+        /* New category filter tabs */
+        .category-tab {
+            @apply px-4 py-2 text-sm font-semibold rounded-full cursor-pointer transition-colors;
+            @apply text-color-muted hover:text-color-base bg-white/5 hover:bg-white/10;
+        }
+        .category-tab.active {
+            @apply text-white bg-blue-600 hover:bg-blue-700;
+        }
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -35,30 +135,76 @@
         <div id="header-placeholder"></div>
 
         <main class="container mx-auto p-4 md:p-8">
+            
+            <!-- ====== ARTICLES LIST VIEW ====== -->
             <div id="articles-list-view" class="page-view active">
                 <div class="text-center mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Finex Guides</h1>
                     <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse our library of in-depth guides and strategies, published by our team.</p>
                 </div>
-                <div id="articles-container" class="space-y-6 max-w-4xl mx-auto">
-                    <p class="text-center text-color-muted">Loading articles...</p>
+
+                <!-- Featured Article -->
+                <div id="featured-article-container" class="mb-12">
+                    <!-- Featured Article will be injected here -->
+                </div>
+                
+                <!-- Category Filters -->
+                <div id="category-filters" class="flex flex-wrap gap-2 justify-center mb-8">
+                    <!-- Category tabs will be injected here -->
+                </div>
+
+                <!-- Article Grid -->
+                <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                    <p class="text-center text-color-muted md:col-span-2">Loading articles...</p>
                 </div>
             </div>
 
+            <!-- ====== FULL ARTICLE VIEW ====== -->
             <div id="full-article-view" class="page-view">
-                <div class="max-w-4xl mx-auto">
-                    <button id="back-to-list-btn" class="text-blue-500 hover:text-blue-400 mb-6 inline-flex items-center group">
-                        <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>Back to All Articles
-                    </button>
-                    <div class="glass-card p-6 md:p-10">
-                        <h1 id="article-title-full" class="text-4xl md:text-5xl font-bold leading-tight mb-4"></h1>
-                        <div id="article-meta-full" class="flex flex-wrap items-center text-sm text-color-muted mb-8 space-x-2"></div>
-                        <article id="article-content-full" class="article-content prose dark:prose-invert max-w-none"></article>
+                <!-- Wrapper for ToC and Article -->
+                <div class="flex flex-col lg:flex-row max-w-6xl mx-auto gap-8">
+                    
+                    <!-- Left Rail: Back Button -->
+                    <div class="w-full lg:w-48 flex-shrink-0">
+                        <button id="back-to-list-btn" class="text-blue-500 hover:text-blue-400 mb-6 inline-flex items-center group">
+                            <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>Back to All Articles
+                        </button>
+                    </div>
+
+                    <!-- Center: Article Content -->
+                    <div class="glass-card p-6 md:p-10 flex-grow min-w-0">
+                        <!-- Cover Image -->
+                        <img id="article-cover-image" src="" alt="Article Cover Image" class="w-full h-auto object-cover rounded-lg mb-8 shadow-lg">
+                        
+                        <!-- Title & Meta -->
+                        <div class="text-center mb-8">
+                            <h1 id="article-title-full" class="text-4xl md:text-5xl font-bold leading-tight mb-4"></h1>
+                            <div id="article-meta-full" class="flex flex-wrap items-center justify-center text-sm text-color-muted space-x-2"></div>
+                        </div>
+
+                        <!-- Article Content (Prose) -->
+                        <article id="article-content-full" class="article-content"></article>
+
+                         <!-- Related Articles -->
+                        <div id="related-articles-container" class="mt-12 pt-8 border-t border-color-base">
+                            <h3 class="text-2xl font-bold mb-4 text-color-base">Related Articles</h3>
+                            <div id="related-articles-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Related articles will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Rail: Table of Contents (Sticky) -->
+                    <div id="toc-container">
+                        <div id="toc-sticky-wrapper">
+                            <h3 class="font-bold text-color-base mb-2">On This Page</h3>
+                            <nav id="toc-list"></nav>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
-        </div>
+    </div>
 
     <script type="module" src="app.js"></script>
     <script type="module">
@@ -70,78 +216,233 @@
             const articlesListView = document.getElementById('articles-list-view');
             const fullArticleView = document.getElementById('full-article-view');
             const articlesContainer = document.getElementById('articles-container');
+            const featuredArticleContainer = document.getElementById('featured-article-container');
+            const categoryFilters = document.getElementById('category-filters');
             const backToListBtn = document.getElementById('back-to-list-btn');
 
-            if (!articlesListView || !fullArticleView || !articlesContainer || !backToListBtn) {
-                 console.error("One or more essential article elements not found!");
-                 if (articlesContainer) articlesContainer.innerHTML = "<p class='text-red-500 text-center'>Error loading page elements.</p>"
-                 return;
+            if (!articlesListView || !fullArticleView || !articlesContainer || !backToListBtn || !featuredArticleContainer || !categoryFilters) {
+                console.error("One or more essential article elements not found!");
+                if (articlesContainer) articlesContainer.innerHTML = "<p class='text-red-500 text-center'>Error loading page elements.</p>"
+                return;
             }
 
             let allArticles = [];
+            let currentCategory = 'All';
+            const placeholderImage = (width, height, text) => `https://placehold.co/${width}x${height}/334155/9ca3af?text=${text}`;
 
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
             onSnapshot(q, (querySnapshot) => {
-                articlesContainer.innerHTML = '';
                 allArticles = [];
                 if (querySnapshot.empty) {
                     articlesContainer.innerHTML = '<p class="text-center text-color-muted">No articles published yet.</p>';
                     return;
                 }
+                
                 querySnapshot.forEach(doc => {
-                    const article = { id: doc.id, ...doc.data() };
-                    allArticles.push(article);
-                    const articleEl = document.createElement('a');
-                    articleEl.href = '#';
-                    articleEl.className = 'glass-card block p-6 md:p-8 hover:border-blue-500/50 transition duration-300 ease-in-out transform hover:-translate-y-1';
-                    articleEl.dataset.id = article.id;
-                    const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
-                    articleEl.innerHTML = `
-                        <div class="md:flex justify-between items-center">
-                            <div>
-                                <h2 class="text-2xl font-bold mb-2">${article.title}</h2>
-                                <p class="text-color-muted text-sm mb-4 md:mb-0">By ${article.author || 'Finex Team'}</p>
-                            </div>
-                            <div class="text-color-muted text-sm text-left md:text-right flex-shrink-0 mt-2 md:mt-0">
-                                <span>${formattedDate}</span>
-                                ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
-                            </div>
-                        </div>`;
-                    articlesContainer.appendChild(articleEl);
+                    allArticles.push({ id: doc.id, ...doc.data() });
                 });
+                
+                renderFeaturedArticle();
+                renderCategories();
+                renderArticleGrid();
+
             }, (error) => {
-                 console.error("Error fetching articles:", error);
-                 articlesContainer.innerHTML = '<p class="text-center text-red-500">Could not load articles.</p>';
+                console.error("Error fetching articles:", error);
+                articlesContainer.innerHTML = '<p class="text-center text-red-500">Could not load articles.</p>';
             });
+
+            function renderFeaturedArticle() {
+                if (allArticles.length === 0) return;
+                
+                const featured = allArticles[0]; // The newest article
+                const formattedDate = featured.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
+                const coverImg = featured.coverImage || placeholderImage(1200, 600, 'Featured');
+
+                featuredArticleContainer.innerHTML = `
+                    <a href="#" class="block group glass-card md:flex gap-8 p-6 md:p-8" data-id="${featured.id}">
+                        <div class="md:w-3/5 flex-shrink-0">
+                            <h3 class="text-xs font-bold uppercase text-blue-400 mb-2">${featured.category || 'Featured'}</h3>
+                            <h2 class="text-3xl md:text-4xl font-bold mb-4 transition-colors group-hover:text-blue-400">${featured.title}</h2>
+                            <p class="text-color-muted text-lg mb-4">${featured.summary || 'Click to read more...'}</p>
+                            <div class="text-color-muted text-sm">
+                                <span>By ${featured.author || 'Finex Team'}</span>
+                                <span class="mx-2">&bull;</span>
+                                <span>${formattedDate}</span>
+                                ${featured.readTime ? `<span class="mx-2">&bull;</span><span>${featured.readTime}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="md:w-2/5 mt-6 md:mt-0">
+                            <img src="${coverImg}" alt="${featured.title}" class="w-full h-64 object-cover rounded-lg shadow-lg transform group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                    </a>
+                `;
+            }
+
+            function renderCategories() {
+                const categories = ['All', ...new Set(allArticles.map(a => a.category).filter(Boolean))];
+                categoryFilters.innerHTML = categories.map(cat => `
+                    <button class="category-tab ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">
+                        ${cat}
+                    </button>
+                `).join('');
+            }
+
+            function renderArticleGrid() {
+                // Start from article 1 (index 1) since article 0 is featured
+                const articlesToDisplay = allArticles.slice(1).filter(article => 
+                    currentCategory === 'All' || article.category === currentCategory
+                );
+                
+                if (articlesToDisplay.length === 0) {
+                    articlesContainer.innerHTML = '<p class="text-center text-color-muted md:col-span-2">No articles in this category.</p>';
+                    return;
+                }
+                
+                articlesContainer.innerHTML = articlesToDisplay.map(article => {
+                    const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) || '';
+                    const coverImg = article.coverImage || placeholderImage(600, 400, 'Article');
+                    
+                    return `
+                    <a href="#" class="glass-card block group" data-id="${article.id}">
+                        <img src="${coverImg}" alt="${article.title}" class="w-full h-48 object-cover rounded-t-lg">
+                        <div class="p-6">
+                            <h3 class="text-xs font-bold uppercase text-blue-400 mb-1">${article.category || 'General'}</h3>
+                            <h2 class="text-xl font-bold mb-2 transition-colors group-hover:text-blue-400">${article.title}</h2>
+                            <p class="text-color-muted text-sm mb-4">${article.summary || 'Click to read more...'}</p>
+                            <div class="text-color-muted text-xs flex justify-between items-center">
+                                <span>By ${article.author || 'Finex Team'}</span>
+                                <span>
+                                    ${formattedDate}
+                                    ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    `;
+                }).join('');
+            }
+
+            function generateTableOfContents(contentEl) {
+                const tocList = document.getElementById('toc-list');
+                if (!tocList) return;
+                tocList.innerHTML = '';
+                let hasHeadings = false;
+
+                const headings = contentEl.querySelectorAll('h2, h3');
+                headings.forEach((heading, index) => {
+                    hasHeadings = true;
+                    const id = `heading-${index}`;
+                    heading.id = id; // Add an ID to the heading to link to
+                    
+                    const level = heading.tagName === 'H2' ? 'level-2' : 'level-3';
+                    const link = document.createElement('a');
+                    link.href = `#${id}`;
+                    link.textContent = heading.textContent;
+                    link.className = level;
+                    
+                    // Smooth scroll
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                    
+                    tocList.appendChild(link);
+                });
+                
+                // If no headings, hide the ToC
+                document.getElementById('toc-container').style.display = hasHeadings ? 'block' : 'none';
+            }
+            
+            function renderRelatedArticles(currentArticleId, category) {
+                const relatedList = document.getElementById('related-articles-list');
+                if (!relatedList) return;
+
+                const related = allArticles.filter(a => 
+                    a.id !== currentArticleId && a.category === category
+                ).slice(0, 3); // Get 3 related articles
+
+                if (related.length === 0) {
+                    relatedList.innerHTML = '<p class="text-color-muted text-sm">No related articles found.</p>';
+                    return;
+                }
+                
+                relatedList.innerHTML = related.map(article => {
+                    const coverImg = article.coverImage || placeholderImage(400, 200, 'Related');
+                    return `
+                    <a href="#" class="block group" data-id="${article.id}">
+                        <img src="${coverImg}" alt="${article.title}" class="w-full h-32 object-cover rounded-lg mb-2">
+                        <h4 class="text-sm font-semibold text-color-base group-hover:text-blue-400">${article.title}</h4>
+                        <p class="text-xs text-color-muted">${article.readTime || ''}</p>
+                    </a>
+                    `;
+                }).join('');
+            }
+
 
             function showListView() {
                 fullArticleView.classList.remove('active');
                 articlesListView.classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: 'auto' });
             }
 
             function showFullArticleView(articleId) {
                 const article = allArticles.find(a => a.id === articleId);
                 if (!article) return;
+                
+                const coverImg = article.coverImage || placeholderImage(1200, 600, 'Article');
+                document.getElementById('article-cover-image').src = coverImg;
+                document.getElementById('article-cover-image').alt = article.title;
+                
                 document.getElementById('article-title-full').textContent = article.title;
                 const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
                 document.getElementById('article-meta-full').innerHTML = `
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-semibold">${article.category || 'General'}</span>
+                    <span class="mx-2">&bull;</span>
                     <span>By ${article.author || 'Finex Team'}</span>
                     <span class="mx-2">&bull;</span>
                     <span>${formattedDate}</span>
                     ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
                 `;
-                document.getElementById('article-content-full').innerHTML = article.content;
+                
+                const contentEl = document.getElementById('article-content-full');
+                contentEl.innerHTML = article.content;
+                
                 articlesListView.classList.remove('active');
                 fullArticleView.classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: 'auto' });
+                
+                // Post-render generation
+                generateTableOfContents(contentEl);
+                renderRelatedArticles(article.id, article.category);
             }
 
-            articlesContainer.addEventListener('click', (e) => {
+            // --- Event Listeners ---
+
+            // Listener for all article clicks (list, featured, related)
+            document.body.addEventListener('click', (e) => {
                 const articleLink = e.target.closest('a[data-id]');
                 if (articleLink) {
                     e.preventDefault();
+                    // Check if we are already on the article page (e.g., clicked a related article)
+                    const isAlreadyOnArticleView = fullArticleView.classList.contains('active');
                     showFullArticleView(articleLink.dataset.id);
+                    // If we clicked a related article, scroll to top
+                    if (isAlreadyOnArticleView) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
+            });
+
+            // Listener for category tabs
+            categoryFilters.addEventListener('click', (e) => {
+                const tab = e.target.closest('.category-tab');
+                if (tab) {
+                    currentCategory = tab.dataset.category;
+                    // Update active state on tabs
+                    categoryFilters.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    // Re-render the grid
+                    renderArticleGrid();
                 }
             });
 
@@ -150,6 +451,7 @@
                 showListView();
             });
         }
+        
         initializeAppCore(initArticlesPage);
     </script>
 </body>
