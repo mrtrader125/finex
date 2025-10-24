@@ -13,7 +13,7 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
-    </head>
+</head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
         <div id="sidebar-placeholder"></div>
@@ -28,10 +28,7 @@
                             <span class="font-semibold text-color-base">Theme</span>
                             <div class="flex items-center space-x-3">
                                 <i class="fas fa-sun text-yellow-500"></i>
-                                <label class="form-switch">
-                                    <input type="checkbox" id="theme-toggle" class="sr-only">
-                                    <div class="form-switch-bg"><div class="form-switch-knob"></div></div>
-                                </label>
+                                <label class="form-switch"><input type="checkbox" id="theme-toggle" class="sr-only"><div class="form-switch-bg"><div class="form-switch-knob"></div></div></label>
                                 <i class="fas fa-moon text-blue-400 dark:text-blue-300"></i>
                             </div>
                         </div>
@@ -66,7 +63,8 @@
 
     <script type="module" src="app.js"></script>
     <script type="module">
-        import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js'; // Import needed functions/vars
+        // Import necessary functions/variables from app.js
+        import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
         import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initSettingsPage(user, db) {
@@ -77,67 +75,81 @@
             const sidebarOptionsContainer = document.getElementById('sidebar-options-container');
             const saveStatus = document.getElementById('save-status');
 
+            // Check if essential elements exist
             if (!accountEmailSpan || !themeToggle || !sidebarOptionsContainer || !saveStatus) {
                 console.error("Critical settings elements missing!");
-                 document.getElementById('app-wrapper').innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page.</p>";
+                 const mainContent = document.querySelector('main');
+                 if(mainContent) mainContent.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>";
                 return;
             }
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
-            let userPreferences = { theme: 'dark', sidebarItems: {} }; // Local copy for this page
-            allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true); // Init defaults locally
+            let userPreferences = { theme: 'dark', sidebarItems: {} }; // Local copy
+            // Initialize local defaults based on imported structure
+            allSidebarItems.forEach(item => {
+                userPreferences.sidebarItems[item.id] = true;
+                if(item.subItems) { item.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = true); }
+            });
             let debounceTimer = null;
 
+            // Load preferences specifically for the settings page UI
             async function loadPreferencesForSettings() {
                 try {
                     const docSnap = await getDoc(settingsDocRef);
                     if (docSnap.exists()) {
                         const loadedPrefs = docSnap.data();
                         userPreferences.theme = loadedPrefs.theme || 'dark';
-                        // Merge sidebar items carefully
+                        // Merge sidebar items
                         if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
                             for (const key in userPreferences.sidebarItems) {
+                                // Only update if the key exists in BOTH defaults and saved prefs
                                 if (loadedPrefs.sidebarItems.hasOwnProperty(key)) {
                                     userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key];
                                 }
                             }
                         }
-                    } // If doesn't exist, defaults are already set
-                } catch (error) { console.error("Error loading preferences for settings:", error); }
+                    } // If doesn't exist, local defaults are used
+                } catch (error) { console.error("Error loading preferences for settings UI:", error); }
 
-                // Update UI elements after loading
+                // Update UI elements AFTER loading or using defaults
                 accountEmailSpan.textContent = user.email;
                 themeToggle.checked = (userPreferences.theme === 'dark');
-                populateSidebarOptions();
+                populateSidebarOptions(); // Populate checkboxes based on loaded/default state
             }
 
+            // Save preferences back to Firestore
             async function savePreferences() {
                 if (!settingsDocRef) return;
                 saveStatus.textContent = 'Saving...';
                  try {
+                     // Save the ENTIRE local userPreferences object
                      await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() }, { merge: true });
                      saveStatus.textContent = 'Preferences Saved.';
                      setTimeout(() => saveStatus.textContent = '', 2000);
                  } catch (error) { console.error("Error saving preferences:", error); saveStatus.textContent = 'Error Saving.'; }
             }
 
+            // Debounce save function
             function debouncedSavePreferences() {
                 clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...';
                 debounceTimer = setTimeout(savePreferences, 1000);
             }
 
+            // Populate the checkboxes for sidebar items
             function populateSidebarOptions() {
-                sidebarOptionsContainer.innerHTML = ''; // Clear loading
+                sidebarOptionsContainer.innerHTML = '';
                 allSidebarItems.forEach(item => {
-                    if (item.id === 'settings') return; // Cannot hide settings link itself
+                     // Skip settings itself, handle dropdown parents
+                    if (item.id === 'settings') return;
 
+                    // Create checkbox for top-level item or dropdown parent
                     const label = document.createElement('label');
                     label.className = 'flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label';
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
-                    checkbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800'; // Added theme classes
-                    checkbox.checked = userPreferences.sidebarItems[item.id] ?? true; // Default to true if somehow missing
+                    checkbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800';
+                    checkbox.checked = userPreferences.sidebarItems[item.id] ?? true; // Default checked if missing
                     checkbox.dataset.itemId = item.id;
                     const icon = document.createElement('i');
                     icon.className = `fas ${item.icon} fa-fw text-color-muted`;
@@ -150,24 +162,30 @@
                     checkbox.addEventListener('change', (e) => {
                          const itemId = e.target.dataset.itemId;
                          userPreferences.sidebarItems[itemId] = e.target.checked;
+                         // If unchecking a parent, potentially uncheck children (optional)
+                         // if (!e.target.checked && item.subItems) {
+                         //    item.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = false);
+                         // }
                          renderSidebar(); // Update the actual sidebar visually (imported from app.js)
                          debouncedSavePreferences();
                     });
+
+                     // Note: Add logic here if you want checkboxes for SUB-ITEMS too
                 });
             }
 
             // --- Event Listeners ---
             themeToggle.addEventListener('change', () => {
                 userPreferences.theme = themeToggle.checked ? 'dark' : 'light';
-                applyTheme(userPreferences.theme); // Apply theme visually (imported from app.js)
+                applyTheme(userPreferences.theme); // Apply theme globally (imported from app.js)
                 savePreferences(); // Save theme change immediately
             });
 
-            // --- Initial Load ---
-            loadPreferencesForSettings(); // Load prefs and populate UI for this page
+            // --- Initial Load for Settings Page UI ---
+            loadPreferencesForSettings();
         }
 
-        initializeAppCore(initSettingsPage); // Initialize core app, then run settings logic
+        initializeAppCore(initSettingsPage); // Initialize core app, then run settings page logic
     </script>
 </body>
 </html>
