@@ -19,6 +19,12 @@
         summary .chevron-icon { transition: transform 0.2s ease-in-out; }
         summary { list-style: none; }
         summary::-webkit-details-marker { display: none; }
+        
+        /* Card-in-card styles */
+        .glass-card-inset { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+        .stat-card { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+        .stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
+        .stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -76,6 +82,7 @@
                             </details>
                         </div>
 
+                        <!-- === THIS SECTION IS UPDATED === -->
                         <div id="weekly-plan-card" class="glass-card p-6">
                             <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
                                 <h2 class="text-2xl font-bold">This Week's Plan</h2>
@@ -83,11 +90,27 @@
                             </div>
                             <div id="weekly-plan-loading"><p class="text-color-muted text-sm text-center">Loading weekly plan...</p></div>
                             <div id="weekly-plan-content" class="hidden space-y-4">
-                                <div><h3 class="font-semibold text-color-base mb-2">Top Pairs Focus</h3><p id="weekly-plan-focus" class="text-color-muted text-sm whitespace-pre-wrap rounded-lg bg-gray-100 dark:bg-white/5 p-3">No focus set.</p></div>
-                                <div><h3 class="font-semibold text-color-base mb-2">Watchlist</h3><div id="weekly-plan-watchlist" class="flex flex-wrap gap-2"><p class="text-color-muted text-sm italic">No watchlist set.</p></div></div>
+                                
+                                <!-- UPDATED: Top Pairs Focus -->
+                                <div>
+                                    <h3 class="font-semibold text-color-base mb-2">Top Pairs Focus</h3>
+                                    <div id="weekly-plan-focus" class="space-y-2">
+                                        <!-- Content injected by JS -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Watchlist -->
+                                <div>
+                                    <h3 class="font-semibold text-color-base mb-2">Watchlist</h3>
+                                    <div id="weekly-plan-watchlist" class="flex flex-wrap gap-2">
+                                        <!-- Content injected by JS -->
+                                    </div>
+                                </div>
+
                             </div>
                             <div id="weekly-plan-empty" class="hidden"><p class="text-color-muted text-sm text-center">No weekly plan found. <a href="weekly_checklist.html" class="text-blue-500 hover:underline">Create one now</a>.</p></div>
                         </div>
+                        <!-- === END OF UPDATE === -->
 
                         <div class="glass-card p-6">
                             <h2 class="text-2xl font-bold mb-4">Trade History</h2>
@@ -108,7 +131,7 @@
 
         function initJournalPage(user, db) {
             console.log("Setting up Trading Journal specific logic...");
-            const elements = { /* ... elements object ... */
+            const elements = { 
                 totalPl: document.getElementById('total-pl'), totalTrades: document.getElementById('total-trades'),
                 winRate: document.getElementById('win-rate'), profitFactor: document.getElementById('profit-factor'),
                 avgWinLoss: document.getElementById('avg-win-loss'), tradeHistory: document.getElementById('trade-history'),
@@ -119,7 +142,7 @@
                 modalImageSrc: document.getElementById('modal-image-src'), tagsContainer: document.getElementById('tags-container'),
                 plDisplay: document.getElementById('trade-pl-display'), chartCanvas: document.getElementById('equity-curve-chart'),
                 weeklyPlanLoading: document.getElementById('weekly-plan-loading'), weeklyPlanContent: document.getElementById('weekly-plan-content'),
-                weeklyPlanEmpty: document.getElementById('weekly-plan-empty'), weeklyPlanFocus: document.getElementById('weekly-plan-focus'),
+                weeklyPlanEmpty: document.getElementById('weekly-plan-empty'), weeklyPlanFocus: document.getElementById('weekly-plan-focus'), // This is now a <div>
                 weeklyPlanWatchlist: document.getElementById('weekly-plan-watchlist'),
             };
             let allTrades = []; let filteredTrades = []; let activeTag = null;
@@ -130,11 +153,11 @@
             for (const key in elements) { if (!elements[key]) { console.error(`Error: Element ID '${key}' not found!`); missingElement = true; } }
             if(missingElement) { const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error initializing page.</p>"; return; }
 
-            // --- P/L Calc, Analytics, Chart, Rendering, Filters, Modals, Event Listeners (Keep previous correct versions) ---
+            // --- P/L Calc, Analytics, Chart, Rendering, Filters, Modals, Event Listeners (Minified) ---
             const calculatePL=()=>{const e=parseFloat(elements.tradeForm["trade-entry"]?.value)||0,t=parseFloat(elements.tradeForm["trade-exit"]?.value)||0,l=parseFloat(elements.tradeForm["trade-size"]?.value)||0,a=elements.tradeForm["trade-direction"]?.value;let d=("long"===a?t-e:e-t)*l;elements.plDisplay.value=isNaN(d)?"":d.toLocaleString("en-US",{style:"currency",currency:"USD"})};function updateAnalytics(e){const t=e.length,l=e.reduce((e,t)=>e+(t.pl||0),0),a=e.filter(e=>e.pl>0),d=e.filter(e=>e.pl<0),n=t>0?a.length/t*100:0,o=a.reduce((e,t)=>e+t.pl,0),s=Math.abs(d.reduce((e,t)=>e+t.pl,0)),r=s>0?o/s:o>0?1/0:0,i=a.length>0?o/a.length:0,c=d.length>0?s/d.length:0;elements.totalPl.textContent=l.toLocaleString("en-US",{style:"currency",currency:"USD"}),elements.totalPl.className=`stat-value ${l>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`,elements.totalTrades.textContent=t,elements.winRate.textContent=`${n.toFixed(1)}%`,elements.profitFactor.textContent=isFinite(r)?r.toFixed(2):"∞",elements.avgWinLoss.innerHTML=`<span class="text-green-500 dark:text-green-400">${i.toLocaleString("en-US",{style:"currency",currency:"USD"})}</span> / <span class="text-red-500 dark:text-red-400">${c.toLocaleString("en-US",{style:"currency",currency:"USD"})}</span>`,updateEquityCurve(e)}
             function initEquityChart(){if(equityChart){equityChart.destroy();}const e=elements.chartCanvas.getContext("2d"),t=document.documentElement.classList.contains("dark"),l=t?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.1)",a=t?"#a9a9b3":"#4b5563",d=t?"#0065ff":"#0052cc";equityChart=new Chart(e,{type:"line",data:{labels:[],datasets:[{data:[],borderColor:d,tension:.1,fill:!1,pointRadius:0,pointHoverRadius:0}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1}},scales:{x:{ticks:{display:!1},grid:{color:l,drawBorder:!1}},y:{grid:{color:l,drawBorder:!1},ticks:{color:a}}},interaction:{intersect:!1,mode:"index"}}})}
             function updateEquityCurve(e){if(!equityChart)return;let t=0;const l=e.slice().filter(e=>e.createdAt?.toDate).sort((e,t)=>e.createdAt.toDate()-t.createdAt.toDate()),a=l.map(e=>t+=(e.pl||0)),d=l.map((e,t)=>t+1);equityChart.data.labels=[0,...d],equityChart.data.datasets[0].data=[0,...a],equityChart.update("none")}
-            function renderTrades(e){if(0===e.length){elements.tradeHistory.innerHTML=`<p class="text-center text-color-muted">No trades ${activeTag?`with tag #${activeTag}`:"logged yet"}.</p>`;return}elements.tradeHistory.innerHTML=e.map(e=>{const t=(e.pl||0)>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400",l="long"===e.direction?"bg-green-600/20 text-green-400":"bg-red-600/20 text-red-400",a=Array.isArray(e.tags)&&e.tags.length>0?e.tags.map(e=>`<span class="tag text-xs font-semibold py-1 px-3 mr-1 mb-1 inline-block">#${e}</span>`).join(""):`<span class="text-xs text-color-muted italic">No tags</span>`,d=e.createdAt?.toDate()?e.createdAt.toDate().toLocaleString():"Date unavailable";return`\n                    <div class="glass-card-inset p-4 rounded-lg">\n                        <div class="grid grid-cols-3 gap-4 mb-3">\n                            <div class="col-span-2 flex items-center gap-3">\n                                <span class="font-bold text-xl text-color-base">${e.symbol?.toUpperCase()||"N/A"}</span>\n                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${l}">${e.direction?.toUpperCase()||"N/A"}</span>\n                            </div>\n                            <div class="text-right"><p class="font-bold text-xl ${t}">${(e.pl||0).toLocaleString("en-US",{style:"currency",currency:"USD"})}</p></div>\n                        </div>\n                        <div class="grid grid-cols-2 gap-4 text-xs text-color-muted mb-3">\n                            <div><span class="font-semibold">Entry/Exit:</span> <span>${e.entryPrice??"?"} &rarr; ${e.exitPrice??"?"} (Size: ${e.positionSize??"?"})</span></div>\n                            <div class="text-right"><span class="font-semibold">Date:</span> <span>${d}</span></div>\n                        </div>\n                        <p class="text-sm text-color-base bg-black/10 dark:bg-white/5 p-3 rounded-md mb-3 break-words">${e.notes||'<i class="text-color-muted">No notes provided.</i>'}</p>\n                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-color-base">\n                            <div class="flex gap-1 flex-wrap">${a}</div>\n                            <div class="flex-shrink-0 flex gap-3">\n                                ${e.image?`<button class="view-chart-btn text-sm text-color-muted hover:text-blue-500" data-img-src="${e.image}"><i class="fas fa-image mr-1"></i>View Chart</button>`:""}\n                                <button data-id="${e.id}" class="delete-trade-btn text-sm text-red-500 hover:text-red-400"><i class="fas fa-trash-alt mr-1"></i>Delete</button>\n                            </div>\n                        </div>\n                    </div>`}).join("")}
+            function renderTrades(e){if(0===e.length){elements.tradeHistory.innerHTML=`<p class="text-center text-color-muted">No trades ${activeTag?`with tag #${activeTag}`:"logged yet"}.</p>`;return}elements.tradeHistory.innerHTML=e.map(e=>{const t=(e.pl||0)>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400",l="long"===e.direction?"bg-green-600/20 text-green-400":"bg-red-600/20 text-red-400",a=Array.isArray(e.tags)&&e.tags.length>0?e.tags.map(e=>`<span class="tag text-xs font-semibold py-1 px-3 mr-1 mb-1 inline-block">#${e}</span>`).join(""):`<span class="text-xs text-color-muted italic">No tags</span>`,d=e.createdAt?.toDate()?e.createdAt.toDate().toLocaleString():"Date unavailable";return`\n                        <div class="glass-card-inset p-4 rounded-lg">\n                            <div class="grid grid-cols-3 gap-4 mb-3">\n                                <div class="col-span-2 flex items-center gap-3">\n                                    <span class="font-bold text-xl text-color-base">${e.symbol?.toUpperCase()||"N/A"}</span>\n                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${l}">${e.direction?.toUpperCase()||"N/A"}</span>\n                                </div>\n                                <div class="text-right"><p class="font-bold text-xl ${t}">${(e.pl||0).toLocaleString("en-US",{style:"currency",currency:"USD"})}</p></div>\n                            </div>\n                            <div class="grid grid-cols-2 gap-4 text-xs text-color-muted mb-3">\n                                <div><span class="font-semibold">Entry/Exit:</span> <span>${e.entryPrice??"?"} &rarr; ${e.exitPrice??"?"} (Size: ${e.positionSize??"?"})</span></div>\n                                <div class="text-right"><span class="font-semibold">Date:</span> <span>${d}</span></div>\n                            </div>\n                            <p class="text-sm text-color-base bg-black/10 dark:bg-white/5 p-3 rounded-md mb-3 break-words">${e.notes||'<i class="text-color-muted">No notes provided.</i>'}</p>\n                            <div class="flex justify-between items-center mt-2 pt-2 border-t border-color-base">\n                                <div class="flex gap-1 flex-wrap">${a}</div>\n                                <div class="flex-shrink-0 flex gap-3">\n                                    ${e.image?`<button class="view-chart-btn text-sm text-color-muted hover:text-blue-500" data-img-src="${e.image}"><i class="fas fa-image mr-1"></i>View Chart</button>`:""}\n                                    <button data-id="${e.id}" class="delete-trade-btn text-sm text-red-500 hover:text-red-400"><i class="fas fa-trash-alt mr-1"></i>Delete</button>\n                                </div>\n                            </div>\n                        </div>`}).join("")}
             function renderTags(){const e=new Set(allTrades.flatMap(e=>e.tags||[]));if(0===e.size){elements.tagsContainer.innerHTML='<p class="text-color-muted text-sm">No trades with tags yet.</p>';return}elements.tagsContainer.innerHTML=`<button class="tag text-xs font-semibold py-1 px-3 ${activeTag?null:"active"}" data-tag="all">All</button>`+[...e].sort().map(e=>`<button class="tag text-xs font-semibold py-1 px-3 ${activeTag===e?"active":""}" data-tag="${e}">#${e}</button>`).join("")}
             function applyFilters(){filteredTrades=activeTag?allTrades.filter(e=>Array.isArray(e.tags)&&e.tags.includes(activeTag)):allTrades;const e=filteredTrades.slice().sort((e,t)=>(t.createdAt?.toDate()??0)-(e.createdAt?.toDate()??0));renderTrades(e),updateAnalytics(filteredTrades),renderTags()}
             function showFormMessage(e,t=!1){elements.formMessage.textContent=e,elements.formMessage.className=`text-center text-sm mt-3 h-4 ${t?"text-red-400":"text-green-400"}`,setTimeout(()=>elements.formMessage.textContent="",3e3)}
@@ -144,10 +167,57 @@
 
             // --- Firestore Listeners ---
             function listenForTrades() {
-                 const q=query(tradesCollectionRef,where("userId","==",userId),orderBy("createdAt","desc")); onSnapshot(q,(snapshot)=>{allTrades=snapshot.docs.map(doc=>{const data=doc.data(); const entry=Number(data.entryPrice)||0; const exit=Number(data.exitPrice)||0; const size=Number(data.positionSize)||0; const pl=(data.direction==='long'?(exit-entry):(entry-exit))*size; const createdAt=data.createdAt; return{id:doc.id,...data,createdAt,pl:isNaN(pl)?0:pl};}); applyFilters();},(error)=>{console.error("Error fetching trades:",error); elements.tradeHistory.innerHTML=`<p class="text-center text-red-500">Error loading trades. ${error.code==='failed-precondition'?'Index required.':''}</p>`;});
-             }
-             function listenForWeeklyPlan() {
-                const currentWeekId=getWeekId(new Date()); const checklistDocRef=doc(db,`users/${userId}/weeklyChecklists`,currentWeekId); onSnapshot(checklistDocRef,(doc)=>{elements.weeklyPlanLoading.style.display='none'; if(doc.exists()){const data=doc.data(); elements.weeklyPlanFocus.textContent=data.topPairsFocus||'No focus set for this week.'; elements.weeklyPlanFocus.classList.toggle('italic',!data.topPairsFocus); elements.weeklyPlanFocus.classList.toggle('text-color-base',!!data.topPairsFocus); let combinedWatchlist=[]; if(Array.isArray(data.watchlist)){combinedWatchlist=[...data.watchlist];} if(combinedWatchlist.length===0&&typeof data.otherPairs==='string'&&data.otherPairs){const others=data.otherPairs.split(',').map(p=>p.trim().toUpperCase()).filter(Boolean); combinedWatchlist.push(...others);} if(combinedWatchlist.length>0){elements.weeklyPlanWatchlist.innerHTML=combinedWatchlist.sort().map(pair=>`<span class="tag text-xs font-semibold py-1 px-3">${pair}</span>`).join('');}else{elements.weeklyPlanWatchlist.innerHTML='<p class="text-color-muted text-sm italic">No watchlist set for this week.</p>';} elements.weeklyPlanContent.classList.remove('hidden'); elements.weeklyPlanEmpty.classList.add('hidden');}else{elements.weeklyPlanContent.classList.add('hidden'); elements.weeklyPlanEmpty.classList.remove('hidden');}},(error)=>{console.error("Error fetching weekly plan:",error); elements.weeklyPlanLoading.style.display='none'; elements.weeklyPlanEmpty.classList.remove('hidden'); elements.weeklyPlanEmpty.innerHTML='<p class="text-red-500 text-sm">Error loading weekly plan.</p>';});
+                const q=query(tradesCollectionRef,where("userId","==",userId),orderBy("createdAt","desc")); onSnapshot(q,(snapshot)=>{allTrades=snapshot.docs.map(doc=>{const data=doc.data(); const entry=Number(data.entryPrice)||0; const exit=Number(data.exitPrice)||0; const size=Number(data.positionSize)||0; const pl=(data.direction==='long'?(exit-entry):(entry-exit))*size; const createdAt=data.createdAt; return{id:doc.id,...data,createdAt,pl:isNaN(pl)?0:pl};}); applyFilters();},(error)=>{console.error("Error fetching trades:",error); elements.tradeHistory.innerHTML=`<p class="text-center text-red-500">Error loading trades. ${error.code==='failed-precondition'?'Index required.':''}</p>`;});
+            }
+            
+            // === THIS FUNCTION IS UPDATED ===
+            function listenForWeeklyPlan() {
+                const currentWeekId = getWeekId(new Date()); 
+                const checklistDocRef = doc(db, `users/${userId}/weeklyChecklists`, currentWeekId); 
+                
+                onSnapshot(checklistDocRef, (doc) => {
+                    elements.weeklyPlanLoading.style.display = 'none'; 
+                    if (doc.exists()) {
+                        const data = doc.data(); 
+                        
+                        // --- NEW: Render Structured Top Focus Pairs ---
+                        if (Array.isArray(data.topFocusPairs) && data.topFocusPairs.length > 0) {
+                            elements.weeklyPlanFocus.innerHTML = data.topFocusPairs.map(fp => `
+                                <div class="glass-card-inset p-3">
+                                    <p class="font-bold text-color-base">${fp.pair}</p>
+                                    <p class="text-color-muted text-sm whitespace-pre-wrap">${fp.reason || '<i class="text-color-muted">No reason added.</i>'}</p>
+                                </div>
+                            `).join('');
+                        } else if (data.topPairsFocus) { 
+                            // --- Fallback for old text data ---
+                            elements.weeklyPlanFocus.innerHTML = `<p class="text-color-muted text-sm whitespace-pre-wrap rounded-lg bg-gray-100 dark:bg-white/5 p-3">${data.topPairsFocus}</p>`;
+                        } else {
+                            elements.weeklyPlanFocus.innerHTML = '<p class="text-color-muted text-sm italic">No focus pairs set for this week.</p>';
+                        }
+
+                        // --- Watchlist Logic (unchanged) ---
+                        let combinedWatchlist=[]; 
+                        if(Array.isArray(data.watchlist)){combinedWatchlist=[...data.watchlist];} 
+                        if(combinedWatchlist.length===0&&typeof data.otherPairs==='string'&&data.otherPairs){const others=data.otherPairs.split(',').map(p=>p.trim().toUpperCase()).filter(Boolean); combinedWatchlist.push(...others);} 
+                        
+                        if(combinedWatchlist.length>0){
+                            elements.weeklyPlanWatchlist.innerHTML=combinedWatchlist.sort().map(pair=>`<span class="tag text-xs font-semibold py-1 px-3">${pair}</span>`).join('');
+                        } else {
+                            elements.weeklyPlanWatchlist.innerHTML='<p class="text-color-muted text-sm italic">No watchlist set for this week.</p>';
+                        } 
+                        
+                        elements.weeklyPlanContent.classList.remove('hidden'); 
+                        elements.weeklyPlanEmpty.classList.add('hidden');
+                    } else {
+                        elements.weeklyPlanContent.classList.add('hidden'); 
+                        elements.weeklyPlanEmpty.classList.remove('hidden');
+                    }
+                }, (error) => {
+                    console.error("Error fetching weekly plan:", error); 
+                    elements.weeklyPlanLoading.style.display='none'; 
+                    elements.weeklyPlanEmpty.classList.remove('hidden'); 
+                    elements.weeklyPlanEmpty.innerHTML='<p class="text-red-500 text-sm">Error loading weekly plan.</p>';
+                });
             }
 
             // --- Initial Setup ---
@@ -161,3 +231,4 @@
     </script>
 </body>
 </html>
+
