@@ -111,7 +111,7 @@
         import { initializeAppCore, db, getWeekId, getWeekDateRange } from './app.js';
         import { 
             doc, setDoc, onSnapshot, serverTimestamp, 
-            collection, query, where 
+            collection, query, where, orderBy
         } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initChecklistPage(user, db) {
@@ -249,7 +249,8 @@
                 const q = query(tradesCollectionRef, 
                     where("userId", "==", currentUserId),
                     where("createdAt", ">=", startDate),
-                    where("createdAt", "<=", endDate)
+                    where("createdAt", "<=", endDate),
+                    orderBy("createdAt", "desc") // <-- ADDED THIS for consistency
                 );
 
                 onSnapshot(q, (snapshot) => {
@@ -271,7 +272,8 @@
                 }, (error) => {
                     console.error("Error fetching weekly trades:", error);
                     if (error.code === 'failed-precondition') {
-                         tradeLogList.innerHTML = `<p class="text-center text-red-500 text-sm p-4"><b>Action Required:</b> This feature requires a database index. Please go to your Firebase console for the 'trades' collection and create a composite index on these fields:<br><b>userId (Ascending)</b>, <b>createdAt (Ascending)</b>, <b>createdAt (Ascending)</b>.</p>`;
+                         // *** FIXED THE ERROR MESSAGE TYPO ***
+                         tradeLogList.innerHTML = `<p class="text-center text-red-500 text-sm p-4"><b>Action Required:</b> This feature requires a database index. Please go to your Firebase console for the 'trades' collection and create a composite index on these fields:<br><b>userId (Ascending)</b>, <b>createdAt (Descending)</b>.</p>`;
                     } else {
                          tradeLogList.innerHTML = `<p class="text-center text-red-500">Error loading trades.</p>`;
                     }
@@ -309,3 +311,4 @@
     </script>
 </body>
 </html>
+
