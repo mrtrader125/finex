@@ -14,10 +14,20 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        #image-modal { transition: opacity 0.3s ease-in-out; }
-        #modal-image { transition: transform 0.3s ease-in-out; }
-        #image-modal:not(.opacity-100) #modal-image { transform: scale(0.95); }
-        #image-modal.opacity-100 #modal-image { transform: scale(1); }
+        /* Modal Transitions */
+        #analysis-modal { transition: opacity 0.3s ease-in-out; }
+        #modal-content { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+        #analysis-modal:not(.opacity-100) #modal-content { transform: scale(0.95); opacity: 0; }
+        #analysis-modal.opacity-100 #modal-content { transform: scale(1); opacity: 1; }
+
+        /* Category filter tabs */
+        .category-tab {
+            @apply px-4 py-2 text-sm font-semibold rounded-full cursor-pointer transition-colors;
+            @apply text-color-muted hover:text-color-base bg-white/5 hover:bg-white/10;
+        }
+        .category-tab.active {
+            @apply text-white bg-blue-600 hover:bg-blue-700;
+        }
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -30,21 +40,51 @@
             <main class="container mx-auto p-4 md:p-8">
                 <div class="text-center mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Analysis Gallery</h1>
-                    <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse the latest market analysis charts and images from the Finex team.</p>
+                    <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse the latest market analysis charts and ideas from the Finex team.</p>
                 </div>
-                <div id="analysis-container" class="space-y-12">
-                    <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
+
+                <!-- NEW: Filter Bar -->
+                <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 max-w-6xl mx-auto">
+                    <!-- Category Filters -->
+                    <div id="category-tabs" class="flex flex-wrap gap-2 justify-center">
+                        <!-- Tabs injected here -->
                     </div>
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-64">
+                        <input type="text" id="search-input" placeholder="Search by title, tag..." class="form-input w-full !pl-10" autocomplete="off">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-color-muted"></i>
+                    </div>
+                </div>
+
+                <!-- Upgraded: Analysis Grid -->
+                <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
+                    <p id="no-results-message" class="text-center text-color-muted col-span-full" style="display: none;">No analysis found matching your criteria.</p>
+                </div>
             </main>
         </div>
 
-        <div id="image-modal" class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-white text-4xl leading-none hover:opacity-75 transition-opacity">&times;</button>
-            <div class="w-full h-full flex items-center justify-center">
-                <img id="modal-image" src="" alt="Full-size analysis image" class="max-w-[90vw] max-h-[90vh] rounded-lg shadow-2xl object-contain">
+        <!-- Upgraded: Analysis Modal (Focus View) -->
+        <div id="analysis-modal" class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-white text-4xl leading-none hover:opacity-75 transition-opacity z-10">&times;</button>
+            
+            <div id="modal-content" class="glass-card w-full max-w-6xl max-h-[90vh] flex flex-col lg:flex-row rounded-lg overflow-hidden">
+                <!-- Image -->
+                <div class="w-full lg:w-2/3 bg-black/20">
+                    <img id="modal-image" src="" alt="Full-size analysis image" class="w-full h-full object-contain max-h-[50vh] lg:max-h-[90vh]">
+                </div>
+                <!-- Details -->
+                <div class="w-full lg:w-1/3 p-6 md:p-8 overflow-y-auto">
+                    <h2 id="modal-title" class="text-2xl font-bold text-color-base mb-2"></h2>
+                    <div id="modal-meta" class="text-sm text-color-muted mb-4"></div>
+                    <div id="modal-tags" class="flex flex-wrap gap-2 mb-6"></div>
+                    <div classs="prose prose-sm dark:prose-invert">
+                        <p id="modal-description" class="text-color-muted leading-relaxed"></p>
+                    </div>
+                </div>
             </div>
         </div>
-        </div>
+    </div>
 
     <script type="module" src="app.js"></script>
 
@@ -55,88 +95,203 @@
         function initAnalysisPage(user, db) {
             console.log("Setting up Analysis page specific logic...");
 
-            const analysisContainer = document.getElementById('analysis-container');
-            const modal = document.getElementById('image-modal');
-            const modalImage = document.getElementById('modal-image');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-            const loadingMsg = document.getElementById('loading-message');
+            const elements = {
+                container: document.getElementById('analysis-container'),
+                modal: document.getElementById('analysis-modal'),
+                modalContent: document.getElementById('modal-content'),
+                modalImage: document.getElementById('modal-image'),
+                modalTitle: document.getElementById('modal-title'),
+                modalMeta: document.getElementById('modal-meta'),
+                modalTags: document.getElementById('modal-tags'),
+                modalDescription: document.getElementById('modal-description'),
+                closeModalBtn: document.getElementById('close-modal-btn'),
+                loadingMsg: document.getElementById('loading-message'),
+                noResultsMsg: document.getElementById('no-results-message'),
+                categoryTabs: document.getElementById('category-tabs'),
+                searchInput: document.getElementById('search-input')
+            };
 
-            if (!analysisContainer || !modal || !modalImage || !closeModalBtn || !loadingMsg) {
-                 console.error("One or more elements required for the Analysis page were not found.");
-                 if(analysisContainer) analysisContainer.innerHTML = "<p class='text-red-500 text-center'>Error: Page elements missing.</p>";
-                 return;
+            for (let key in elements) {
+                if (!elements[key]) {
+                    console.error(`Error: Element ID '${key}' not found!`);
+                    return;
+                }
             }
 
+            let allAnalysis = [];
+            let currentCategory = 'All';
+            let currentSearch = '';
+            let searchDebounceTimer;
+            const placeholderImage = (width, height, text) => `https://placehold.co/${width}x${height}/334155/9ca3af?text=${text}`;
+
+
             function fetchAnalysis() {
-                onSnapshot(query(collection(db, "analysis"), orderBy("createdAt", "desc")), (snapshot) => {
-                    loadingMsg.style.display = 'none';
+                const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"));
+                onSnapshot(q, (snapshot) => {
+                    elements.loadingMsg.style.display = 'none';
+                    allAnalysis = [];
+                    
                     if (snapshot.empty) {
-                        analysisContainer.innerHTML = '<p class="text-center text-color-muted">No analysis has been posted yet.</p>';
+                        elements.container.innerHTML = '<p class="text-center text-color-muted col-span-full">No analysis has been posted yet.</p>';
                         return;
                     }
-                    const groupedByDate = {};
+
                     snapshot.forEach(doc => {
-                        const item = doc.data();
-                        if (item.createdAt && typeof item.createdAt.toDate === 'function') {
-                            const date = item.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                            if (!groupedByDate[date]) groupedByDate[date] = [];
-                            groupedByDate[date].push(item);
-                        } else {
-                            console.warn("Analysis item missing or has invalid 'createdAt' field:", item);
-                        }
+                        allAnalysis.push({ id: doc.id, ...doc.data() });
                     });
-                    analysisContainer.innerHTML = '';
-                    for (const date in groupedByDate) {
-                        const dateGroupEl = document.createElement('div');
-                        let imageGridHTML = groupedByDate[date].map(item => `
-                            <div class="glass-card group overflow-hidden cursor-pointer" data-full-src="${item.imageUrl}" data-title="${item.title || 'Analysis Image'}">
-                                <img src="${item.imageUrl}" alt="${item.title || 'Analysis Image'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
-                                <div class="p-4"><p class="font-semibold text-color-base truncate" title="${item.title || ''}">${item.title || 'Untitled Analysis'}</p></div>
-                            </div>`).join('');
-                        dateGroupEl.innerHTML = `
-                            <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">${date}</h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                ${imageGridHTML}
-                            </div>`;
-                        analysisContainer.appendChild(dateGroupEl);
-                    }
+                    
+                    renderCategories();
+                    renderAnalysisGrid();
+
                 }, (error) => {
                     console.error("Error fetching analysis data:", error);
-                    loadingMsg.style.display = 'none';
-                    analysisContainer.innerHTML = '<p class="text-center text-red-500">Could not load analysis data.</p>';
+                    elements.loadingMsg.style.display = 'none';
+                    elements.container.innerHTML = '<p class="text-center text-red-500 col-span-full">Could not load analysis data.</p>';
                 });
             }
 
-            function openModal(imageUrl, altText) {
-                modalImage.src = imageUrl;
-                modalImage.alt = altText || 'Analysis Image';
-                modal.classList.add('opacity-100');
-                modal.classList.remove('pointer-events-none');
+            function renderCategories() {
+                const categories = ['All', ...new Set(allAnalysis.map(a => a.category).filter(Boolean))];
+                elements.categoryTabs.innerHTML = categories.map(cat => `
+                    <button class="category-tab ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">
+                        ${cat}
+                    </button>
+                `).join('');
             }
+            
+            function renderAnalysisGrid() {
+                elements.loadingMsg.style.display = 'none';
+                
+                const searchLower = currentSearch.toLowerCase();
+
+                const filteredAnalysis = allAnalysis.filter(item => {
+                    const inCategory = currentCategory === 'All' || item.category === currentCategory;
+                    
+                    const inSearch = searchLower === '' ||
+                        (item.title && item.title.toLowerCase().includes(searchLower)) ||
+                        (item.analyst && item.analyst.toLowerCase().includes(searchLower)) ||
+                        (item.category && item.category.toLowerCase().includes(searchLower)) ||
+                        (item.tags && Array.isArray(item.tags) && item.tags.some(tag => tag.toLowerCase().includes(searchLower)));
+
+                    return inCategory && inSearch;
+                });
+
+                if (filteredAnalysis.length === 0) {
+                    elements.container.innerHTML = '';
+                    elements.noResultsMsg.style.display = 'block';
+                    return;
+                }
+                
+                elements.noResultsMsg.style.display = 'none';
+                elements.container.innerHTML = filteredAnalysis.map(item => {
+                    const coverImg = item.imageUrl || placeholderImage(600, 400, 'Analysis');
+                    const tagsHTML = Array.isArray(item.tags) 
+                        ? item.tags.slice(0, 3).map(tag => `<span class="tag text-xs">#${tag}</span>`).join('') 
+                        : '';
+                    
+                    return `
+                    <div class="glass-card group flex flex-col overflow-hidden cursor-pointer" data-id="${item.id}">
+                        <div class="overflow-hidden">
+                            <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <span class="text-xs font-bold uppercase text-blue-400 mb-1">${item.category || 'General'}</span>
+                            <h3 class="font-semibold text-color-base truncate mb-2" title="${item.title || ''}">${item.title || 'Untitled Analysis'}</h3>
+                            <p class="text-sm text-color-muted mb-4 h-10 overflow-hidden">${item.description || 'Click to see more...'}</p>
+                            <div class="mt-auto pt-2 border-t border-color-base flex justify-between items-center">
+                                <span class="text-xs text-color-muted">${item.analyst || 'Finex Team'}</span>
+                                <div class="flex gap-1">${tagsHTML}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            function openModal(item) {
+                if (!item) return;
+                
+                elements.modalImage.src = item.imageUrl || placeholderImage(1200, 800, 'Analysis');
+                elements.modalImage.alt = item.title || 'Analysis Image';
+                elements.modalTitle.textContent = item.title || 'Untitled Analysis';
+                elements.modalDescription.innerHTML = item.description ? item.description.replace(/\n/g, '<br>') : 'No description provided.';
+                
+                const formattedDate = item.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || '';
+                elements.modalMeta.innerHTML = `
+                    <span>By ${item.analyst || 'Finex Team'}</span>
+                    <span class="mx-2">&bull;</span>
+                    <span>${formattedDate}</span>
+                `;
+                
+                if (Array.isArray(item.tags) && item.tags.length > 0) {
+                    elements.modalTags.innerHTML = item.tags.map(tag => `<span class="tag text-xs">#${tag}</span>`).join('');
+                } else {
+                    elements.modalTags.innerHTML = '';
+                }
+
+                elements.modal.classList.add('opacity-100');
+                elements.modal.classList.remove('pointer-events-none');
+            }
+
             function closeModal() {
-                modal.classList.remove('opacity-100');
-                modal.classList.add('pointer-events-none');
-                setTimeout(() => { modalImage.src = ""; modalImage.alt = ""; }, 300);
+                elements.modal.classList.remove('opacity-100');
+                elements.modal.classList.add('pointer-events-none');
+                // Clear content after transition to prevent flash
+                setTimeout(() => { 
+                    elements.modalImage.src = ""; 
+                    elements.modalTitle.textContent = "";
+                    elements.modalMeta.innerHTML = "";
+                    elements.modalTags.innerHTML = "";
+                    elements.modalDescription.textContent = "";
+                }, 300);
             }
 
-            analysisContainer.addEventListener('click', (e) => {
-                const card = e.target.closest('[data-full-src]');
+            // --- Event Listeners ---
+
+            // Click on analysis card
+            elements.container.addEventListener('click', (e) => {
+                const card = e.target.closest('[data-id]');
                 if (card) {
-                    openModal(card.dataset.fullSrc, card.dataset.title);
+                    const item = allAnalysis.find(a => a.id === card.dataset.id);
+                    openModal(item);
                 }
             });
-            closeModalBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
+            
+            // Click on category tab
+            elements.categoryTabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('.category-tab');
+                if (tab) {
+                    currentCategory = tab.dataset.category;
+                    elements.categoryTabs.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderAnalysisGrid();
+                }
+            });
+
+            // Search input
+            elements.searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => {
+                    currentSearch = e.target.value;
+                    renderAnalysisGrid();
+                }, 300); // 300ms debounce
+            });
+
+            // Modal close buttons
+            elements.closeModalBtn.addEventListener('click', closeModal);
+            elements.modal.addEventListener('click', (e) => {
+                // Check if the click is on the backdrop, not the content
+                if (e.target === elements.modal && !elements.modalContent.contains(e.target)) {
                     closeModal();
                 }
             });
+            
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('opacity-100')) {
+                if (e.key === 'Escape' && elements.modal.classList.contains('opacity-100')) {
                     closeModal();
                 }
             });
 
+            // --- Initial Load ---
             fetchAnalysis();
         }
 
