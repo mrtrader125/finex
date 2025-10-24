@@ -1,3 +1,4 @@
+// app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
@@ -8,216 +9,224 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// --- NEW SHARED UTILITY FUNCTIONS ---
-
-/**
- * Calculates the ISO week number string (e.g., "2025-43") for a given date.
- * @param {Date} date The date to get the week ID for.
- * @returns {string} The week ID string.
- */
-export function getWeekId(date) {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    return `${d.getUTCFullYear()}-${String(weekNo).padStart(2, '0')}`;
-}
-
-/**
- * Gets the UTC start (Monday 00:00:00) and end (Sunday 23:59:59) dates for a given date's week.
- * @param {Date} date The date to get the week range for.
- * @returns {{startDate: Date, endDate: Date}} An object with the start and end Date objects.
- */
-export function getWeekDateRange(date) {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7; // sunday = 7
-    // Set d to Monday of the current week
-    d.setUTCDate(d.getUTCDate() - dayNum + 1);
-    d.setUTCHours(0, 0, 0, 0);
-    const startDate = new Date(d);
-    // Set d to Sunday of the current week
-    d.setUTCDate(d.getUTCDate() + 6);
-    d.setUTCHours(23, 59, 59, 999);
-    const endDate = new Date(d);
-    return { startDate, endDate };
-}
-
-// --- END NEW FUNCTIONS ---
-
-
-// --- Available Sidebar Items ---
+// --- Available Sidebar Items (Updated Structure) ---
 export const allSidebarItems = [
     { id: 'dashboard', href: 'member_dashboard.html', icon: 'fa-tachometer-alt', text: 'Dashboard' },
     { id: 'portfolio', href: 'portfolio.html', icon: 'fa-wallet', text: 'Portfolio' },
     { id: 'articles', href: 'articles.html', icon: 'fa-book-reader', text: 'Articles' },
     { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
-    { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
+    // Combined Planning & Journaling Dropdown
+    {
+        id: 'planning', // ID for the dropdown parent
+        icon: 'fa-clipboard-list', // Example parent icon
+        text: 'Plan & Journal',
+        subItems: [
+            { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
+            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' }
+        ]
+    },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
     { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
     { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' },
-    { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
 let userPreferences = {
-    theme: 'dark', // Default theme
-    sidebarItems: {} // Default visibility (all true)
+    theme: 'dark',
+    sidebarItems: {}
 };
-allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true); // Initialize defaults
+// Initialize default visibility - now handles subItems correctly if needed
+function initializeDefaultVisibility(items) {
+    items.forEach(item => {
+        userPreferences.sidebarItems[item.id] = true; // Parent/Standard item visible by default
+        if (item.subItems && Array.isArray(item.subItems)) {
+            // Ensure sub-items have visibility tracked if needed, default to true
+             item.subItems.forEach(subItem => {
+                 // Use sub-item ID for tracking, default to true
+                 userPreferences.sidebarItems[subItem.id] = true;
+             });
+            // Note: We currently only control visibility of top-level items in settings.
+            // If you want to control sub-item visibility, the settings page needs updating.
+        }
+    });
+}
+initializeDefaultVisibility(allSidebarItems);
+
 
 // --- Main App Initialization ---
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // 1. Load common HTML components (header, sidebar)
             await loadCommonComponents();
-
-            // 2. Load user preferences
             const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
             await loadPreferences(settingsDocRef);
-
-            // 3. Apply theme
             applyTheme(userPreferences.theme);
-
-            // 4. Render sidebar based on preferences
-            renderSidebar(); // This function now also sets the page title
-
-            // 5. Attach core event listeners (sidebar toggle, logout) AFTER components load
-            attachCoreEventListeners();
-
-            // 6. Update user email in header
+            renderSidebar();
+            attachCoreEventListeners(); // Ensure this is called AFTER components are loaded
             const userEmailSpan = document.getElementById('user-email');
             if (userEmailSpan) userEmailSpan.textContent = user.email;
-
-            // 7. Run page-specific logic (passed in from the specific page's script)
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                pageSpecificInit(user, db); // Pass user and db if needed
+                pageSpecificInit(user, db);
             }
-            
-            // 8. Show the main app content
             const appWrapper = document.getElementById('app-wrapper');
             if (appWrapper) appWrapper.style.display = 'block';
-
         } else {
-            // No user, redirect to login page
             window.location.replace(new URL('login.html', window.location.href).href);
         }
     });
 }
 
-// --- HTML Component Loader ---
+// --- HTML Component Loader --- (No changes needed)
 async function loadCommonComponents() {
-    // Find the placeholder elements in the current page
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
-
     try {
-        // Fetch the HTML content of the header and sidebar templates
-        const [headerRes, sidebarRes] = await Promise.all([
-            fetch('_header.html'), // Assuming _header.html is in the same directory
-            fetch('_sidebar.html')  // Assuming _sidebar.html is in the same directory
-        ]);
-        
-        // Check if fetches were successful
+        const [headerRes, sidebarRes] = await Promise.all([ fetch('_header.html'), fetch('_sidebar.html') ]);
         if (!headerRes.ok) throw new Error(`Failed to load _header.html: ${headerRes.statusText}`);
         if (!sidebarRes.ok) throw new Error(`Failed to load _sidebar.html: ${sidebarRes.statusText}`);
-
-        // Insert the HTML content into the placeholders
         if (headerPlaceholder) headerPlaceholder.innerHTML = await headerRes.text();
         if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = await sidebarRes.text();
-
     } catch (error) {
         console.error("Error loading common components:", error);
-        // Optionally display an error message to the user on the page
         if (headerPlaceholder) headerPlaceholder.innerHTML = "<p class='text-red-500 text-center'>Error loading header.</p>";
         if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = "<p class='text-red-500 text-center'>Error loading sidebar.</p>";
     }
 }
 
-// --- Preference Management ---
+// --- Preference Management --- (Handles sidebarItems structure, no change needed here for dropdown logic itself)
 async function loadPreferences(settingsDocRef) {
-    try {
+     try {
         const docSnap = await getDoc(settingsDocRef);
+        // Reset local prefs to defaults before loading
+        userPreferences = { theme: 'dark', sidebarItems: {} };
+        initializeDefaultVisibility(allSidebarItems); // Re-init defaults
+
         if (docSnap.exists()) {
             const loadedPrefs = docSnap.data();
-            // Load theme, defaulting to 'dark' if not found
             userPreferences.theme = loadedPrefs.theme || 'dark';
-            
-            // Load sidebar item visibility, merging with defaults
-            userPreferences.sidebarItems = { /* Default visibility */ };
-            allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true); // Start with all true
-            
+            // Merge sidebar item visibility
             if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
-                 // Update visibility based on saved preferences
                  for (const key in userPreferences.sidebarItems) {
+                     // Only update if the key exists in saved preferences AND the default structure
                      if (loadedPrefs.sidebarItems.hasOwnProperty(key)) {
-                         // Only update if the key exists in the saved preferences
                          userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key];
                      }
                  }
             }
-            // If sidebarItems was missing entirely, the defaults remain.
         } else {
-            // No settings document found, save the default preferences
-            console.log("No user preferences found, saving defaults.");
             await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() });
         }
     } catch (error) {
         console.error("Error loading preferences:", error);
-        // Fallback to defaults in case of error
-        userPreferences.theme = 'dark';
-        userPreferences.sidebarItems = {};
-        allSidebarItems.forEach(item => userPreferences.sidebarItems[item.id] = true);
+         // Fallback hard to defaults on error
+         userPreferences = { theme: 'dark', sidebarItems: {} };
+         initializeDefaultVisibility(allSidebarItems);
     }
 }
 
-// --- Theme Application ---
+
+// --- Theme Application --- (No changes needed)
 export function applyTheme(theme) {
-    if (theme === 'light') {
-        document.documentElement.classList.remove('dark');
-    } else {
-        document.documentElement.classList.add('dark'); // Add dark class if not light
-    }
-    // Update the toggle on the settings page if it exists
+    if (theme === 'light') { document.documentElement.classList.remove('dark'); }
+    else { document.documentElement.classList.add('dark'); }
     const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.checked = (theme === 'dark');
-    }
+    if (themeToggle) { themeToggle.checked = (theme === 'dark'); }
 }
 
-// --- Sidebar Rendering & Page Title Setting ---
+// --- Sidebar Rendering & Page Title Setting (UPDATED for Dropdown) ---
 export function renderSidebar() {
     const sidebarNav = document.getElementById('sidebar-nav');
-    const pageTitleEl = document.getElementById('page-title'); // Get page title element
-    if (!sidebarNav) return; // Exit if sidebar nav area doesn't exist
+    const pageTitleEl = document.getElementById('page-title');
+    if (!sidebarNav) { console.error("Sidebar nav element not found!"); return; }
 
-    const currentPage = window.location.pathname.split('/').pop() || 'member_dashboard.html'; // Default to dashboard if root path
-    let currentPageTitle = "Dashboard"; // Default page title
-    sidebarNav.innerHTML = ''; // Clear existing links
+    const currentPage = window.location.pathname.split('/').pop() || 'member_dashboard.html';
+    let currentPageTitle = "Dashboard"; // Default title
+    let isSubItemActive = false; // Flag to check if current page is within a dropdown
+    sidebarNav.innerHTML = ''; // Clear previous links
 
     allSidebarItems.forEach(item => {
-        // Render the link only if its visibility preference is true
-        if (userPreferences.sidebarItems[item.id]) {
+        // Skip rendering if item is marked as hidden in preferences
+        if (!userPreferences.sidebarItems[item.id]) {
+            return;
+        }
+
+        // Check if item has sub-items (Dropdown case)
+        if (item.subItems && Array.isArray(item.subItems)) {
+            const dropdownContainer = document.createElement('div');
+            let parentIsActive = false; // Check if any sub-item is active
+
+            // Create Toggle Button
+            const toggleButton = document.createElement('button');
+            toggleButton.className = 'sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; // Adjusted classes for button
+            toggleButton.setAttribute('type', 'button');
+            toggleButton.dataset.toggle = item.id; // ID to target submenu
+
+            // Check if any sub-item is the current page
+            item.subItems.forEach(subItem => {
+                if (subItem.href === currentPage) {
+                    parentIsActive = true;
+                    isSubItemActive = true; // Mark that the active page is a sub-item
+                    currentPageTitle = subItem.text; // Use sub-item text for page title
+                }
+            });
+
+            if (parentIsActive) {
+                toggleButton.classList.add('active-parent'); // Add class for styling active parent
+            }
+
+            toggleButton.innerHTML = `
+                <span class="flex items-center gap-4">
+                    <i class="fas ${item.icon} fa-fw w-6"></i>
+                    <span>${item.text}</span>
+                </span>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+            `;
+            dropdownContainer.appendChild(toggleButton);
+
+            // Create Submenu Div (Hidden initially)
+            const subMenu = document.createElement('div');
+            subMenu.id = `submenu-${item.id}`;
+            // Use Tailwind classes for styling and hidden state
+            subMenu.className = 'pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out'; 
+            // Start collapsed (max-h-0). We'll toggle max-height with JS.
+
+            // Add Submenu Links
+            item.subItems.forEach(subItem => {
+                // Only render sub-item if its preference allows (if sub-item control is implemented)
+                // if (!userPreferences.sidebarItems[subItem.id]) return; 
+
+                const link = document.createElement('a');
+                link.href = subItem.href;
+                link.className = `sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; // Smaller text/padding
+                if (subItem.href === currentPage) {
+                    link.classList.add('active'); // Highlight active sub-link
+                }
+                link.innerHTML = `
+                    <i class="fas ${subItem.icon} fa-fw w-5"></i> 
+                    <span>${subItem.text}</span>
+                `;
+                subMenu.appendChild(link);
+            });
+
+            dropdownContainer.appendChild(subMenu);
+            sidebarNav.appendChild(dropdownContainer);
+
+        } else { // Standard Link Case
             const link = document.createElement('a');
             link.href = item.href;
-            // Use the static dark theme class for links
-            link.className = `sidebar-link flex items-center gap-4 p-3 rounded-lg`; 
-            
-            // Check if this link corresponds to the current page
-            if (item.href === currentPage) {
-                link.classList.add('active'); // Highlight the active link
-                currentPageTitle = item.text; // Update the page title
+            link.className = `sidebar-link flex items-center gap-4 p-3 rounded-lg`;
+            if (item.href === currentPage && !isSubItemActive) { // Only active if not a sub-item page
+                link.classList.add('active');
+                currentPageTitle = item.text; // Set title for standard links
             }
-            
             link.innerHTML = `<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`;
             sidebarNav.appendChild(link);
         }
     });
 
-    // Set the dynamically determined page title in the header
+    // Set the Page Title in the Header
     if (pageTitleEl) {
         pageTitleEl.textContent = currentPageTitle;
     } else {
@@ -225,52 +234,68 @@ export function renderSidebar() {
     }
 }
 
-// --- Core Event Listeners Attachment ---
+
+// --- Core Event Listeners Attachment (UPDATED for Dropdown) ---
 function attachCoreEventListeners() {
-    // Ensure elements exist before attaching listeners
     const openSidebarBtn = document.getElementById('open-sidebar-btn');
     const closeSidebarBtn = document.getElementById('close-sidebar-btn');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const sidebarNav = document.getElementById('sidebar-nav');
+    const sidebarNav = document.getElementById('sidebar-nav'); // Parent container for delegation
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Sidebar toggle functions
-    function openSidebar() { 
-        if(sidebar) sidebar.classList.remove('-translate-x-full'); 
-        if(sidebarOverlay) {
-            sidebarOverlay.classList.remove('hidden'); 
-            // Delay opacity transition slightly to ensure element is visible
-            setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); 
-        }
+    function openSidebar() { /* ... (same as before) ... */
+        if(sidebar) sidebar.classList.remove('-translate-x-full');
+        if(sidebarOverlay) { sidebarOverlay.classList.remove('hidden'); setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10); }
     }
-    function closeSidebar() { 
-        if(sidebar) sidebar.classList.add('-translate-x-full'); 
-        if(sidebarOverlay) {
-            sidebarOverlay.classList.add('opacity-0'); 
-            // Hide after transition ends
-            setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); 
-        }
+    function closeSidebar() { /* ... (same as before) ... */
+         if(sidebar) sidebar.classList.add('-translate-x-full');
+         if(sidebarOverlay) { sidebarOverlay.classList.add('opacity-0'); setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); }
     }
 
-    // Attach listeners only if elements exist
     if (openSidebarBtn) openSidebarBtn.addEventListener('click', openSidebar);
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
-    // Close sidebar on link click on smaller screens
-    if (sidebarNav) sidebarNav.addEventListener('click', (e) => { 
-        if (e.target.closest('a') && window.innerWidth < 1024) { 
-            closeSidebar(); 
-        } 
-    }); 
-    // Logout functionality
-    if (logoutBtn) logoutBtn.addEventListener('click', (e) => { 
-        e.preventDefault(); 
-        signOut(auth).then(() => {
-            console.log('User signed out, redirecting to index.html');
-            window.location.href = 'index.html'; // Redirect to public home after logout
-        }).catch((error) => {
-            console.error('Sign out error', error);
-        }); 
+    if (logoutBtn) logoutBtn.addEventListener('click', (e) => { /* ... (same logout logic) ... */
+        e.preventDefault();
+        signOut(auth).then(() => { window.location.href = 'index.html'; })
+            .catch((error) => { console.error('Sign out error', error); });
     });
+
+    // Event Delegation for Sidebar Links and Dropdowns
+    if (sidebarNav) {
+        sidebarNav.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            const toggle = e.target.closest('button[data-toggle]');
+
+            // Handle direct link clicks (close sidebar on mobile)
+            if (link && !link.parentElement.classList.contains('sidebar-submenu')) { // Exclude submenu links from immediate close? Maybe not needed.
+                if (window.innerWidth < 1024) { closeSidebar(); }
+            }
+            // Handle Dropdown Toggle Clicks
+            else if (toggle) {
+                const subMenuId = `submenu-${toggle.dataset.toggle}`;
+                const subMenu = document.getElementById(subMenuId);
+                const chevron = toggle.querySelector('.fa-chevron-down');
+
+                if (subMenu) {
+                     // Check if currently collapsed (max-h-0)
+                    if (subMenu.style.maxHeight && subMenu.style.maxHeight !== '0px') {
+                         subMenu.style.maxHeight = '0px'; // Collapse
+                         toggle.classList.remove('active-parent'); // Optional: remove active style on collapse
+                         if(chevron) chevron.classList.remove('rotate-180');
+                     } else {
+                         // Expand: Set max-height to scrollHeight for smooth transition
+                         subMenu.style.maxHeight = subMenu.scrollHeight + "px";
+                         toggle.classList.add('active-parent'); // Optional: add active style on expand
+                         if(chevron) chevron.classList.add('rotate-180');
+                     }
+                }
+            }
+            // Handle submenu link clicks (close sidebar on mobile)
+             else if (link && link.closest('.sidebar-submenu')) {
+                 if (window.innerWidth < 1024) { closeSidebar(); }
+             }
+        });
+    }
 }
