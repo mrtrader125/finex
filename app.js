@@ -1,4 +1,3 @@
-// app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
@@ -8,6 +7,44 @@ const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", auth
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// --- NEW SHARED UTILITY FUNCTIONS ---
+
+/**
+ * Calculates the ISO week number string (e.g., "2025-43") for a given date.
+ * @param {Date} date The date to get the week ID for.
+ * @returns {string} The week ID string.
+ */
+export function getWeekId(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-${String(weekNo).padStart(2, '0')}`;
+}
+
+/**
+ * Gets the UTC start (Monday 00:00:00) and end (Sunday 23:59:59) dates for a given date's week.
+ * @param {Date} date The date to get the week range for.
+ * @returns {{startDate: Date, endDate: Date}} An object with the start and end Date objects.
+ */
+export function getWeekDateRange(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7; // sunday = 7
+    // Set d to Monday of the current week
+    d.setUTCDate(d.getUTCDate() - dayNum + 1);
+    d.setUTCHours(0, 0, 0, 0);
+    const startDate = new Date(d);
+    // Set d to Sunday of the current week
+    d.setUTCDate(d.getUTCDate() + 6);
+    d.setUTCHours(23, 59, 59, 999);
+    const endDate = new Date(d);
+    return { startDate, endDate };
+}
+
+// --- END NEW FUNCTIONS ---
+
 
 // --- Available Sidebar Items ---
 export const allSidebarItems = [
