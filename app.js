@@ -69,43 +69,53 @@ function initializeDefaultVisibility(items) {
 initializeDefaultVisibility(allSidebarItems);
 
 
-// --- Main App Initialization --- (MODIFIED FOR SPEED)
+// --- Main App Initialization --- (MODIFIED FOR STABILITY)
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             
-            // --- PERFORMANCE FIX ---
-            // Show the app wrapper and hide the loader IMMEDIATELY.
-            // The user will see the page content while components load in.
-            const appLoader = document.getElementById('app-loader');
-            if (appLoader) appLoader.style.display = 'none';
-            
-            const appWrapper = document.getElementById('app-wrapper');
-            if (appWrapper) appWrapper.style.display = 'block';
+            // --- STABILITY FIX ---
+            // We will wait for components (header/sidebar) AND 
+            // preferences (theme) to load *before* hiding the spinner.
+            // This prevents all "flashing" and "jumping".
 
-            // Run page-specific logic (like loading articles) right away
+            // 1. Start page-specific logic (like loading articles) immediately.
+            //    This can run in the background while the layout loads.
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
                 pageSpecificInit(user, db);
             }
-            // --- END FIX ---
 
-            // Load components, preferences, and render sidebar in parallel.
-            // These will populate the UI as they become available.
-            loadCommonComponents().then(() => {
-                // Attach listeners *after* components are loaded
+            const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
+
+            try {
+                // 2. Wait for *both* components and preferences to finish
+                await Promise.all([
+                    loadCommonComponents(),
+                    loadPreferences(settingsDocRef)
+                ]);
+
+                // 3. Now that we have all data, apply it *before* showing the page
+                applyTheme(userPreferences.theme);
+                renderSidebar(); // Renders sidebar with correct items
+                
+                // 4. Attach event listeners (to the now-loaded components)
                 attachCoreEventListeners();
-
-                // Set user email *after* header is loaded
                 const userEmailSpan = document.getElementById('user-email');
                 if (userEmailSpan) userEmailSpan.textContent = user.email;
-            });
-            
-            const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
-            loadPreferences(settingsDocRef).then(() => {
-                // Apply theme and render sidebar *after* preferences are loaded
-                applyTheme(userPreferences.theme);
-                renderSidebar();
-            });
+
+                // 5. FINALLY, hide the loader and show the fully-ready page
+                const appLoader = document.getElementById('app-loader');
+                if (appLoader) appLoader.style.display = 'none';
+                
+                const appWrapper = document.getElementById('app-wrapper');
+                if (appWrapper) appWrapper.style.display = 'block';
+
+            } catch (error) {
+                console.error("Failed to initialize app components:", error);
+                // Handle error, maybe show a message in the loader
+                const appLoader = document.getElementById('app-loader');
+                if (appLoader) appLoader.textContent = "Error loading application.";
+            }
 
         } else {
             window.location.replace(new URL('login.html', window.location.href).href);
@@ -152,9 +162,8 @@ export function applyTheme(theme) {
 export function renderSidebar() {
     const sidebarNav=document.getElementById('sidebar-nav'); const pageTitleEl=document.getElementById('page-title'); if(!sidebarNav){console.error("Sidebar nav element not found!"); return;} const currentPage=window.location.pathname.split('/').pop()||'member_dashboard.html'; let currentPageTitle="Dashboard"; let isSubItemActive=false; sidebarNav.innerHTML=''; allSidebarItems.forEach(item=>{if(!userPreferences.sidebarItems[item.id]){return;} if(item.subItems&&Array.isArray(item.subItems)){const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; item.subItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; isSubItemActive=true; currentPageTitle=subItem.text;}}); if(parentIsActive){toggleButton.classList.add('active-parent');} toggleButton.innerHTML=`<span class="flex items-center gap-4"><i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span></span><i class="fas fa-chevron-down text-xs transition-transform duration-200 chevron-icon"></i>`; dropdownContainer.appendChild(toggleButton); const subMenu=document.createElement('div'); subMenu.id=`submenu-${item.id}`; subMenu.className='pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out sidebar-submenu'; item.subItems.forEach(subItem=>{const link=document.createElement('a'); link.href=subItem.href; link.className=`sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; if(subItem.href===currentPage){link.classList.add('active');} link.innerHTML=`<i class="fas ${subItem.icon} fa-fw w-5"></i> <span>${subItem.text}</span>`; subMenu.appendChild(link);}); dropdownContainer.appendChild(subMenu); sidebarNav.appendChild(dropdownContainer);}else{const link=document.createElement('a'); link.href=item.href; link.className=`sidebar-link flex items-center gap-4 p-3 rounded-lg`; if(item.href===currentPage&&!isSubItemActive){link.classList.add('active'); currentPageTitle=item.text;} link.innerHTML=`<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`; sidebarNav.appendChild(link);}});
     
-    // --- MODIFICATION HERE ---
+    // Set Page Title (with "Finex" for dashboard)
     if(pageTitleEl){
-        // Check if the page is dashboard, and set title to "Finex"
         if (currentPageTitle === 'Dashboard') {
             pageTitleEl.textContent = 'Finex';
         } else {
@@ -163,7 +172,6 @@ export function renderSidebar() {
     }else{
         console.warn("Element with ID 'page-title' not found.");
     }
-    // --- END MODIFICATION ---
  }
 
 // --- Core Event Listeners Attachment ---
