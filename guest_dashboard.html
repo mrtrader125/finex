@@ -54,7 +54,7 @@
     <header id="header" class="header backdrop-blur-md sticky top-0 z-40">
         <div class="container mx-auto flex justify-between items-center p-4">
             <div class="text-2xl font-bold tracking-wider text-white" id="logo">
-                <a href="index.html">Finex</a> 
+                <a href="index.html">Finex</a> <!-- Changed Finclarity to Finex -->
             </div>
             <nav>
                  <a href="login.html" class="main-button font-semibold py-2 px-5 rounded-lg">Get Full Access</a>
@@ -64,11 +64,10 @@
     <div class="container mx-auto p-4 md:p-8">
         <div class="md:flex md:space-x-8">
             <aside class="w-full md:w-64 mb-8 md:mb-0 flex-shrink-0">
-                <div class="glass-card p-4 sticky top-24"> 
+                <div class="glass-card p-4 sticky top-24"> <!-- Added sticky top -->
                     <h2 class="text-lg font-bold p-4">Guest Menu</h2>
                     <nav class="flex flex-col space-y-2">
-                        <!-- CORRECTED: Ensure href points to guest_article.html -->
-                        <a href="guest_article.html" class="sidebar-link active flex items-center space-x-3 py-3 px-4 rounded-lg">
+                        <a href="guest_dashboard.html" class="sidebar-link active flex items-center space-x-3 py-3 px-4 rounded-lg">
                             <i class="fa-solid fa-newspaper w-5 text-center"></i>
                             <span>Sample Article</span>
                         </a>
@@ -91,46 +90,105 @@
             </aside>
             <main class="flex-1">
                 <div>
-                    <h1 class="text-4xl font-bold mb-6">Explore Finex Features</h1> <!-- Updated Title -->
+                    <h1 class="text-4xl font-bold mb-6">Sample Article Preview</h1>
                     <div class="space-y-6">
-                        <!-- Updated Card to point to guest_article.html -->
-                        <div class="glass-card p-6 md:p-8 hover:border-blue-400/50 transition-all duration-300">
-                             <a href="guest_article.html" class="block">
-                                <h3 class="text-2xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation</h3>
-                                <p class="text-gray-300 mb-4">Read a preview of our foundational guide covering Mindset, Capital, Effort, Time Horizon, and Scalability.</p>
-                                <span class="text-blue-400 font-semibold hover:text-blue-300">Read Preview &rarr;</span>
-                            </a>
+                        <div class="glass-card p-6 md:p-8">
+                            <h3 class="text-2xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation</h3>
+                            <p class="text-gray-300 mb-4">An essential primer on the foundational principles you need to understand before choosing a financial path. We cover Mindset, Capital, Effort, Time Horizon, and Scalability.</p>
+                            <a href="guest_article.html" class="text-blue-400 font-semibold hover:text-blue-300">Read Preview &rarr;</a>
                         </div>
                          <!-- Placeholder for more sample content if needed -->
-                         <div class="glass-card p-6 md:p-8 opacity-70">
-                            <h3 class="text-2xl font-bold mb-2">Full Access Required</h3>
-                            <p class="text-gray-400 mb-4">Log in or create an account to unlock the complete library of articles, analysis, and tools.</p>
-                            <a href="login.html" class="text-blue-400 font-semibold hover:text-blue-300">Become a Member &rarr;</a>
-                        </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
     <script>
-        // Constellation background script 
+        // Constellation background script (slightly adjusted for visibility on dark)
         document.addEventListener('DOMContentLoaded', function() {
             const canvas = document.getElementById('constellation-bg'); 
-            if (!canvas) return; 
+            if (!canvas) return; // Exit if canvas not found
             const ctx = canvas.getContext('2d'); 
             let particles = [];
-            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = document.documentElement.scrollHeight; }; 
-            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = Math.random() * 1.5 + 0.5; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
-            function initParticles() { particles = []; let numberOfParticles = Math.min(80, (canvas.width * canvas.height) / 15000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
-            function connectParticles() { let maxDistance = 150; for (let i = 0; i < particles.length; i++) { for (let j = i + 1; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < maxDistance) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - distance / maxDistance)})`; ctx.lineWidth = 0.3; ctx.stroke(); } } } }
+            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = document.documentElement.scrollHeight; }; // Use scrollHeight
+            class Particle { 
+                constructor() { 
+                    this.x = Math.random() * canvas.width; 
+                    this.y = Math.random() * canvas.height; 
+                    this.vx = Math.random() * 0.3 - 0.15; // Slower speed
+                    this.vy = Math.random() * 0.3 - 0.15; 
+                    this.radius = Math.random() * 1.5 + 0.5; // Smaller radius
+                } 
+                draw() { 
+                    ctx.beginPath(); 
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); 
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // Slightly dimmer points
+                    ctx.fill(); 
+                } 
+                update() { 
+                    this.x += this.vx; 
+                    this.y += this.vy; 
+                    // Bounce off edges
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1; 
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1; 
+                } 
+            }
+            function initParticles() { 
+                particles = []; 
+                let numberOfParticles = Math.min(80, (canvas.width * canvas.height) / 15000); // Fewer particles
+                for (let i = 0; i < numberOfParticles; i++) { 
+                    particles.push(new Particle()); 
+                } 
+            }
+            function connectParticles() { 
+                let maxDistance = 150; // Increased connection distance slightly
+                for (let i = 0; i < particles.length; i++) { 
+                    for (let j = i + 1; j < particles.length; j++) { 
+                        let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); 
+                        if (distance < maxDistance) { 
+                            ctx.beginPath(); 
+                            ctx.moveTo(particles[i].x, particles[i].y); 
+                            ctx.lineTo(particles[j].x, particles[j].y); 
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - distance / maxDistance)})`; // Dimmer lines
+                            ctx.lineWidth = 0.3; // Thinner lines
+                            ctx.stroke(); 
+                        } 
+                    } 
+                } 
+            }
             let animationFrameId = null;
-            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); animationFrameId = requestAnimationFrame(animate); }
-            function debounce(func, wait) { let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func(...args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); }; };
-            const handleResize = debounce(() => { cancelAnimationFrame(animationFrameId); setupCanvas(); initParticles(); animate(); }, 250); 
+            function animate() { 
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                particles.forEach(p => { p.update(); p.draw(); }); 
+                connectParticles(); 
+                animationFrameId = requestAnimationFrame(animate); 
+            }
+            
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            };
+
+            const handleResize = debounce(() => {
+                cancelAnimationFrame(animationFrameId); // Stop previous animation
+                setupCanvas(); 
+                initParticles(); 
+                animate(); // Restart animation
+            }, 250); // Debounce resize event
+
             window.addEventListener('resize', handleResize);
-            setupCanvas(); initParticles(); animate();
+            
+            setupCanvas(); 
+            initParticles(); 
+            animate();
         });
     </script>
 </body>
 </html>
-
