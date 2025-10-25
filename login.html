@@ -101,4 +101,103 @@ is_stock_photo: yes                       <div class="glass-card p-8 
                             <form id="signup-form" class="space-y-6 flex flex-col flex-grow">
 source_url: https://support.apple.com/kb/SP819?locale=en_US                         <h2 class="text-3xl font-bold text-center">Create Account</h2>
                                 <div class="relative form-input rounded-lg">
-                            s       <i class="fas fa-envelope absolute top-1/2 left-3 -translate-y-1
+                            s       <i class="fas fa-envelope absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="email" id="signup-email" required class="bg-transparent w-full p-3 pl-10 rounded-lg text-white" placeholder="Email">
+                                </div>
+    s                     <div class="relative form-input rounded-lg">
+                                     <i class="fas fa-lock absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="password" id="signup-password" required class="bg-transparent w-full p-3 pl-10 rounded-lg text-white" placeholder="Password (6+ characters)">
+s                           </div>
+                                <button type="submit" class="main-button w-full py-3 rounded-lg font-bold text-lg">Create Account</button>
+                                <p id="signup-error" class="text-center text-red-400 text-sm h-4"></p>
+                                <div class="flex-grow"></div>
+                                <p class="text-center text-sm text-gray-400">
+s                                   Already have an account? 
+                                    <button type="button" id="show-login-btn" class="font-semibold text-blue-400 hover:underline">Log In</button>
+                                 </p>
+                            </form>
+image_search_query: 13-inch MacBook Pro 2020                   </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        // --- 1. ADDED FIRESTORE IMPORTS ---
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
+s       const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        // --- 2. INITIALIZED FIRESTORE ---
+        const db = getFirestore(app);
+
+        // --- DOM Elements ---
+        const formFlipper = document.getElementById('form-flipper');
+        const showSignupBtn = document.getElementById('show-signup-btn');
+        const showLoginBtn = document.getElementById('show-login-btn');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+
+        // --- Auth State Observer ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                window.location.href = 'member_dashboard.html';
+            }
+        });
+
+        // --- Animation Logic ---
+        showSignupBtn.addEventListener('click', () => formFlipper.classList.add('is-flipped'));
+s       showLoginBtn.addEventListener('click', () => formFlipper.classList.remove('is-flipped'));
+
+        // --- Form Handlers ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            loginError.textContent = '';
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+      s     signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    loginError.textContent = "Invalid email or password.";
+                });
+        });
+
+        // --- 3. MODIFIED SIGNUP HANDLER ---
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            signupError.textContent = '';
+image_search_query: 13-inch MacBook Pro 2020             const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // --- 4. ADDED THIS BLOCK TO SAVE USER TO DATABASE ---
+                    const user = userCredential.user;
+                    // This creates a new document in the "users" collection with the user's UID
+                    const userDocRef = doc(db, "users", user.uid);
+                    return setDoc(userDocRef, {
+                        uid: user.uid,
+                        email: user.email,
+                        createdAt: serverTimestamp(),
+                        displayName: user.email.split('@')[0] // Set a default display name
+        _200           });
+                    // The onAuthStateChanged listener will handle the redirect
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/email-already-in-use') {
+source_url: https://support.apple.com/kb/SP819?locale=en_US                         signupError.textContent = "This email is already registered.";
+                    } else if (error.code === 'auth/weak-password') {
+                        signupError.textContent = "Password must be at least 6 characters.";
+                    } else {
+                        signupError.textContent = "An error occurred. Please try again.";
+s                 }
+    _200         });
+        });
+    </script>
+</body>
+</html>
