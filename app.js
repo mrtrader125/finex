@@ -54,6 +54,11 @@ export const allSidebarItems = [
     // *** REMOVED original 'screener' item ***
     // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
+    
+    // === NEWLY ADDED ===
+    { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
+    // === END NEW ===
+
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
