@@ -37,7 +37,7 @@ export const allSidebarItems = [
     { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
     { id: 'planning', icon: 'fa-clipboard-list', text: 'Plan & Journal', subItems: [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
-            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' } ] },
+            { id:J: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' } ] },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
     // *** UPDATED Market Data Dropdown ***
     {
@@ -84,6 +84,13 @@ export async function initializeAppCore(pageSpecificInit) {
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
                 pageSpecificInit(user, db);
             }
+            
+            // --- MODIFICATION START ---
+            // Hide loader and show app wrapper
+            const appLoader = document.getElementById('app-loader');
+            if (appLoader) appLoader.style.display = 'none';
+            // --- MODIFICATION END ---
+            
             const appWrapper = document.getElementById('app-wrapper');
             if (appWrapper) appWrapper.style.display = 'block';
         } else {
@@ -108,17 +115,17 @@ async function loadCommonComponents() {
 // --- Preference Management --- (No changes)
 async function loadPreferences(settingsDocRef) {
      try {
-        const docSnap = await getDoc(settingsDocRef);
-        userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems);
-        if (docSnap.exists()) {
-            const loadedPrefs = docSnap.data(); userPreferences.theme = loadedPrefs.theme || 'dark';
-            if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
+         const docSnap = await getDoc(settingsDocRef);
+         userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems);
+         if (docSnap.exists()) {
+             const loadedPrefs = docSnap.data(); userPreferences.theme = loadedPrefs.theme || 'dark';
+             if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
                  for (const key in userPreferences.sidebarItems) {
                      if (loadedPrefs.sidebarItems.hasOwnProperty(key)) { userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key]; }
                  }
-            }
-        } else { await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() }); }
-    } catch (error) { console.error("Error loading preferences:", error); userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems); }
+             }
+         } else { await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() }); }
+     } catch (error) { console.error("Error loading preferences:", error); userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems); }
 }
 
 // --- Theme Application --- (No changes)
