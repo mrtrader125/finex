@@ -14,31 +14,23 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        /* Style for the preview container with fade-out effect */
         .preview-container {
             position: relative;
-            max-height: 500px; /* Adjust height to control preview length */
+            max-height: 500px; /* Adjust preview length */
             overflow: hidden;
-            /* Fade effect using mask-image */
             -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
             mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-            margin-bottom: -6rem; /* Pull the CTA up over the fade */
+            margin-bottom: -6rem; /* Pull CTA up */
         }
-
-         /* Style for the content within the preview */
          .article-preview-content {
-             padding-bottom: 8rem; /* Add padding at the bottom so content doesn't abruptly end */
+             padding-bottom: 8rem; /* Avoid abrupt end */
          }
-
-        /* Styling for the CTA overlay */
         .cta-overlay {
-            position: relative; /* Sits correctly relative to the preview container */
-            z-index: 10; /* Ensure it's above the faded content */
-            margin-top: 0; /* Adjusted by preview container's negative margin */
-            padding-top: 2rem; /* Spacing above CTA content */
-             background: linear-gradient(to top, #0c111e 30%, transparent 100%); /* Add gradient background that matches body */
+            position: relative; z-index: 10; margin-top: 0; padding-top: 2rem;
+            /* Match dark body background for gradient */
+            background: linear-gradient(to top, #0c111e 30%, transparent 100%);
         }
-         /* Article content styles from articles.html (simplified) */
+         /* Simplified article content styles (already in main.css via prose potentially, but added here for specificity) */
          .article-content h2, .article-content h3 { @apply border-t border-color-base pt-6 mt-8 text-2xl font-bold; }
          .article-content p, .article-content li { @apply text-color-muted leading-relaxed mb-4; }
          .article-content a { @apply text-blue-500 hover:underline; }
@@ -47,9 +39,7 @@
          .article-content img { @apply rounded-lg my-4 max-w-full h-auto mx-auto shadow-md; }
     </style>
 </head>
-<body class="antialiased textured-background dark"> {/* Force dark theme */}
-
-    <header class="header backdrop-blur-md sticky top-0 z-30">
+<body class="antialiased textured-background dark"> <header class="header backdrop-blur-md sticky top-0 z-30">
         <div class="container mx-auto flex justify-between items-center p-4">
              <div class="text-2xl font-bold tracking-wider text-color-base"><a href="index.html">Finex</a></div>
              <nav class="flex items-center gap-4"><a href="login.html" class="main-button text-sm py-2 px-5">Get Full Access</a></nav>
@@ -63,18 +53,15 @@
             </a>
 
             <div class="glass-card p-6 md:p-10">
-                 {/* Title and Meta */}
                  <h1 id="guest-article-title" class="text-4xl md:text-5xl font-bold leading-tight mb-3">Loading Article Preview...</h1>
                  <div id="guest-article-meta" class="text-sm text-color-muted mb-8">Loading info...</div>
 
-                 {/* Faded Preview Content */}
                  <div class="preview-container">
                     <article id="guest-article-content" class="article-content article-preview-content space-y-6">
                         <p class="text-center text-color-muted">Loading content...</p>
                     </article>
                  </div>
 
-                 {/* Call to Action Overlay */}
                  <div class="cta-overlay flex flex-col items-center justify-center text-center pt-8">
                      <div class="glass-card text-center p-6 md:p-8 w-full max-w-lg shadow-xl">
                          <h2 class="text-xl font-bold mb-3">Unlock The Full Article & More</h2>
@@ -110,50 +97,36 @@
             const metaEl = document.getElementById('guest-article-meta');
             const contentEl = document.getElementById('guest-article-content');
 
-            // Ensure elements exist
             if (!titleEl || !metaEl || !contentEl) {
-                console.error("Guest article elements not found!");
-                return;
+                console.error("Guest article elements not found!"); return;
             }
 
             try {
-                // Query for the single latest article
                 const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(1));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    const doc = querySnapshot.docs[0];
-                    const article = { id: doc.id, ...doc.data() };
-
+                    const doc = querySnapshot.docs[0]; const article = { id: doc.id, ...doc.data() };
                     titleEl.textContent = article.title || "Article Preview";
-
                     const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || '';
                     metaEl.innerHTML = `
                         <span>By ${article.author || 'Finex Team'}</span>
                         ${formattedDate ? `<span class="mx-2">&bull;</span><span>${formattedDate}</span>` : ''}
                         ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
                     `;
-                    // IMPORTANT: Ensure article.content is treated as safe HTML.
-                    // If content could contain malicious scripts, you MUST sanitize it here before setting innerHTML.
+                    // WARNING: Ensure article.content is safe HTML or sanitize it first.
                     contentEl.innerHTML = article.content || "<p>Could not load content.</p>";
-
                 } else {
-                    titleEl.textContent = "No Articles Found";
-                    metaEl.textContent = "";
-                    contentEl.innerHTML = "<p class='text-center text-color-muted'>No sample article available at this time.</p>";
+                    titleEl.textContent = "No Articles Found"; metaEl.textContent = "";
+                    contentEl.innerHTML = "<p class='text-center text-color-muted'>No sample article available.</p>";
                 }
             } catch (error) {
                 console.error("Error fetching sample article: ", error);
-                titleEl.textContent = "Error Loading Preview";
-                metaEl.textContent = "";
-                contentEl.innerHTML = "<p class='text-center text-red-500'>Could not load the article preview due to an error.</p>";
+                titleEl.textContent = "Error Loading Preview"; metaEl.textContent = "";
+                contentEl.innerHTML = "<p class='text-center text-red-500'>Could not load preview.</p>";
             }
         }
-
-        // Fetch the article when the page loads
-        fetchSampleArticle();
-
+        fetchSampleArticle(); // Fetch on load
     </script>
-
 </body>
 </html>
