@@ -14,31 +14,26 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        /* Style for member-only lock icon overlay */
-        .locked-feature::after {
-            content: "\f023"; /* Font Awesome lock icon */
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            top: 1.5rem; /* Adjust positioning */
-            right: 1.5rem;
-            font-size: 1rem;
-            color: rgba(234, 179, 8, 0.6); /* Muted yellow/gold */
-            background-color: rgba(17, 24, 39, 0.5); /* Dark semi-transparent bg */
-            padding: 0.3rem 0.5rem;
-            border-radius: 9999px;
-            backdrop-filter: blur(5px);
+        /* --- ADD THIS RULE --- */
+        html {
+            scroll-behavior: smooth; /* Enables smooth scrolling for anchor links */
         }
-         .locked-link {
-             cursor: pointer; /* Indicate it's clickable (to go to login) */
-         }
-          /* Subtle hover effect for locked items */
-         .locked-feature:hover {
-            border-color: rgba(234, 179, 8, 0.3);
-         }
+        /* --- END ADDED RULE --- */
+
+        .article-preview-card:hover { border-color: rgba(0, 82, 204, 0.4); }
+        .member-lock { @apply text-yellow-500 text-xs ml-1; }
+        .feature-card { @apply glass-card p-6 flex flex-col transition duration-300; min-height: 180px; }
+        .feature-card:hover:not(.locked-feature) { @apply border-blue-500/40; }
+        .feature-card h3 { @apply text-xl font-bold mb-2 flex items-center; }
+        .feature-card p { @apply text-color-muted text-sm mb-4 flex-grow; }
+        .feature-card a { @apply block text-center; }
+        .locked-feature { cursor: default; }
+        .locked-feature:hover { border-color: rgba(234, 179, 8, 0.3); }
     </style>
 </head>
-<body class="antialiased textured-background dark"> <header class="header backdrop-blur-md sticky top-0 z-30">
+<body class="antialiased textured-background dark">
+
+    <header class="header backdrop-blur-md sticky top-0 z-30">
         <div class="container mx-auto flex justify-between items-center p-4">
              <div class="text-2xl font-bold tracking-wider text-color-base"><a href="index.html">Finex</a></div>
              <nav class="flex items-center gap-4"><a href="login.html" class="main-button text-sm py-2 px-5">Get Full Access</a></nav>
@@ -46,7 +41,7 @@
     </header>
 
     <main class="container mx-auto">
-        <section class="min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+        <section id="hero" class="min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
             <div class="max-w-3xl">
                 <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome to Finex</h1>
                 <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Explore a preview of our tools designed for trading clarity. Sign up for full access.</p>
@@ -54,12 +49,18 @@
                      <a href="login.html" class="main-button text-lg px-8 py-3">Sign Up Free</a>
                  </div>
             </div>
-             <div class="absolute bottom-10 left-1/2 -translate-x-1/2"><a href="#guest-content" class="text-color-muted animate-bounce"><i class="fas fa-chevron-down fa-2x"></i></a></div>
+             <div class="absolute bottom-10 left-1/2 -translate-x-1/2">
+                 <a href="#guest-content" class="text-color-muted animate-bounce" title="Scroll Down"> {/* Added title for accessibility */}
+                    <i class="fas fa-chevron-down fa-2x"></i>
+                 </a>
+            </div>
         </section>
 
         <section id="guest-content" class="p-4 md:py-16">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                 {/* Left Column */}
+                 <div class="lg:col-span-2 space-y-8">
+                     {/* Featured Guide Preview */}
                     <div class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
                         <div class="text-7xl text-blue-500 flex-shrink-0"><i class="fas fa-book-open"></i></div>
                         <div>
@@ -69,60 +70,67 @@
                             <a href="guest_article.html" class="secondary-button font-bold py-3 px-6 rounded-lg inline-block">Read Preview</a>
                         </div>
                     </div>
-                    <div class="glass-card locked-feature relative p-8">
-                        <h3 class="text-2xl font-bold mb-4">Latest Articles</h3>
-                        <div class="space-y-3 blur-sm pointer-events-none"> {/* Blur content */}
-                            <div class="h-6 bg-gray-700 rounded w-3/4"></div>
-                            <p class="h-4 bg-gray-600 rounded w-full"></p>
-                            <hr class="border-color-base my-2"/>
-                            <div class="h-6 bg-gray-700 rounded w-2/3"></div>
-                            <p class="h-4 bg-gray-600 rounded w-5/6"></p>
-                        </div>
-                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 to-transparent flex flex-col items-center justify-center p-6 text-center">
+                     {/* Latest Articles (Locked) */}
+                     <div class="glass-card locked-feature relative overflow-hidden p-8">
+                         {/* Blurred Background Content */}
+                         <div class="blur-sm pointer-events-none">
+                              <h3 class="text-2xl font-bold mb-4">Latest Articles</h3>
+                              <div class="space-y-3">
+                                 <div class="h-6 bg-gray-700 rounded w-3/4"></div><p class="h-4 bg-gray-600 rounded w-full"></p>
+                                 <hr class="border-color-base my-2"/>
+                                 <div class="h-6 bg-gray-700 rounded w-2/3"></div><p class="h-4 bg-gray-600 rounded w-5/6"></p>
+                             </div>
+                              <div class="h-9 mt-4"></div> {/* Placeholder for button */}
+                         </div>
+                         {/* CTA Overlay */}
+                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/95 via-[#111827]/80 to-transparent flex flex-col items-center justify-end p-6 text-center z-10 pb-4">
                             <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
-                             <h4 class="text-lg font-semibold mb-2">Access All Articles</h4>
-                             <p class="text-sm text-color-muted mb-4">Members get unlimited access to our full library of guides and strategies.</p>
-                             <a href="login.html" class="main-button text-sm py-2 px-4">Sign Up to Read</a>
+                             <h4 class="text-lg font-semibold mb-2 text-white">Access All Articles</h4>
+                             <p class="text-sm text-gray-300 mb-4">Members get unlimited access to our full library.</p>
+                             <a href="login.html" class="main-button text-sm py-2 px-4 w-full">Sign Up / Log In</a>
                          </div>
                     </div>
-                </div>
-                <div class="space-y-8">
-                     <div class="glass-card locked-feature relative p-8">
-                        <h3 class="text-2xl font-bold mb-6">Real-World Results</h3>
-                        <div class="space-y-6 blur-sm pointer-events-none"> {/* Blur content */}
-                            <div class="flex items-start gap-4">
-                                <i class="fas fa-chart-pie text-green-400 mt-1 opacity-50"></i>
-                                <div><div class="h-5 bg-gray-700 rounded w-3/4 mb-1"></div><div class="h-3 bg-gray-600 rounded w-full"></div></div>
-                            </div>
-                             <div class="flex items-start gap-4">
-                                 <i class="fas fa-wallet text-green-400 mt-1 opacity-50"></i>
-                                <div><div class="h-5 bg-gray-700 rounded w-2/3 mb-1"></div><div class="h-3 bg-gray-600 rounded w-5/6"></div></div>
-                            </div>
-                        </div>
-                       
-                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 to-transparent flex flex-col items-center justify-center p-6 text-center">
-                            <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
-                             <h4 class="text-lg font-semibold mb-2">See Member Results</h4>
-                             <p class="text-sm text-color-muted mb-4">Gain insights from real case studies and member spotlights showing our principles in action.</p>
-                             <a href="login.html" class="main-button text-sm py-2 px-4">Unlock Results</a>
+                 </div>
+                 {/* Right Column */}
+                 <div class="space-y-8">
+                      {/* New Results (Locked) */}
+                      <div class="glass-card locked-feature relative overflow-hidden p-8">
+                         <div class="blur-sm pointer-events-none">
+                             <h3 class="text-2xl font-bold mb-6">Real-World Results</h3>
+                             <div class="space-y-6">
+                                 <div class="flex items-start gap-4"><i class="fas fa-chart-pie text-green-400 mt-1 opacity-50"></i><div><div class="h-5 bg-gray-700 rounded w-3/4 mb-1"></div><div class="h-3 bg-gray-600 rounded w-full"></div></div></div>
+                                  <div class="flex items-start gap-4"><i class="fas fa-wallet text-green-400 mt-1 opacity-50"></i><div><div class="h-5 bg-gray-700 rounded w-2/3 mb-1"></div><div class="h-3 bg-gray-600 rounded w-5/6"></div></div></div>
+                             </div>
+                              <div class="h-9 mt-4"></div>
                          </div>
-                    </div>
-                    <div class="glass-card locked-feature relative p-8">
-                        <h3 class="text-2xl font-bold mb-4">Trading Tools</h3>
-                         <div class="blur-sm pointer-events-none space-y-2">
-                             <p class="text-color-muted text-sm"><i class="fas fa-calculator fa-fw text-teal-400 opacity-50"></i> Position Size Calculator</p>
-                             <p class="text-color-muted text-sm"><i class="fas fa-balance-scale fa-fw text-teal-400 opacity-50"></i> Risk/Reward Calculator</p>
-                             <p class="text-color-muted text-sm"><i class="fas fa-book fa-fw text-teal-400 opacity-50"></i> Trading Journal & Analytics</p>
-                         </div>
-                        
-                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 to-transparent flex flex-col items-center justify-center p-6 text-center">
+                          {/* CTA Overlay */}
+                          <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/95 via-[#111827]/80 to-transparent flex flex-col items-center justify-end p-6 text-center z-10 pb-4">
                             <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
-                             <h4 class="text-lg font-semibold mb-2">Access Trading Tools</h4>
-                             <p class="text-sm text-color-muted mb-4">Members get full access to calculators, the journal, market data, and more.</p>
-                             <a href="login.html" class="main-button text-sm py-2 px-4">Unlock Tools</a>
+                             <h4 class="text-lg font-semibold mb-2 text-white">See Member Results</h4>
+                             <p class="text-sm text-gray-300 mb-4">Gain insights from real case studies and member spotlights.</p>
+                             <a href="login.html" class="main-button text-sm py-2 px-4 w-full">Sign Up / Log In</a>
                          </div>
                      </div>
-                </div>
+                     {/* Tools Preview (Locked) */}
+                      <div class="glass-card locked-feature relative overflow-hidden p-8">
+                         <div class="blur-sm pointer-events-none">
+                             <h3 class="text-2xl font-bold mb-4">Trading Tools</h3>
+                              <div class="space-y-2">
+                                  <p class="text-color-muted text-sm"><i class="fas fa-calculator fa-fw text-teal-400 opacity-50"></i> Position Size Calculator</p>
+                                  <p class="text-color-muted text-sm"><i class="fas fa-balance-scale fa-fw text-teal-400 opacity-50"></i> Risk/Reward Calculator</p>
+                                  <p class="text-color-muted text-sm"><i class="fas fa-book fa-fw text-teal-400 opacity-50"></i> Trading Journal & Analytics</p>
+                              </div>
+                               <div class="h-9 mt-4"></div>
+                         </div>
+                          {/* CTA Overlay */}
+                          <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/95 via-[#111827]/80 to-transparent flex flex-col items-center justify-end p-6 text-center z-10 pb-4">
+                            <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
+                             <h4 class="text-lg font-semibold mb-2 text-white">Access Trading Tools</h4>
+                             <p class="text-sm text-gray-300 mb-4">Members get full access to calculators, the journal, and more.</p>
+                             <a href="login.html" class="main-button text-sm py-2 px-4 w-full">Sign Up / Log In</a>
+                         </div>
+                      </div>
+                 </div>
             </div>
         </section>
     </main>
