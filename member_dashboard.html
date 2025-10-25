@@ -14,11 +14,18 @@
     <meta property="og:url" content="https://www.yourdomain.com/member_dashboard.html"> <meta property="og:image" content="https://www.yourdomain.com/images/og-dashboard.png"> <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Member Dashboard | Finex">
     <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
-    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' } // Re-add config for CDN
+    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com" defer></script> 
+    
+    <link rel="stylesheet" href="main.css"> <script>
+        // Inline config is necessary when using the CDN
+        tailwind.config = { darkMode: 'class' }
     </script>
-    <link rel="stylesheet" href="main.css"> </head>
+</head>
 
 <body class="antialiased textured-background">
 
@@ -80,7 +87,7 @@
                                     </div>
                                 </div>
                                  <div class="flex items-start gap-4 group">
-                                     <i class="fas fa-wallet text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
+                                    <i class="fas fa-wallet text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
                                     <div>
                                          <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Member Spotlight: Tripling Portfolio</a>
                                          <p class="text-sm text-color-muted">How one member used our dividend strategy.</p>
@@ -102,12 +109,10 @@
         function initDashboardPage(user, db) {
             console.log("Setting up Dashboard specific logic...");
             
-            // Personalize welcome message
             const memberNameEl = document.getElementById('member-name');
             if (memberNameEl && user && user.displayName) {
-                // SECURITY: Always use .textContent when setting text from a user object
-                // This prevents XSS attacks.
-                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member'; // Shows first name
+                // SECURITY (XSS Safe): Use .textContent
+                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member';
             }
 
             const articlesListContainer = document.getElementById('latest-articles-list');
@@ -119,8 +124,7 @@
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
 
             onSnapshot(q, (snapshot) => {
-                // Clear container safely
-                articlesListContainer.innerHTML = ''; // Clear the "Loading..." text
+                articlesListContainer.innerHTML = ''; // Clear "Loading..."
 
                 if (snapshot.empty) {
                     const p = document.createElement('p');
@@ -133,16 +137,14 @@
                 snapshot.forEach((doc, index) => {
                     const article = { id: doc.id, ...doc.data() };
                     
-                    // --- SECURITY (CRITICAL): Build DOM elements manually ---
-                    // This prevents XSS attacks by never using .innerHTML with database data.
-                    
+                    // --- SECURITY (XSS Safe): Build DOM elements manually ---
                     const articleDiv = document.createElement('div');
                     articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
 
                     const link = document.createElement('a');
-                    link.href = `articles.html?id=${article.id}`; // Link to specific article
+                    link.href = `articles.html?id=${article.id}`; 
                     link.className = 'text-lg font-semibold text-color-base group-hover:text-blue-500';
-                    link.textContent = article.title; // SECURE: Sets text only
+                    link.textContent = article.title; // Secure
 
                     const meta = document.createElement('p');
                     meta.className = 'text-color-muted text-sm';
@@ -150,28 +152,25 @@
                     const publishedDate = article.createdAt 
                         ? article.createdAt.toDate().toLocaleDateString() 
                         : 'N/A';
-                    meta.textContent = `${readTime} • Published on ${publishedDate}`; // SECURE: Sets text only
+                    meta.textContent = `${readTime} • Published on ${publishedDate}`; // Secure
 
                     articleDiv.appendChild(link);
                     articleDiv.appendChild(meta);
                     articlesListContainer.appendChild(articleDiv);
 
-                    // Add divider
                     if (index < snapshot.docs.length - 1) {
                         const divider = document.createElement('hr');
                         divider.className = 'border-color-base mx-4';
                         articlesListContainer.appendChild(divider);
                     }
-                    // --- End of secure DOM creation ---
                 });
 
             }, (error) => {
                 console.error("Error fetching latest articles:", error);
-                // Clear container safely
                 articlesListContainer.innerHTML = ''; 
                 const p = document.createElement('p');
                 p.className = 'text-red-500 text-center';
-                p.textContent = 'Could not load articles.'; // SECURE: Use .textContent
+                p.textContent = 'Could not load articles.'; // Secure
                 articlesListContainer.appendChild(p);
             });
         }
