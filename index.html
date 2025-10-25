@@ -22,79 +22,90 @@
 
         /* --- LIGHT THEME STYLES --- */
         body {
-            background-color: #f8f9fa; /* Light background */
-            color: #212529; /* Dark text */
+            background-color: #f0f4f8; /* Slightly softer light background */
+            color: #1a202c; /* Slightly softer dark text */
             font-family: 'Source Sans Pro', sans-serif;
             overflow-x: hidden;
-            position: relative; /* Needed for absolute gradient */
+            position: relative;
         }
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
 
-        /* --- BACKGROUND GRADIENT & CANVAS --- */
-        #background-gradient {
+        /* --- NEW: Animated Mesh Gradient Background --- */
+        #mesh-gradient-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(230, 235, 240, 0.8) 0%, rgba(245, 248, 250, 0.8) 100%); /* Subtle light gradient */
-            z-index: -2; /* Below canvas */
+            z-index: -1;
+            overflow: hidden; /* Prevent scrollbars from gradient */
         }
-        #wave-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; /* Above gradient, below content */
-            opacity: 0.6; /* Subtle effect */
+        #mesh-gradient {
+            width: 150%; /* Larger to allow movement */
+            height: 150%;
+            position: absolute;
+            top: -25%; /* Center the larger gradient */
+            left: -25%;
+            background: radial-gradient(at 20% 20%, hsla(210, 80%, 95%, 0.8) 0px, transparent 50%),
+                        radial-gradient(at 80% 20%, hsla(190, 70%, 90%, 0.7) 0px, transparent 50%),
+                        radial-gradient(at 50% 80%, hsla(230, 75%, 92%, 0.8) 0px, transparent 50%),
+                        radial-gradient(at 80% 80%, hsla(30, 60%, 94%, 0.7) 0px, transparent 50%);
+            animation: moveGradient 25s ease infinite alternate; /* Slow, smooth animation */
         }
 
+        @keyframes moveGradient {
+            0% { transform: translate(0%, 0%) rotate(0deg); }
+            100% { transform: translate(-10%, -10%) rotate(10deg); } /* Slight movement and rotation */
+        }
+        /* --- End Mesh Gradient --- */
+
         .glass-card {
-            background: rgba(255, 255, 255, 0.75); /* Lighter glass effect for light theme */
-            -webkit-backdrop-filter: blur(15px);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 0, 0, 0.08); /* Subtle dark border */
+            background: rgba(255, 255, 255, 0.8); /* Slightly more opaque glass */
+            -webkit-backdrop-filter: blur(18px); /* Increased blur */
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(0, 0, 0, 0.06); /* Even subtler border */
             border-radius: 1.5rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Subtle base shadow */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06); /* Refined shadow */
         }
         .glass-card-hover:hover {
-            background: rgba(255, 255, 255, 0.9);
-            border-color: rgba(0, 82, 204, 0.3);
-            transform: translateY(-6px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Slightly stronger hover shadow */
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 82, 204, 0.25);
+            transform: translateY(-7px); /* Increased lift */
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12); /* Stronger hover shadow */
         }
         .main-button {
             background-color: #0052cc; color: white;
             transition: all 0.3s ease;
             display: inline-block;
             box-shadow: 0 4px 15px rgba(0, 82, 204, 0.2);
+            border-radius: 9999px; /* Pill shape */
         }
         .main-button:hover {
-            background-color: #0065ff; transform: scale(1.03);
-            box-shadow: 0 6px 20px rgba(0, 101, 255, 0.3);
+            background-color: #0065ff; transform: scale(1.04); /* Slightly more pop */
+            box-shadow: 0 7px 22px rgba(0, 101, 255, 0.35);
         }
         .secondary-button {
-            background-color: rgba(0, 0, 0, 0.03); /* Subtle dark background */
-            color: #343a40; /* Darker text */
-            border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle dark border */
+            background-color: rgba(0, 0, 0, 0.04);
+            color: #343a40;
+            border: 1px solid rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease; display: inline-block;
+            border-radius: 9999px; /* Pill shape */
         }
         .secondary-button:hover {
-            background-color: rgba(0, 0, 0, 0.06);
+            background-color: rgba(0, 0, 0, 0.08);
             border-color: rgba(0, 0, 0, 0.2);
-            transform: scale(1.03);
-            color: #212529; /* Darken text slightly on hover */
+            transform: scale(1.04);
+            color: #1a202c;
         }
         .feature-icon-wrapper {
-            width: 80px; height: 80px;
+            width: 70px; height: 70px; /* Slightly smaller icon wrapper */
             margin-bottom: 1.5rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease; /* Transition all */
         }
          /* Icon colors adjusted */
         .feature-icon-wrapper.blue { background-color: #e7f0ff; color: #0052cc; }
@@ -102,38 +113,42 @@
         .feature-icon-wrapper.purple { background-color: #f3eafa; color: #6f42c1; }
 
         .glass-card-hover:hover .feature-icon-wrapper {
-             background-color: rgba(0, 82, 204, 0.15); /* Lighter hover background */
-             color: #0052cc; /* Ensure icon color stays */
+             background-color: rgba(0, 82, 204, 0.1);
+             color: #0052cc;
+             transform: scale(1.1); /* Pop effect on icon */
         }
-        .feature-icon { width: 40px; height: 40px; }
+        .feature-icon { width: 35px; height: 35px; /* Adjusted icon size */ }
         header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
-        header a { color: #212529; } /* Header text dark by default in light theme */
+        header a { color: #1a202c; } /* Header text dark by default */
         header.scrolled {
-            background-color: rgba(255, 255, 255, 0.95); /* White background when scrolled */
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            background-color: rgba(255, 255, 255, 0.9); /* White background when scrolled */
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* Subtle shadow */
         }
-        header.scrolled a { color: #212529; } /* Dark text when scrolled */
-        header.scrolled .main-button { color: white; } /* Keep main button text white */
-        header.scrolled .secondary-button { color: #343a40; } /* Keep secondary button dark */
+        header.scrolled a { color: #1a202c; }
+        header.scrolled .main-button { color: white; }
+        header.scrolled .secondary-button { color: #343a40; }
 
-        /* Gradient adjusted for light theme - make it subtle dark */
+        /* Gradient for hero */
         .hero-gradient-text {
-             background: linear-gradient(90deg, #212529, #495057);
+             background: linear-gradient(90deg, #1a202c, #0052cc); /* Darker, bluer gradient */
              -webkit-background-clip: text;
              -webkit-text-fill-color: transparent;
              background-clip: text;
              text-fill-color: transparent;
         }
         /* Text color overrides */
-        .text-gray-300 { color: #6c757d; } /* Use medium gray for subtext */
-        .text-gray-500 { color: #adb5bd; } /* Lighter gray for footer */
-        .text-gray-600 { color: #6c757d; } /* Adjust chevron color */
+        .text-gray-600 { color: #4a5568; } /* Adjusted gray for subtext */
+        .text-gray-500 { color: #718096; } /* Adjusted gray for footer */
+        .text-gray-400 { color: #a0aec0; } /* Adjusted chevron color */
     </style>
 </head>
 <body class="antialiased">
-    <!-- Background Gradient --><div id="background-gradient"></div>
-    <!-- Wave Animation Canvas --><canvas id="wave-canvas"></canvas>
+    <!-- Animated Mesh Gradient Background -->
+    <div id="mesh-gradient-container">
+        <div id="mesh-gradient"></div>
+    </div>
+    <!-- Removed Canvas -->
 
     <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
         <div class="container mx-auto flex justify-between items-center">
@@ -141,14 +156,15 @@
                 <a href="#hero">Finex</a>
             </div>
             <nav class="flex items-center space-x-3 sm:space-x-4">
-                 <a href="login.html" class="secondary-button font-semibold py-2 px-4 sm:px-5 rounded-lg text-sm sm:text-base">Member Login</a>
-                 <a href="admin_login.html" class="main-button font-semibold py-2 px-4 sm:px-5 rounded-lg text-sm sm:text-base">Admin Login</a>
+                 <a href="login.html" class="secondary-button font-semibold py-2 px-4 sm:px-5 rounded-full text-sm sm:text-base">Member Login</a>
+                 <a href="admin_login.html" class="main-button font-semibold py-2 px-4 sm:px-5 rounded-full text-sm sm:text-base">Admin Login</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <!-- Hero Section --><section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
+        <!-- Hero Section -->
+        <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
             <div class="relative z-10 max-w-4xl">
                 <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-6 hero-gradient-text">Trade with Precision & Insight</h1>
                 <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
@@ -166,28 +182,32 @@
             </div>
         </section>
 
-        <!-- Features Section --><section id="features" class="py-20 md:py-32 px-4 relative z-10">
+        <!-- Features Section -->
+        <section id="features" class="py-20 md:py-32 px-4 relative z-10">
             <div class="container mx-auto text-center">
                 <h2 class="text-4xl font-bold mb-4">Engineered for Performance</h2>
                 <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
                     Leverage tools designed to enhance your decision-making process and streamline your trading workflow.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    <!-- Feature 1 --><div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
+                    <!-- Feature 1 -->
+                    <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
                         <div class="feature-icon-wrapper blue">
                              <i class="fas fa-clipboard-check fa-2x feature-icon"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-3">Systematic Planning</h3>
                         <p class="text-gray-600">Implement a disciplined weekly workflow: analyze potential setups, define your high-probability watchlist, and log trades with our integrated journal.</p>
                     </div>
-                    <!-- Feature 2 --><div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
+                    <!-- Feature 2 -->
+                    <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
                         <div class="feature-icon-wrapper green">
                              <i class="fas fa-image fa-2x feature-icon"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-3">Curated Market Analysis</h3>
                         <p class="text-gray-600">Access timely chart breakdowns and strategic insights provided by the Finex team, delivered directly to your Analysis Gallery.</p>
                     </div>
-                     <!-- Feature 3 --><div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
+                     <!-- Feature 3 -->
+                     <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
                         <div class="feature-icon-wrapper purple">
                             <i class="fas fa-book-open fa-2x feature-icon"></i>
                         </div>
@@ -198,7 +218,8 @@
             </div>
         </section>
 
-        <!-- Call to Action Section --><section id="cta" class="py-20 md:py-32 px-4 relative z-10">
+        <!-- Call to Action Section -->
+        <section id="cta" class="py-20 md:py-32 px-4 relative z-10">
              <div class="container mx-auto text-center max-w-3xl">
                  <h2 class="text-4xl font-bold mb-6">Refine Your Edge. Achieve Consistency.</h2>
                  <p class="text-lg text-gray-600 mb-10">
@@ -209,90 +230,22 @@
         </section>
     </main>
 
-    <!-- Footer --><footer class="py-8 px-4 relative z-10 border-t border-gray-200 mt-16">
+    <!-- Footer -->
+    <footer class="py-8 px-4 relative z-10 border-t border-gray-200 mt-16">
         <div class="container mx-auto text-center text-gray-500 text-sm">
             &copy; 2025 Finex. All Rights Reserved. Empowering Disciplined Traders.
         </div>
     </footer>
 
     <script>
-        // Wave Background Animation Script
+        // Sticky header
         document.addEventListener('DOMContentLoaded', function() {
-            const canvas = document.getElementById('wave-canvas');
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-            const particleCount = 40; // Fewer particles for a calmer wave
-            const particleColor = 'rgba(0, 0, 0, 0.1)'; // Very subtle dark particles
-            const waveAmplitude = 15; // How high the wave goes
-            const waveFrequency = 0.005; // How many waves across the screen
-            const waveSpeed = 0.01; // How fast the wave moves
-
-            let animationFrameId = null;
-            let time = 0;
-
-            function setupCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                initParticles();
-            }
-
-            class Particle {
-                constructor(x, y) {
-                    this.baseX = x;
-                    this.baseY = y;
-                    this.x = x;
-                    this.y = y;
-                    this.radius = Math.random() * 1.5 + 0.5; // Slightly varied particle size
-                }
-
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = particleColor;
-                    ctx.fill();
-                }
-
-                update() {
-                    let distanceToCenter = Math.sqrt(
-                        Math.pow(this.baseX - canvas.width / 2, 2) +
-                        Math.pow(this.baseY - canvas.height / 2, 2)
-                    );
-                    let displacement = Math.sin(this.baseX * waveFrequency + time * waveSpeed) * waveAmplitude * (1 - (distanceToCenter / Math.max(canvas.width, canvas.height))); // Wave effect, stronger near center
-                    this.y = this.baseY + displacement;
-                    this.x = this.baseX + Math.cos(this.baseY * waveFrequency + time * waveSpeed * 0.5) * waveAmplitude * 0.5 * (1 - (distanceToCenter / Math.max(canvas.width, canvas.height))); // Slight horizontal movement
-                }
-            }
-
-            function initParticles() {
-                particles = [];
-                for (let i = 0; i < particleCount; i++) {
-                    for (let j = 0; j < particleCount; j++) {
-                        let x = (canvas.width / (particleCount - 1)) * i;
-                        let y = (canvas.height / (particleCount - 1)) * j;
-                        particles.push(new Particle(x, y));
-                    }
-                }
-            }
-
-            function animate() {
-                animationFrameId = requestAnimationFrame(animate);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                time++; // Increment time for animation
-                particles.forEach(p => {
-                    p.update();
-                    p.draw();
-                });
-            }
-
-            window.addEventListener('resize', setupCanvas);
-
-            setupCanvas();
-            animate();
-
-            // Sticky header
             const header = document.getElementById('header');
-            window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.scrollY > 50); });
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            });
         });
+        // Note: Removed the canvas animation script
     </script>
 </body>
 </html>
