@@ -54,11 +54,7 @@ export const allSidebarItems = [
     // *** REMOVED original 'screener' item ***
     // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
-    
-    // === NEWLY ADDED ===
     { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
-    // === END NEW ===
-
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
@@ -96,7 +92,7 @@ export async function initializeAppCore(pageSpecificInit) {
                 // 2. Wait for *both* components and preferences to finish
                 await Promise.all([
                     loadCommonComponents(),
-                    loadPreferences(settingsDocRef)
+                    loadPreferences(settingsDocRef) // This function is now updated
                 ]);
 
                 // 3. Now that we have all data, apply it *before* showing the page
@@ -142,19 +138,56 @@ async function loadCommonComponents() {
  }
 
 // --- Preference Management ---
+// === THIS FUNCTION IS UPDATED TO LOAD GLOBAL DEFAULTS ===
 async function loadPreferences(settingsDocRef) {
-     try {
-         const docSnap = await getDoc(settingsDocRef);
-         userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems);
-         if (docSnap.exists()) {
-             const loadedPrefs = docSnap.data(); userPreferences.theme = loadedPrefs.theme || 'dark';
-             if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
-                 for (const key in userPreferences.sidebarItems) {
-                     if (loadedPrefs.sidebarItems.hasOwnProperty(key)) { userPreferences.sidebarItems[key] = loadedPrefs.sidebarItems[key]; }
-                 }
-             }
-         } else { await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() }); }
-     } catch (error) { console.error("Error loading preferences:", error); userPreferences = { theme: 'dark', sidebarItems: {} }; initializeDefaultVisibility(allSidebarItems); }
+    try {
+        // 1. Start with the hard-coded defaults
+        userPreferences = { theme: 'dark', sidebarItems: {} };
+        initializeDefaultVisibility(allSidebarItems);
+        let baseSettings = { ...userPreferences.sidebarItems };
+        let baseTheme = 'dark';
+
+        // 2. Load GLOBAL defaults from 'siteSettings/sidebarDefaults'
+        const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
+        const globalDocSnap = await getDoc(globalSettingsRef);
+
+        if (globalDocSnap.exists()) {
+            // Merge global settings OVER hard-coded defaults
+            const globalPrefs = globalDocSnap.data();
+            if (globalPrefs.sidebarItems) {
+                baseSettings = { ...baseSettings, ...globalPrefs.sidebarItems };
+            }
+            baseTheme = globalPrefs.theme || baseTheme;
+        }
+
+        // 3. Set userPreferences to these merged defaults
+        userPreferences.sidebarItems = baseSettings;
+        userPreferences.theme = baseTheme;
+
+        // 4. Load the INDIVIDUAL user's settings
+        const userDocSnap = await getDoc(settingsDocRef);
+        
+        // 5. Merge individual user's settings OVER the global defaults
+        if (userDocSnap.exists()) {
+            const loadedPrefs = userDocSnap.data();
+            // User's theme overrides global/default theme
+            userPreferences.theme = loadedPrefs.theme || userPreferences.theme; 
+            
+            if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
+                // User's sidebar settings override global/default settings
+                userPreferences.sidebarItems = { ...userPreferences.sidebarItems, ...loadedPrefs.sidebarItems };
+            }
+        }
+        // We NO LONGER create a new user doc here.
+        // A user doc will be created only when they first save their *own* settings.
+        // This ensures they always get the latest global defaults until they choose to override them.
+
+     } catch (error) { 
+         console.error("Error loading preferences:", error);
+         // Fallback to just the hard-coded defaults in case of error
+         userPreferences = { theme: 'dark', sidebarItems: {} }; 
+         initializeDefaultVisibility(allSidebarItems); 
+     }
 }
 
 // --- Theme Application ---
