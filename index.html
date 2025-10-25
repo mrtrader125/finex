@@ -100,19 +100,19 @@
         </div>
     </header>
 
-    <main class="container mx-auto mt-12 mb-20 px-4 relative z-10"> {/* Added relative z-10 */}
-        {/* Adjusted padding top to account for fixed header */}
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start pt-24">
+    <!-- CORRECTED COMMENT -->
+    <main class="container mx-auto mt-12 mb-20 px-4 relative z-10"> <!-- Added relative z-10 -->
+        <!-- CORRECTED COMMENT -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start pt-24"> <!-- Adjusted padding top to account for fixed header -->
 
             <!-- Left Side: Headline and Feature Card -->
-            <!-- CORRECTED COMMENT: Used HTML comment syntax -->
             <div class="lg:sticky lg:top-28 self-start"> <!-- Makes the card stick on scroll -->
                 <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-8">
                     Your Edge in Trading Consistency.
                 </h1>
 
-                <div class="content-card p-6 sm:p-8"> {/* Changed to content-card */}
-                    <h2 class="text-xl font-semibold mb-6 text-gray-300">Explore Finex Core Features</h2> {/* Lighter text */}
+                <div class="content-card p-6 sm:p-8">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-300">Explore Finex Core Features</h2>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                          <a href="login.html" class="feature-item">
                             <div class="feature-icon-wrapper"><i class="fas fa-image fa-lg"></i></div>
@@ -147,7 +147,7 @@
 
             <!-- Right Side: Image Collage -->
             <div class="image-collage min-h-[400px] lg:min-h-[600px]">
-                 <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Analysis+Chart" alt="Financial analysis chart" class="img-span-2"> {/* Darker placeholder */}
+                 <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Analysis+Chart" alt="Financial analysis chart" class="img-span-2">
                  <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Trading+Setup" alt="Trading setup visualization">
                  <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Market+Data" alt="Market data screen">
             </div>
@@ -155,7 +155,7 @@
         </section>
     </main>
 
-    <footer class="py-8 px-4 border-t border-white/10 mt-16 relative z-10"> {/* Added relative z-10 */}
+    <footer class="py-8 px-4 border-t border-white/10 mt-16 relative z-10"> <!-- Added relative z-10 -->
         <div class="container mx-auto text-center text-gray-500 text-sm">
             &copy; 2025 Finex. All rights reserved. Empowering Disciplined Traders with Actionable Intelligence.
         </div>
@@ -173,7 +173,6 @@
             window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
             setupCanvas(); initParticles(); animate();
 
-            // Header Scroll Effect Restored
             const header = document.getElementById('header');
             window.addEventListener('scroll', () => {
                 if (window.scrollY > 50) {
