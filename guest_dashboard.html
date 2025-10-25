@@ -10,42 +10,84 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        // Apply Tailwind class-based dark mode (though this page is always dark)
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        /* Specific hover effect for the preview card */
-        .article-preview-card:hover {
-             border-color: rgba(0, 82, 204, 0.4); /* Subtle blue border on hover */
+        /* Style for member-only lock icon */
+        .member-lock {
+            @apply text-yellow-500 text-xs ml-1;
         }
+        .feature-card {
+            @apply glass-card p-6 flex flex-col transition duration-300;
+             min-height: 180px; /* Ensure cards have some minimum height */
+        }
+         .feature-card:hover {
+            @apply border-blue-500/40;
+         }
+         .feature-card h3 {
+             @apply text-xl font-bold mb-2 flex items-center;
+         }
+          .feature-card p {
+             @apply text-color-muted text-sm mb-4 flex-grow; /* flex-grow pushes button down */
+          }
+           .feature-card a {
+             @apply block text-center; /* Make links block for full width */
+           }
     </style>
 </head>
 <body class="antialiased textured-background dark"> <header class="header backdrop-blur-md sticky top-0 z-30">
         <div class="container mx-auto flex justify-between items-center p-4">
-             <div class="text-2xl font-bold tracking-wider text-color-base">
-                 <a href="index.html">Finex</a> </div>
-             <nav class="flex items-center gap-4">
-                 <a href="login.html" class="main-button text-sm py-2 px-5">Get Full Access</a>
-             </nav>
+             <div class="text-2xl font-bold tracking-wider text-color-base"><a href="index.html">Finex</a></div>
+             <nav class="flex items-center gap-4"><a href="login.html" class="main-button text-sm py-2 px-5">Get Full Access</a></nav>
         </div>
     </header>
 
     <main class="container mx-auto p-4 md:p-8">
         <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-color-base">Explore Finex Guides</h1>
-            <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Get a glimpse of the insights available to members. Sign up for full access to all articles and tools.</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-color-base">Explore Finex Features (Guest Preview)</h1>
+            <p class="text-lg text-color-muted mt-4 max-w-3xl mx-auto">See what Finex offers to help you trade smarter. Sign up for full access to all features.</p>
         </div>
 
-        <div class="max-w-3xl mx-auto space-y-6">
-            <h2 class="text-2xl font-bold text-color-base mb-4">Sample Article</h2>
-            <a href="guest_article.html" class="glass-card block p-6 md:p-8 article-preview-card transition duration-300">
-                <h3 class="text-xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation (Preview)</h3>
-                <p class="text-color-muted text-sm mb-4">An essential primer on the foundational principles you need to understand before choosing a financial path. We cover Mindset, Capital, Effort, Time Horizon, and Scalability.</p>
-                <span class="text-blue-500 font-semibold hover:text-blue-400">Read Preview &rarr;</span>
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
 
+            <div class="feature-card">
+                <h3><i class="fas fa-book-reader fa-fw mr-3 text-blue-400"></i>Articles & Guides</h3>
+                <p>Read in-depth guides and strategies. Guests can view a limited preview of selected articles.</p>
+                <a href="guest_article.html" class="secondary-button text-sm py-2">Read Sample Article</a>
             </div>
+
+            <div class="feature-card">
+                 <h3><i class="fas fa-book fa-fw mr-3 text-green-400"></i>Trading Journal<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
+                 <p>Log trades, track performance with P/L, win rate, profit factor, and visualize your equity curve.</p>
+                 <a href="login.html" class="main-button text-sm py-2">Unlock Journal</a>
+            </div>
+
+            <div class="feature-card">
+                 <h3><i class="fas fa-clipboard-check fa-fw mr-3 text-purple-400"></i>Weekly Checklist<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
+                 <p>Plan your trading week: set your watchlist, define focus pairs, review auto-summarized journal stats, and reflect.</p>
+                 <a href="login.html" class="main-button text-sm py-2">Unlock Checklist</a>
+             </div>
+
+             <div class="feature-card">
+                 <h3><i class="fas fa-chart-bar fa-fw mr-3 text-red-400"></i>Market Data<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
+                 <p>Stay informed with integrated live news feeds, an economic calendar for key events, and market screeners.</p>
+                 <a href="login.html" class="main-button text-sm py-2">Access Market Data</a>
+             </div>
+
+             <div class="feature-card">
+                 <h3><i class="fas fa-image fa-fw mr-3 text-indigo-400"></i>Analysis Gallery<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
+                 <p>View market analysis charts and insights shared regularly by the Finex team.</p>
+                 <a href="login.html" class="main-button text-sm py-2">View Analysis</a>
+              </div>
+
+             <div class="feature-card">
+                 <h3><i class="fas fa-calculator fa-fw mr-3 text-teal-400"></i>Trading Calculators<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
+                 <p>Essential tools like Position Size and Risk/Reward calculators for effective trade planning.</p>
+                 <a href="login.html" class="main-button text-sm py-2">Use Calculators</a>
+             </div>
+
+        </div>
     </main>
 
      <footer class="py-8 px-4 border-t border-color-base mt-16">
