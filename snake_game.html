@@ -32,7 +32,7 @@
 
         /* Style for game buttons */
         .game-btn {
-            @apply px-6 py-3 bg-green-600 text-white rounded-lg shadow-lg transform transition-all duration-150;
+            @apply px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg transform transition-all duration-150; /* Smaller padding */
             @apply hover:bg-green-700 hover:shadow-xl active:scale-95;
             border-bottom: 4px solid #2f855a; /* darker green */
         }
@@ -44,7 +44,7 @@
 
         /* On-screen controls styling */
         .controls-btn {
-            @apply w-16 h-16 sm:w-20 sm:h-20 bg-gray-700 text-white rounded-lg shadow-md flex items-center justify-center text-3xl;
+            @apply w-14 h-14 sm:w-16 sm:h-16 bg-gray-700 text-white rounded-lg shadow-md flex items-center justify-center text-2xl; /* Made smaller */
             @apply active:bg-gray-800 active:scale-95 transition-transform;
             border-bottom: 4px solid #2d3748; /* darker gray */
         }
@@ -56,7 +56,7 @@
         
         /* Custom message box for game over/start */
         #message-box {
-            @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-75 p-8 rounded-lg text-center text-lg sm:text-2xl shadow-2xl;
+            @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-75 p-6 rounded-lg text-center text-base sm:text-xl shadow-2xl; /* Smaller text/padding */
             backdrop-filter: blur(5px);
             /* Ensure it's on top of the canvas */
             z-index: 10;
@@ -65,19 +65,19 @@
 </head>
 <body class="flex items-center justify-center min-h-screen text-white p-4">
 
-    <div class="w-full max-w-lg text-center">
+    <div class="w-full max-w-sm text-center"> <!-- Made container smaller -->
         <!-- Game Title -->
-        <h1 class="text-4xl sm:text-5xl font-bold text-green-400 mb-4" style="text-shadow: 0 0 10px #48bb78;">
+        <h1 class="text-3xl sm:text-4xl font-bold text-green-400 mb-4" style="text-shadow: 0 0 10px #48bb78;"> <!-- Made text smaller -->
             SNAKE
         </h1>
 
         <!-- Score Display -->
-        <div id="score-display" class="text-2xl mb-4">
+        <div id="score-display" class="text-xl mb-4"> <!-- Made text smaller -->
             Score: 0
         </div>
 
         <!-- Game Area -->
-        <div id="game-container" class="relative w-full aspect-square max-w-md mx-auto mb-6">
+        <div id="game-container" class="relative w-full aspect-square max-w-xs mx-auto mb-4"> <!-- Made container smaller -->
             <!-- Game Canvas -->
             <canvas id="game-canvas" class="w-full h-full rounded-lg"></canvas>
             
@@ -88,17 +88,17 @@
         </div>
 
         <!-- Start/Restart Button -->
-        <button id="start-button" class="game-btn text-xl mb-6">
+        <button id="start-button" class="game-btn text-lg mb-4"> <!-- Made text smaller -->
             Start Game
         </button>
 
         <!-- On-screen controls for mobile -->
-        <div class="grid grid-cols-3 gap-2 w-48 sm:w-60 mx-auto">
+        <div class="grid grid-cols-3 gap-2 w-44 sm:w-52 mx-auto"> <!-- Made container smaller -->
             <!-- Empty cell -->
             <div></div>
             <!-- Up Button -->
             <button id="btn-up" class="controls-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <!-- Made icon smaller -->
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                 </svg>
             </button>
@@ -106,7 +106,7 @@
             <div></div>
             <!-- Left Button -->
             <button id="btn-left" class="controls-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <!-- Made icon smaller -->
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
@@ -114,7 +114,8 @@
             <div></div>
             <!-- Right Button -->
             <button id="btn-right" class="controls-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <!-- Made icon smaller -->
+
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
@@ -122,7 +123,7 @@
             <div></div>
             <!-- Down Button -->
             <button id="btn-down" class="controls-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <!-- Made icon smaller -->
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
@@ -380,3 +381,4 @@
     </script>
 </body>
 </html>
+
