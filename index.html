@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finex | Precision Trading Tools & Analysis</title> <!-- Refined Title -->
+    <title>Finex | Precision Trading Tools & Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,77 +19,94 @@
         html::-webkit-scrollbar {
             display: none; /* Chrome, Safari, Opera */
         }
+        /* --- LIGHT THEME STYLES --- */
         body {
-            background-color: #0c111e;
-            color: #f4f6f9;
+            background-color: #f8f9fa; /* Light background */
+            color: #212529; /* Dark text */
             font-family: 'Source Sans Pro', sans-serif;
             overflow-x: hidden;
         }
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        #constellation-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.7; } /* Slightly reduced opacity */
+        #constellation-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.3; } /* Reduced opacity further */
         .glass-card {
-            background: rgba(255, 255, 255, 0.03); /* More subtle background */
-            -webkit-backdrop-filter: blur(20px);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08); /* More subtle border */
+            background: rgba(255, 255, 255, 0.6); /* Lighter glass effect */
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.08); /* Subtle dark border */
             border-radius: 1.5rem;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Subtle base shadow */
         }
         .glass-card-hover:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(0, 82, 204, 0.4);
-            transform: translateY(-6px); /* Slightly increased lift */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Added subtle shadow on hover */
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 82, 204, 0.3);
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Slightly stronger hover shadow */
         }
         .main-button {
             background-color: #0052cc; color: white;
-            transition: all 0.3s ease; /* Transition all properties */
+            transition: all 0.3s ease;
             display: inline-block;
-            box-shadow: 0 4px 15px rgba(0, 82, 204, 0.3); /* Subtle button shadow */
+            box-shadow: 0 4px 15px rgba(0, 82, 204, 0.2);
         }
         .main-button:hover {
-            background-color: #0065ff; transform: scale(1.03); /* Slightly reduced scale */
-            box-shadow: 0 6px 20px rgba(0, 101, 255, 0.4); /* Enhanced shadow on hover */
+            background-color: #0065ff; transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(0, 101, 255, 0.3);
         }
         .secondary-button {
-            background-color: rgba(255, 255, 255, 0.08); color: white;
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly stronger border */
+            background-color: rgba(0, 0, 0, 0.03); /* Subtle dark background */
+            color: #343a40; /* Darker text */
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle dark border */
             transition: all 0.3s ease; display: inline-block;
         }
         .secondary-button:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 0, 0, 0.2);
             transform: scale(1.03);
+            color: #212529; /* Darken text slightly on hover */
         }
-        .feature-icon-wrapper { /* Wrapper for icon background */
-            width: 80px; height: 80px; /* Made icon wrapper larger */
+        .feature-icon-wrapper {
+            width: 80px; height: 80px;
             margin-bottom: 1.5rem;
-            display: inline-flex; /* Use flex to center icon */
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             transition: background-color 0.3s ease;
         }
+         /* Icon colors adjusted */
+        .feature-icon-wrapper.blue { background-color: #e7f0ff; color: #0052cc; }
+        .feature-icon-wrapper.green { background-color: #e6f9f0; color: #198754; }
+        .feature-icon-wrapper.purple { background-color: #f3eafa; color: #6f42c1; }
+
         .glass-card-hover:hover .feature-icon-wrapper {
-             background-color: rgba(0, 82, 204, 0.3); /* Add highlight on card hover */
+             background-color: rgba(0, 82, 204, 0.15); /* Lighter hover background */
+             color: #0052cc; /* Ensure icon color stays */
         }
-        .feature-icon {
-            width: 40px; height: 40px; /* Adjusted icon size within wrapper */
-        }
-        header { transition: background-color 0.3s ease, box-shadow 0.3s ease; } /* Added shadow transition */
+        .feature-icon { width: 40px; height: 40px; }
+        header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+        header a { color: #f8f9fa; } /* Header text white by default */
         header.scrolled {
-            background-color: rgba(12, 17, 30, 0.85); /* Slightly darker */
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Added shadow when scrolled */
+            background-color: rgba(255, 255, 255, 0.9); /* White background when scrolled */
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
         }
-        /* Gradient text for hero */
+        header.scrolled a { color: #212529; } /* Dark text when scrolled */
+        header.scrolled .main-button { color: white; } /* Keep main button text white */
+        header.scrolled .secondary-button { color: #343a40; } /* Keep secondary button dark */
+
+        /* Gradient adjusted for light theme - make it subtle dark */
         .hero-gradient-text {
-             background: linear-gradient(90deg, #ffffff, #a3bffa);
+             background: linear-gradient(90deg, #212529, #495057);
              -webkit-background-clip: text;
              -webkit-text-fill-color: transparent;
              background-clip: text;
              text-fill-color: transparent;
         }
+        /* Text color overrides */
+        .text-gray-300 { color: #6c757d; } /* Use medium gray for subtext */
+        .text-gray-500 { color: #adb5bd; } /* Lighter gray for footer */
+        .text-gray-600 { color: #6c757d; } /* Adjust chevron color */
     </style>
 </head>
 <body class="antialiased">
@@ -97,7 +114,7 @@
 
     <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold tracking-wider text-white" id="logo">
+            <div class="text-2xl font-bold tracking-wider" id="logo">
                 <a href="#hero">Finex</a>
             </div>
             <nav class="flex items-center space-x-3 sm:space-x-4">
@@ -111,9 +128,8 @@
         <!-- Hero Section -->
         <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
             <div class="relative z-10 max-w-4xl">
-                <!-- Added Gradient Text Class -->
                 <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-6 hero-gradient-text">Trade with Precision & Insight</h1>
-                <p class="text-lg md:text-xl text-gray-300 mb-10 max-w-3xl mx-auto">
+                <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto"> <!-- Darker subtext -->
                     Finex integrates powerful analysis tools with structured planning frameworks, helping disciplined traders achieve consistent performance.
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
@@ -122,7 +138,7 @@
                 </div>
             </div>
              <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
-                <a href="#features" class="text-gray-600 hover:text-gray-400 transition-colors animate-bounce">
+                <a href="#features" class="text-gray-400 hover:text-gray-600 transition-colors animate-bounce"> <!-- Adjusted chevron color -->
                     <i class="fas fa-chevron-down fa-2x"></i>
                 </a>
             </div>
@@ -132,33 +148,33 @@
         <section id="features" class="py-20 md:py-32 px-4 relative z-10">
             <div class="container mx-auto text-center">
                 <h2 class="text-4xl font-bold mb-4">Engineered for Performance</h2>
-                <p class="text-lg text-gray-300 max-w-3xl mx-auto mb-16">
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-16"> <!-- Darker subtext -->
                     Leverage tools designed to enhance your decision-making process and streamline your trading workflow.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     <!-- Feature 1 -->
                     <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper bg-blue-500/10 text-blue-400">
+                        <div class="feature-icon-wrapper blue"> <!-- Added color class -->
                              <i class="fas fa-clipboard-check fa-2x feature-icon"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-3">Systematic Planning</h3>
-                        <p class="text-gray-300">Implement a disciplined weekly workflow: analyze potential setups, define your high-probability watchlist, and log trades with our integrated journal.</p>
+                        <p class="text-gray-600">Implement a disciplined weekly workflow: analyze potential setups, define your high-probability watchlist, and log trades with our integrated journal.</p>
                     </div>
                     <!-- Feature 2 -->
                     <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper bg-green-500/10 text-green-400">
+                        <div class="feature-icon-wrapper green"> <!-- Added color class -->
                              <i class="fas fa-image fa-2x feature-icon"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-3">Curated Market Analysis</h3>
-                        <p class="text-gray-300">Access timely chart breakdowns and strategic insights provided by the Finex team, delivered directly to your Analysis Gallery.</p>
+                        <p class="text-gray-600">Access timely chart breakdowns and strategic insights provided by the Finex team, delivered directly to your Analysis Gallery.</p>
                     </div>
                      <!-- Feature 3 -->
                      <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper bg-purple-500/10 text-purple-400">
+                        <div class="feature-icon-wrapper purple"> <!-- Added color class -->
                             <i class="fas fa-book-open fa-2x feature-icon"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-3">Exclusive Knowledge Base</h3>
-                        <p class="text-gray-300">Deepen your expertise with our library covering advanced strategies, risk management protocols, and performance psychology.</p>
+                        <p class="text-gray-600">Deepen your expertise with our library covering advanced strategies, risk management protocols, and performance psychology.</p>
                     </div>
                 </div>
             </div>
@@ -168,7 +184,7 @@
         <section id="cta" class="py-20 md:py-32 px-4 relative z-10">
              <div class="container mx-auto text-center max-w-3xl">
                  <h2 class="text-4xl font-bold mb-6">Refine Your Edge. Achieve Consistency.</h2>
-                 <p class="text-lg text-gray-300 mb-10">
+                 <p class="text-lg text-gray-600 mb-10"> <!-- Darker subtext -->
                      Join a community of focused traders. Access the tools and insights needed to elevate your performance and navigate the markets with discipline.
                  </p>
                  <a href="login.html" class="main-button font-bold text-xl py-4 px-10 rounded-full shadow-lg">Unlock Your Member Access</a>
@@ -177,20 +193,20 @@
     </main>
 
     <!-- Footer -->
-    <footer class="py-8 px-4 relative z-10 border-t border-white/10 mt-16">
+    <footer class="py-8 px-4 relative z-10 border-t border-gray-200 mt-16"> <!-- Lighter border -->
         <div class="container mx-auto text-center text-gray-500 text-sm">
             &copy; 2025 Finex. All Rights Reserved. Empowering Disciplined Traders.
         </div>
     </footer>
 
     <script>
-        // Constellation Background Script
+        // Constellation Background Script (Adjusted particle/line colors)
         document.addEventListener('DOMContentLoaded', function() {
             const canvas = document.getElementById('constellation-bg'); const ctx = canvas.getContext('2d'); let particles = [];
             const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = 1.2; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
-            function initParticles() { particles = []; let numberOfParticles = Math.min(80, (canvas.width * canvas.height) / 10000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
-            function connectParticles() { for (let i = 0; i < particles.length; i++) { for (let j = i + 1; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < 140) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - distance / 140)})`; ctx.lineWidth = 0.4; ctx.stroke(); } } } }
+            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = 1.5; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } } // Darker particles
+            function initParticles() { particles = []; let numberOfParticles = Math.min(60, (canvas.width * canvas.height) / 12000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } } // Fewer particles
+            function connectParticles() { for (let i = 0; i < particles.length; i++) { for (let j = i + 1; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < 150) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(0, 0, 0, ${0.2 * (1 - distance / 150)})`; ctx.lineWidth = 0.4; ctx.stroke(); } } } } // Darker lines
             function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); requestAnimationFrame(animate); }
             window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
             setupCanvas(); initParticles(); animate();
