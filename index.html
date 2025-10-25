@@ -11,14 +11,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         html { scroll-behavior: smooth; }
-        body { background-color: #f9fafb; color: #1f2937; font-family: 'Source Sans Pro', sans-serif; overflow-x: hidden;}
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; color: #111827; }
+        /* Dark Theme Restored */
+        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; overflow-x: hidden;}
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; color: #f4f6f9; } /* White headings */
+        #constellation-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; } /* Constellation BG added back */
+        /* Glass Card Style Restored */
         .content-card {
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); /* Lighter shadow */
         }
         .feature-item {
             display: flex;
@@ -28,60 +32,61 @@
             border-radius: 0.75rem;
             transition: background-color 0.2s ease;
             text-decoration: none;
-            color: #374151; /* Default text color for feature items */
+            color: #d1d5db; /* Lighter gray text for dark theme */
         }
         .feature-item:hover {
-            background-color: #f3f4f6; /* Light hover background */
+            background-color: rgba(255, 255, 255, 0.1); /* Subtle white hover */
         }
         .feature-icon-wrapper {
-            background-color: #e0e7ff; /* Light blue background for icons */
+            background-color: rgba(79, 70, 229, 0.2); /* Indigo background for icons */
             border-radius: 0.5rem;
             padding: 0.75rem;
             margin-bottom: 0.75rem;
-            display: inline-flex; /* To contain the icon */
+            display: inline-flex;
         }
          .feature-icon-wrapper i {
-            color: #4338ca; /* Indigo icon color */
+            color: #a5b4fc; /* Lighter Indigo icon color */
         }
         .feature-item span {
-            font-size: 0.875rem; /* Smaller text */
+            font-size: 0.875rem;
             font-weight: 600;
             text-align: center;
         }
 
+        /* Button Styles Restored */
         .main-button { background-color: #4f46e5; color: white; transition: background-color 0.3s ease, transform 0.2s ease; display: inline-block; } /* Indigo button */
         .main-button:hover { background-color: #4338ca; transform: scale(1.05); }
-        .secondary-button { background-color: #ffffff; color: #1f2937; border: 1px solid #d1d5db; transition: all 0.3s ease; display: inline-block; }
-        .secondary-button:hover { background-color: #f3f4f6; border-color: #9ca3af; }
+        .secondary-button { background-color: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; display: inline-block; }
+        .secondary-button:hover { background-color: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.3); }
 
-        header { background-color: #ffffff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 50;}
-        #logo a { color: #111827; }
-        .text-gray-600 { color: #4b5563; }
-        .text-gray-500 { color: #6b7280; }
-        footer { border-top-color: #e5e7eb; }
+        /* Header Style Restored */
+        header {
+            background-color: transparent; /* Start transparent */
+            position: fixed; /* Fixed again */
+            top: 0; left: 0; right: 0;
+            z-index: 50;
+            transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+        }
+        header.scrolled {
+             background-color: rgba(12, 17, 30, 0.7); /* Dark semi-transparent bg on scroll */
+             backdrop-filter: blur(10px);
+        }
+        #logo a { color: #f4f6f9; } /* White logo text */
+        /* Text Colors Restored */
+        .text-gray-600 { color: #d1d5db; } /* Use lighter gray for body text */
+        .text-gray-500 { color: #9ca3af; }
+        /* Footer Style Restored */
+        footer { border-top-color: rgba(255, 255, 255, 0.1); background-color: transparent; } /* Transparent bg */
 
-        /* Style for the image collage area */
-        .image-collage {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Two columns */
-            gap: 1rem;
-            height: 100%;
-        }
-        .image-collage img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 0.75rem;
-             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-         /* Make top-right image span two rows */
-        .image-collage .img-span-2 {
-            grid-row: span 2 / span 2;
-        }
-
+        /* Image Collage Style (no change needed) */
+        .image-collage { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; height: 100%; }
+        .image-collage img { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .image-collage .img-span-2 { grid-row: span 2 / span 2; }
     </style>
 </head>
 <body class="antialiased">
+    <!-- Constellation Background Canvas Added Back -->
+    <canvas id="constellation-bg"></canvas>
 
     <header id="header" class="p-4">
         <div class="container mx-auto flex justify-between items-center">
@@ -95,52 +100,42 @@
         </div>
     </header>
 
-    <main class="container mx-auto mt-12 mb-20 px-4">
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+    <main class="container mx-auto mt-12 mb-20 px-4 relative z-10"> {/* Added relative z-10 */}
+        {/* Adjusted padding top to account for fixed header */}
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start pt-24">
 
             <!-- Left Side: Headline and Feature Card -->
-            <div class="lg:sticky lg:top-28 self-start"> {/* Makes the card stick on scroll */}
+            <!-- CORRECTED COMMENT: Used HTML comment syntax -->
+            <div class="lg:sticky lg:top-28 self-start"> <!-- Makes the card stick on scroll -->
                 <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-8">
                     Your Edge in Trading Consistency.
                 </h1>
 
-                <div class="content-card p-6 sm:p-8">
-                    <h2 class="text-xl font-semibold mb-6 text-gray-700">Explore Finex Core Features</h2>
+                <div class="content-card p-6 sm:p-8"> {/* Changed to content-card */}
+                    <h2 class="text-xl font-semibold mb-6 text-gray-300">Explore Finex Core Features</h2> {/* Lighter text */}
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                          <a href="login.html" class="feature-item">
-                            <div class="feature-icon-wrapper">
-                                <i class="fas fa-image fa-lg"></i>
-                            </div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-image fa-lg"></i></div>
                             <span>Analysis Gallery</span>
                         </a>
                          <a href="login.html" class="feature-item">
-                            <div class="feature-icon-wrapper">
-                                <i class="fas fa-clipboard-check fa-lg"></i>
-                            </div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-clipboard-check fa-lg"></i></div>
                             <span>Weekly Checklist</span>
                         </a>
                          <a href="login.html" class="feature-item">
-                            <div class="feature-icon-wrapper">
-                                <i class="fas fa-book-open fa-lg"></i>
-                            </div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-book-open fa-lg"></i></div>
                             <span>Articles & Guides</span>
                         </a>
                          <a href="login.html" class="feature-item">
-                            <div class="feature-icon-wrapper">
-                                <i class="fas fa-chart-line fa-lg"></i>
-                            </div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-chart-line fa-lg"></i></div>
                             <span>Results & Case Studies</span>
                         </a>
                           <a href="login.html" class="feature-item">
-                            <div class="feature-icon-wrapper">
-                                <i class="fas fa-tools fa-lg"></i>
-                            </div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-tools fa-lg"></i></div>
                             <span>Trading Tools</span>
                         </a>
                           <a href="login.html" class="feature-item">
-                            <div class="feature-icon-wrapper">
-                                <i class="fas fa-user-cog fa-lg"></i>
-                            </div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-user-cog fa-lg"></i></div>
                             <span>Account Settings</span>
                         </a>
                     </div>
@@ -152,24 +147,42 @@
 
             <!-- Right Side: Image Collage -->
             <div class="image-collage min-h-[400px] lg:min-h-[600px]">
-                 <img src="https://placehold.co/600x400/a3a3a3/ffffff?text=Analysis+Chart" alt="Financial analysis chart" class="img-span-2">
-                 <img src="https://placehold.co/600x400/a3a3a3/ffffff?text=Trading+Setup" alt="Trading setup visualization">
-                 <img src="https://placehold.co/600x400/a3a3a3/ffffff?text=Market+Data" alt="Market data screen">
-                 
+                 <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Analysis+Chart" alt="Financial analysis chart" class="img-span-2"> {/* Darker placeholder */}
+                 <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Trading+Setup" alt="Trading setup visualization">
+                 <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=Market+Data" alt="Market data screen">
             </div>
 
         </section>
     </main>
 
-    <footer class="py-8 px-4 border-t border-gray-200 mt-16 bg-white">
+    <footer class="py-8 px-4 border-t border-white/10 mt-16 relative z-10"> {/* Added relative z-10 */}
         <div class="container mx-auto text-center text-gray-500 text-sm">
             &copy; 2025 Finex. All rights reserved. Empowering Disciplined Traders with Actionable Intelligence.
         </div>
     </footer>
 
-    <!-- Script (optional, e.g., for animations if added later) -->
+    <!-- Constellation Script Added Back -->
     <script>
-        // No specific JS needed for this layout currently
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('constellation-bg'); const ctx = canvas.getContext('2d'); let particles = [];
+            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.4 - 0.2; this.vy = Math.random() * 0.4 - 0.2; this.radius = 1.5; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
+            function initParticles() { particles = []; let numberOfParticles = Math.min(100, (canvas.width * canvas.height) / 9000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
+            function connectParticles() { for (let i = 0; i < particles.length; i++) { for (let j = i; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * (1 - distance / 120)})`; ctx.lineWidth = 0.5; ctx.stroke(); } } } }
+            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); requestAnimationFrame(animate); }
+            window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
+            setupCanvas(); initParticles(); animate();
+
+            // Header Scroll Effect Restored
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        });
     </script>
 </body>
 </html>
