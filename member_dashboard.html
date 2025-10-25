@@ -8,15 +8,17 @@
     <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
     <meta name="author" content="Finex Team">
 
-    <link rel="canonical" href="https://www.yourdomain.com/dashboard"> <link rel="icon" href="/favicon.ico" type="image/x-icon"> <meta property="og:title" content="Member Dashboard | Finex">
+    <link rel="canonical" href="https://www.yourdomain.com/member_dashboard.html"> <link rel="icon" href="/favicon.ico" type="image/x-icon"> <meta property="og:title" content="Member Dashboard | Finex">
     <meta property="og:description" content="Your personal hub for financial tools and clarity.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.yourdomain.com/dashboard"> <meta property="og:image" content="https://www.yourdomain.com/images/og-dashboard.png"> <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:url" content="https://www.yourdomain.com/member_dashboard.html"> <meta property="og:image" content="https://www.yourdomain.com/images/og-dashboard.png"> <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Member Dashboard | Finex">
     <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
-    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <link rel="stylesheet" href="css/main.css">
-    
-    </head>
+    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' } // Re-add config for CDN
+    </script>
+    <link rel="stylesheet" href="main.css"> </head>
 
 <body class="antialiased textured-background">
 
@@ -132,17 +134,13 @@
                     const article = { id: doc.id, ...doc.data() };
                     
                     // --- SECURITY (CRITICAL): Build DOM elements manually ---
-                    // Using .innerHTML = `...` with data from your database (like article.title)
-                    // creates a Cross-Site Scripting (XSS) vulnerability.
-                    // A hacker could save a script as an article title.
-                    // The method below is 100% secure.
+                    // This prevents XSS attacks by never using .innerHTML with database data.
                     
                     const articleDiv = document.createElement('div');
                     articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
 
                     const link = document.createElement('a');
-                    // Make the link go to the specific article
-                    link.href = `articles.html?id=${article.id}`; 
+                    link.href = `articles.html?id=${article.id}`; // Link to specific article
                     link.className = 'text-lg font-semibold text-color-base group-hover:text-blue-500';
                     link.textContent = article.title; // SECURE: Sets text only
 
@@ -173,8 +171,7 @@
                 articlesListContainer.innerHTML = ''; 
                 const p = document.createElement('p');
                 p.className = 'text-red-500 text-center';
-                // SECURE: Use .textContent for error messages too.
-                p.textContent = 'Could not load articles.';
+                p.textContent = 'Could not load articles.'; // SECURE: Use .textContent
                 articlesListContainer.appendChild(p);
             });
         }
