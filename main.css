@@ -1,3 +1,9 @@
+/* NOTE: @import rules for Google Fonts and Font Awesome 
+   have been moved to the .html file head for faster parallel loading.
+*/
+
+/* main.css */
+
 html {
     scrollbar-width: none; /* For Firefox */
     -ms-overflow-style: none; /* For IE and Edge */
@@ -55,10 +61,13 @@ body {
 .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
 .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; border-radius: 0.5rem; padding: 0.75rem 1.5rem; } /* Added radius/padding */
 .main-button:hover { background-color: #0065ff; transform: scale(1.02); } /* Adjusted hover scale */
-/* Background pattern for light mode */
+
+/* Background pattern for light mode
+*/
 .textured-background {
      background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
      background-size: 2rem 2rem;
+     /* Example: background-image: url('/images/light-texture.png'); */
 }
 
 /* --- Dark Theme (Main Content) --- */
@@ -101,10 +110,13 @@ body {
 .dark .main-button { background-color: #0052cc; color: white; border-radius: 0.5rem; padding: 0.75rem 1.5rem;}
 .dark .main-button:hover { background-color: #0065ff; transform: scale(1.02); }
  .dark .main-button:disabled { background-color: #003d99; cursor: not-allowed; opacity: 0.7; } /* Added disabled style */
-/* Background pattern for dark mode */
+
+/* Background pattern for dark mode
+*/
 .dark .textured-background {
      background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
      background-size: 2rem 2rem;
+     /* Example: background-image: url('/images/dark-texture.png'); */
 }
 
 /* --- Sidebar Styles (Static - Always Dark) --- */
