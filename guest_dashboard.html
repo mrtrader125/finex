@@ -14,26 +14,28 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        /* Style for member-only lock icon */
-        .member-lock {
-            @apply text-yellow-500 text-xs ml-1;
+        /* Style for member-only lock icon overlay */
+        .locked-feature::after {
+            content: "\f023"; /* Font Awesome lock icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 1.5rem; /* Adjust positioning */
+            right: 1.5rem;
+            font-size: 1rem;
+            color: rgba(234, 179, 8, 0.6); /* Muted yellow/gold */
+            background-color: rgba(17, 24, 39, 0.5); /* Dark semi-transparent bg */
+            padding: 0.3rem 0.5rem;
+            border-radius: 9999px;
+            backdrop-filter: blur(5px);
         }
-        .feature-card {
-            @apply glass-card p-6 flex flex-col transition duration-300;
-             min-height: 180px; /* Ensure cards have some minimum height */
-        }
-         .feature-card:hover {
-            @apply border-blue-500/40;
+         .locked-link {
+             cursor: pointer; /* Indicate it's clickable (to go to login) */
          }
-         .feature-card h3 {
-             @apply text-xl font-bold mb-2 flex items-center;
+          /* Subtle hover effect for locked items */
+         .locked-feature:hover {
+            border-color: rgba(234, 179, 8, 0.3);
          }
-          .feature-card p {
-             @apply text-color-muted text-sm mb-4 flex-grow; /* flex-grow pushes button down */
-          }
-           .feature-card a {
-             @apply block text-center; /* Make links block for full width */
-           }
     </style>
 </head>
 <body class="antialiased textured-background dark"> <header class="header backdrop-blur-md sticky top-0 z-30">
@@ -43,51 +45,89 @@
         </div>
     </header>
 
-    <main class="container mx-auto p-4 md:p-8">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-color-base">Explore Finex Features (Guest Preview)</h1>
-            <p class="text-lg text-color-muted mt-4 max-w-3xl mx-auto">See what Finex offers to help you trade smarter. Sign up for full access to all features.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-
-            <div class="feature-card">
-                <h3><i class="fas fa-book-reader fa-fw mr-3 text-blue-400"></i>Articles & Guides</h3>
-                <p>Read in-depth guides and strategies. Guests can view a limited preview of selected articles.</p>
-                <a href="guest_article.html" class="secondary-button text-sm py-2">Read Sample Article</a>
+    <main class="container mx-auto">
+        <section class="min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome to Finex</h1>
+                <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Explore a preview of our tools designed for trading clarity. Sign up for full access.</p>
+                 <div class="mt-8">
+                     <a href="login.html" class="main-button text-lg px-8 py-3">Sign Up Free</a>
+                 </div>
             </div>
+             <div class="absolute bottom-10 left-1/2 -translate-x-1/2"><a href="#guest-content" class="text-color-muted animate-bounce"><i class="fas fa-chevron-down fa-2x"></i></a></div>
+        </section>
 
-            <div class="feature-card">
-                 <h3><i class="fas fa-book fa-fw mr-3 text-green-400"></i>Trading Journal<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
-                 <p>Log trades, track performance with P/L, win rate, profit factor, and visualize your equity curve.</p>
-                 <a href="login.html" class="main-button text-sm py-2">Unlock Journal</a>
+        <section id="guest-content" class="p-4 md:py-16">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-8">
+                    <div class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
+                        <div class="text-7xl text-blue-500 flex-shrink-0"><i class="fas fa-book-open"></i></div>
+                        <div>
+                            <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide Preview</span>
+                            <h2 class="text-3xl font-bold mt-2 mb-3">Unlock The 5 Pillars of Wealth</h2>
+                            <p class="text-color-muted mb-6">Read a preview of our core guide on foundational financial principles. Full access for members.</p>
+                            <a href="guest_article.html" class="secondary-button font-bold py-3 px-6 rounded-lg inline-block">Read Preview</a>
+                        </div>
+                    </div>
+                    <div class="glass-card locked-feature relative p-8">
+                        <h3 class="text-2xl font-bold mb-4">Latest Articles</h3>
+                        <div class="space-y-3 blur-sm pointer-events-none"> {/* Blur content */}
+                            {/* Placeholder blurred content */}
+                            <div class="h-6 bg-gray-700 rounded w-3/4"></div>
+                            <p class="h-4 bg-gray-600 rounded w-full"></p>
+                            <hr class="border-color-base my-2"/>
+                            <div class="h-6 bg-gray-700 rounded w-2/3"></div>
+                            <p class="h-4 bg-gray-600 rounded w-5/6"></p>
+                        </div>
+                         {/* CTA Overlay */}
+                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 to-transparent flex flex-col items-center justify-center p-6 text-center">
+                            <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
+                             <h4 class="text-lg font-semibold mb-2">Access All Articles</h4>
+                             <p class="text-sm text-color-muted mb-4">Members get unlimited access to our full library of guides and strategies.</p>
+                             <a href="login.html" class="main-button text-sm py-2 px-4">Sign Up to Read</a>
+                         </div>
+                    </div>
+                </div>
+                <div class="space-y-8">
+                     <div class="glass-card locked-feature relative p-8">
+                        <h3 class="text-2xl font-bold mb-6">Real-World Results</h3>
+                        <div class="space-y-6 blur-sm pointer-events-none"> {/* Blur content */}
+                            {/* Placeholder blurred content */}
+                            <div class="flex items-start gap-4">
+                                <i class="fas fa-chart-pie text-green-400 mt-1 opacity-50"></i>
+                                <div><div class="h-5 bg-gray-700 rounded w-3/4 mb-1"></div><div class="h-3 bg-gray-600 rounded w-full"></div></div>
+                            </div>
+                             <div class="flex items-start gap-4">
+                                 <i class="fas fa-wallet text-green-400 mt-1 opacity-50"></i>
+                                <div><div class="h-5 bg-gray-700 rounded w-2/3 mb-1"></div><div class="h-3 bg-gray-600 rounded w-5/6"></div></div>
+                            </div>
+                        </div>
+                         {/* CTA Overlay */}
+                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 to-transparent flex flex-col items-center justify-center p-6 text-center">
+                            <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
+                             <h4 class="text-lg font-semibold mb-2">See Member Results</h4>
+                             <p class="text-sm text-color-muted mb-4">Gain insights from real case studies and member spotlights showing our principles in action.</p>
+                             <a href="login.html" class="main-button text-sm py-2 px-4">Unlock Results</a>
+                         </div>
+                    </div>
+                    <div class="glass-card locked-feature relative p-8">
+                        <h3 class="text-2xl font-bold mb-4">Trading Tools</h3>
+                         <div class="blur-sm pointer-events-none space-y-2">
+                             <p class="text-color-muted text-sm"><i class="fas fa-calculator fa-fw text-teal-400 opacity-50"></i> Position Size Calculator</p>
+                             <p class="text-color-muted text-sm"><i class="fas fa-balance-scale fa-fw text-teal-400 opacity-50"></i> Risk/Reward Calculator</p>
+                             <p class="text-color-muted text-sm"><i class="fas fa-book fa-fw text-teal-400 opacity-50"></i> Trading Journal & Analytics</p>
+                         </div>
+                         {/* CTA Overlay */}
+                         <div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 to-transparent flex flex-col items-center justify-center p-6 text-center">
+                            <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
+                             <h4 class="text-lg font-semibold mb-2">Access Trading Tools</h4>
+                             <p class="text-sm text-color-muted mb-4">Members get full access to calculators, the journal, market data, and more.</p>
+                             <a href="login.html" class="main-button text-sm py-2 px-4">Unlock Tools</a>
+                         </div>
+                     </div>
+                </div>
             </div>
-
-            <div class="feature-card">
-                 <h3><i class="fas fa-clipboard-check fa-fw mr-3 text-purple-400"></i>Weekly Checklist<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
-                 <p>Plan your trading week: set your watchlist, define focus pairs, review auto-summarized journal stats, and reflect.</p>
-                 <a href="login.html" class="main-button text-sm py-2">Unlock Checklist</a>
-             </div>
-
-             <div class="feature-card">
-                 <h3><i class="fas fa-chart-bar fa-fw mr-3 text-red-400"></i>Market Data<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
-                 <p>Stay informed with integrated live news feeds, an economic calendar for key events, and market screeners.</p>
-                 <a href="login.html" class="main-button text-sm py-2">Access Market Data</a>
-             </div>
-
-             <div class="feature-card">
-                 <h3><i class="fas fa-image fa-fw mr-3 text-indigo-400"></i>Analysis Gallery<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
-                 <p>View market analysis charts and insights shared regularly by the Finex team.</p>
-                 <a href="login.html" class="main-button text-sm py-2">View Analysis</a>
-              </div>
-
-             <div class="feature-card">
-                 <h3><i class="fas fa-calculator fa-fw mr-3 text-teal-400"></i>Trading Calculators<i class="fas fa-lock member-lock" title="Member Feature"></i></h3>
-                 <p>Essential tools like Position Size and Risk/Reward calculators for effective trade planning.</p>
-                 <a href="login.html" class="main-button text-sm py-2">Use Calculators</a>
-             </div>
-
-        </div>
+        </section>
     </main>
 
      <footer class="py-8 px-4 border-t border-color-base mt-16">
