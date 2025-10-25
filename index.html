@@ -3,63 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clarity, Not Chaos | Your Financial Roadmap</title>
+    <title>Finex | Clarity in Trading</title> <!-- Updated Title -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        html { scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; }
-        html::-webkit-scrollbar { display: none; }
-        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { background-color: #0c111e; color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; overflow-x: hidden;} /* Prevent horizontal scroll */
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        /* Background Pattern (Optional but matches theme) */
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: radial-gradient(circle at top left, rgba(26, 35, 54, 0.6), transparent 50%),
-                              radial-gradient(circle at bottom right, rgba(26, 35, 54, 0.6), transparent 50%);
-            background-attachment: fixed; z-index: -1; opacity: 0.7;
-        }
-        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; font-weight: 600; padding: 0.75rem 1.75rem; border-radius: 9999px; }
-        .main-button:hover { background-color: #0065ff; transform: scale(1.03); }
-        .secondary-button { background-color: rgba(255, 255, 255, 0.08); color: white; border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; font-weight: 600; padding: 0.75rem 1.75rem; border-radius: 9999px; }
-        .secondary-button:hover { background-color: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.25); transform: scale(1.03); }
+        #constellation-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; transition: all 0.3s ease; }
+        .glass-card-hover:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(0, 82, 204, 0.5); transform: translateY(-5px); }
+        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; display: inline-block; }
+        .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
+        .secondary-button { background-color: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; display: inline-block; }
+        .secondary-button:hover { background-color: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.3); }
+        .feature-icon { width: 60px; height: 60px; } /* Consistent icon size */
+        header { transition: background-color 0.3s ease; }
+        header.scrolled { background-color: rgba(12, 17, 30, 0.8); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="antialiased">
-    <header class="fixed top-0 left-0 right-0 z-50 p-4 bg-[#0c111e]/50 backdrop-blur-md">
+    <canvas id="constellation-bg"></canvas>
+
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
         <div class="container mx-auto flex justify-between items-center">
             <div class="text-2xl font-bold tracking-wider text-white" id="logo">
-                <a href="index.html">Finex</a> {/* Corrected Brand Name */}
+                <a href="#hero">Finex</a> <!-- Link to top -->
             </div>
-            <nav class="flex items-center space-x-4">
-                 {/* Updated button styles slightly for consistency */}
-                 <a href="guest_dashboard.html" class="secondary-button text-sm py-2 px-5">Guest Preview</a>
-                 <a href="login.html" class="main-button text-sm py-2 px-5">Member Login</a>
+            <nav class="flex items-center space-x-3 sm:space-x-4">
+                 <!-- Link to Member Login Page -->
+                 <a href="login.html" class="secondary-button font-semibold py-2 px-4 sm:px-5 rounded-lg text-sm sm:text-base">Member Login</a>
+                 <!-- Link to Admin Login Page -->
+                 <a href="admin_login.html" class="main-button font-semibold py-2 px-4 sm:px-5 rounded-lg text-sm sm:text-base">Admin Login</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 pt-20 pb-10"> {/* Removed the incorrect comment */}
-            <div class="relative z-10 max-w-4xl mx-auto">
-                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-4">Clarity, Not Chaos.</h1>
-                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-300 mb-8">
-                    Stop chasing financial trends. Start building a personalized roadmap to sustainable wealth. We help you understand the landscape, analyze your position, and choose the right path.
+        <!-- Hero Section -->
+        <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative">
+            <div class="relative z-10 max-w-4xl">
+                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-6">Gain Clarity in Your Trading</h1>
+                <p class="text-lg md:text-xl text-gray-300 mb-10">
+                    Stop reacting, start planning. Finex provides the tools and insights to navigate the markets with confidence and build a consistent trading strategy.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    {/* Updated button styles */}
-                    <a href="login.html" class="main-button text-lg px-8 py-3">Get Started (Join)</a>
-                    <a href="guest_dashboard.html" class="secondary-button text-lg px-8 py-3">Explore as Guest</a>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <a href="login.html" class="main-button font-bold text-lg py-3 px-8 rounded-full shadow-lg w-full sm:w-auto">Access Member Area</a>
+                    <a href="#features" class="secondary-button font-bold text-lg py-3 px-8 rounded-full w-full sm:w-auto">Learn More</a>
+                </div>
+            </div>
+             <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
+                <a href="#features" class="text-gray-500 animate-bounce">
+                    <i class="fas fa-chevron-down fa-2x"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-20 md:py-32 px-4 relative z-10">
+            <div class="container mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-4">Why Finex?</h2>
+                <p class="text-lg text-gray-300 max-w-3xl mx-auto mb-16">
+                    We cut through the noise, providing focused tools and analysis designed for serious traders.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="glass-card glass-card-hover p-8 text-center">
+                        <div class="mb-6 inline-block p-4 rounded-full bg-blue-500/20 text-blue-400">
+                             <i class="fas fa-clipboard-check fa-3x feature-icon"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Structured Planning</h3>
+                        <p class="text-gray-300">Utilize our Weekly Checklist to analyze pairs, define your watchlist, and log your trades systematically.</p>
+                    </div>
+                    <div class="glass-card glass-card-hover p-8 text-center">
+                        <div class="mb-6 inline-block p-4 rounded-full bg-green-500/20 text-green-400">
+                             <i class="fas fa-image fa-3x feature-icon"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Curated Analysis</h3>
+                        <p class="text-gray-300">Access timely chart analysis and insights directly from our team, posted regularly to the Analysis Gallery.</p>
+                    </div>
+                     <div class="glass-card glass-card-hover p-8 text-center">
+                        <div class="mb-6 inline-block p-4 rounded-full bg-purple-500/20 text-purple-400">
+                            <i class="fas fa-book-open fa-3x feature-icon"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">In-Depth Articles</h3>
+                        <p class="text-gray-300">Explore our growing library of articles covering trading strategies, market psychology, and more.</p>
+                    </div>
                 </div>
             </div>
         </section>
+
+        <!-- Call to Action Section -->
+        <section id="cta" class="py-20 md:py-32 px-4 relative z-10">
+             <div class="container mx-auto text-center max-w-3xl">
+                 <h2 class="text-4xl font-bold mb-6">Ready to Find Your Edge?</h2>
+                 <p class="text-lg text-gray-300 mb-10">
+                     Join the Finex member area today and start applying a structured, clarity-driven approach to your trading.
+                 </p>
+                 <a href="login.html" class="main-button font-bold text-xl py-4 px-10 rounded-full shadow-lg">Become a Member</a>
+             </div>
+        </section>
     </main>
 
-    <footer class="py-8 px-4 mt-16 text-center text-gray-500 text-sm">
-        &copy; 2025 Finex. All Rights Reserved.
+    <!-- Footer -->
+    <footer class="py-8 px-4 relative z-10 border-t border-white/10 mt-16">
+        <div class="container mx-auto text-center text-gray-500 text-sm">
+            &copy; 2025 Finex. All rights reserved. Built for clarity in trading.
+        </div>
     </footer>
 
+    <script>
+        // Constellation Background Script (no changes needed)
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('constellation-bg'); const ctx = canvas.getContext('2d'); let particles = [];
+            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.4 - 0.2; this.vy = Math.random() * 0.4 - 0.2; this.radius = 1.5; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
+            function initParticles() { particles = []; let numberOfParticles = Math.min(100, (canvas.width * canvas.height) / 9000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
+            function connectParticles() { for (let i = 0; i < particles.length; i++) { for (let j = i; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * (1 - distance / 120)})`; ctx.lineWidth = 0.5; ctx.stroke(); } } } }
+            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); requestAnimationFrame(animate); }
+            window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
+            setupCanvas(); initParticles(); animate();
+
+            // Sticky header background on scroll
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
+
