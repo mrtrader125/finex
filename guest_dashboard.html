@@ -1,204 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finex | Precision Trading Tools & Analysis</title> <!-- Refined Title -->
+    <title>Guest Dashboard | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' } // Use class strategy if needed elsewhere, though this page is static dark
+    </script>
+    <link rel="stylesheet" href="main.css">
     <style>
-        /* --- SCROLLBAR HIDE --- */
-        html {
-            scroll-behavior: smooth;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
-        }
-        html::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-        }
-        body {
-            background-color: #0c111e;
-            color: #f4f6f9;
-            font-family: 'Source Sans Pro', sans-serif;
-            overflow-x: hidden;
-        }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        #constellation-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.7; } /* Slightly reduced opacity */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03); /* More subtle background */
-            -webkit-backdrop-filter: blur(20px);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08); /* More subtle border */
-            border-radius: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        .glass-card-hover:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(0, 82, 204, 0.4);
-            transform: translateY(-6px); /* Slightly increased lift */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Added subtle shadow on hover */
-        }
-        .main-button {
-            background-color: #0052cc; color: white;
-            transition: all 0.3s ease; /* Transition all properties */
-            display: inline-block;
-            box-shadow: 0 4px 15px rgba(0, 82, 204, 0.3); /* Subtle button shadow */
-        }
-        .main-button:hover {
-            background-color: #0065ff; transform: scale(1.03); /* Slightly reduced scale */
-            box-shadow: 0 6px 20px rgba(0, 101, 255, 0.4); /* Enhanced shadow on hover */
-        }
-        .secondary-button {
-            background-color: rgba(255, 255, 255, 0.08); color: white;
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly stronger border */
-            transition: all 0.3s ease; display: inline-block;
-        }
-        .secondary-button:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: scale(1.03);
-        }
-        .feature-icon-wrapper { /* Wrapper for icon background */
-            width: 80px; height: 80px; /* Made icon wrapper larger */
-            margin-bottom: 1.5rem;
-            display: inline-flex; /* Use flex to center icon */
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background-color 0.3s ease;
-        }
-        .glass-card-hover:hover .feature-icon-wrapper {
-             background-color: rgba(0, 82, 204, 0.3); /* Add highlight on card hover */
-        }
-        .feature-icon {
-            width: 40px; height: 40px; /* Adjusted icon size within wrapper */
-        }
-        header { transition: background-color 0.3s ease, box-shadow 0.3s ease; } /* Added shadow transition */
-        header.scrolled {
-            background-color: rgba(12, 17, 30, 0.85); /* Slightly darker */
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Added shadow when scrolled */
-        }
-        /* Gradient text for hero */
-        .hero-gradient-text {
-             background: linear-gradient(90deg, #ffffff, #a3bffa);
-             -webkit-background-clip: text;
-             -webkit-text-fill-color: transparent;
-             background-clip: text;
-             text-fill-color: transparent;
+        /* Optional: Add specific adjustments if main.css doesn't cover everything */
+        .article-preview-card:hover {
+             border-color: rgba(0, 82, 204, 0.4); /* Subtle blue border on hover */
         }
     </style>
 </head>
-<body class="antialiased">
-    <canvas id="constellation-bg"></canvas>
+<body class="antialiased textured-background dark"> {/* Force dark theme for guest pages */}
 
-    <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold tracking-wider text-white" id="logo">
-                <a href="#hero">Finex</a>
-            </div>
-            <nav class="flex items-center space-x-3 sm:space-x-4">
-                 <a href="login.html" class="secondary-button font-semibold py-2 px-4 sm:px-5 rounded-lg text-sm sm:text-base">Member Login</a>
-                 <a href="admin_login.html" class="main-button font-semibold py-2 px-4 sm:px-5 rounded-lg text-sm sm:text-base">Admin Login</a>
-            </nav>
+    <header class="header backdrop-blur-md sticky top-0 z-30">
+        <div class="container mx-auto flex justify-between items-center p-4">
+             <div class="text-2xl font-bold tracking-wider text-color-base">
+                 <a href="index.html">Finex</a>
+             </div>
+             <nav class="flex items-center gap-4">
+                 <a href="login.html" class="main-button text-sm py-2 px-5">Get Full Access</a>
+             </nav>
         </div>
     </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
-            <div class="relative z-10 max-w-4xl">
-                <!-- Added Gradient Text Class -->
-                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-6 hero-gradient-text">Trade with Precision & Insight</h1>
-                <p class="text-lg md:text-xl text-gray-300 mb-10 max-w-3xl mx-auto">
-                    Finex integrates powerful analysis tools with structured planning frameworks, helping disciplined traders achieve consistent performance.
-                </p>
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <a href="login.html" class="main-button font-bold text-lg py-3 px-8 rounded-full shadow-lg w-full sm:w-auto">Access Member Platform</a>
-                    <a href="#features" class="secondary-button font-bold text-lg py-3 px-8 rounded-full w-full sm:w-auto">Discover Features</a>
-                </div>
-            </div>
-             <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
-                <a href="#features" class="text-gray-600 hover:text-gray-400 transition-colors animate-bounce">
-                    <i class="fas fa-chevron-down fa-2x"></i>
-                </a>
-            </div>
-        </section>
+    <main class="container mx-auto p-4 md:p-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-color-base">Explore Finex Guides</h1>
+            <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Get a glimpse of the insights available to members. Sign up for full access to all articles and tools.</p>
+        </div>
 
-        <!-- Features Section -->
-        <section id="features" class="py-20 md:py-32 px-4 relative z-10">
-            <div class="container mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-4">Engineered for Performance</h2>
-                <p class="text-lg text-gray-300 max-w-3xl mx-auto mb-16">
-                    Leverage tools designed to enhance your decision-making process and streamline your trading workflow.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    <!-- Feature 1 -->
-                    <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper bg-blue-500/10 text-blue-400">
-                             <i class="fas fa-clipboard-check fa-2x feature-icon"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Systematic Planning</h3>
-                        <p class="text-gray-300">Implement a disciplined weekly workflow: analyze potential setups, define your high-probability watchlist, and log trades with our integrated journal.</p>
-                    </div>
-                    <!-- Feature 2 -->
-                    <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper bg-green-500/10 text-green-400">
-                             <i class="fas fa-image fa-2x feature-icon"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Curated Market Analysis</h3>
-                        <p class="text-gray-300">Access timely chart breakdowns and strategic insights provided by the Finex team, delivered directly to your Analysis Gallery.</p>
-                    </div>
-                     <!-- Feature 3 -->
-                     <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper bg-purple-500/10 text-purple-400">
-                            <i class="fas fa-book-open fa-2x feature-icon"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Exclusive Knowledge Base</h3>
-                        <p class="text-gray-300">Deepen your expertise with our library covering advanced strategies, risk management protocols, and performance psychology.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="max-w-3xl mx-auto space-y-6">
+            <h2 class="text-2xl font-bold text-color-base mb-4">Sample Article</h2>
+            <a href="guest_article.html" class="glass-card block p-6 md:p-8 article-preview-card transition duration-300">
+                <h3 class="text-xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation (Preview)</h3>
+                <p class="text-color-muted text-sm mb-4">An essential primer on the foundational principles you need to understand before choosing a financial path. We cover Mindset, Capital, Effort, Time Horizon, and Scalability.</p>
+                <span class="text-blue-500 font-semibold hover:text-blue-400">Read Preview &rarr;</span>
+            </a>
 
-        <!-- Call to Action Section -->
-        <section id="cta" class="py-20 md:py-32 px-4 relative z-10">
-             <div class="container mx-auto text-center max-w-3xl">
-                 <h2 class="text-4xl font-bold mb-6">Refine Your Edge. Achieve Consistency.</h2>
-                 <p class="text-lg text-gray-300 mb-10">
-                     Join a community of focused traders. Access the tools and insights needed to elevate your performance and navigate the markets with discipline.
-                 </p>
-                 <a href="login.html" class="main-button font-bold text-xl py-4 px-10 rounded-full shadow-lg">Unlock Your Member Access</a>
-             </div>
-        </section>
+            {/* Placeholder for potentially listing more previews later if needed */}
+            {/*
+            <div id="more-previews-container">
+                 Loading more previews...
+            </div>
+             */}
+        </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="py-8 px-4 relative z-10 border-t border-white/10 mt-16">
-        <div class="container mx-auto text-center text-gray-500 text-sm">
-            &copy; 2025 Finex. All Rights Reserved. Empowering Disciplined Traders.
+     <footer class="py-8 px-4 border-t border-color-base mt-16">
+        <div class="container mx-auto text-center text-color-muted text-sm">
+            &copy; 2025 Finex. All Rights Reserved. | <a href="index.html" class="hover:text-blue-500">Home</a>
         </div>
     </footer>
 
-    <script>
-        // Constellation Background Script
-        document.addEventListener('DOMContentLoaded', function() {
-            const canvas = document.getElementById('constellation-bg'); const ctx = canvas.getContext('2d'); let particles = [];
-            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = 1.2; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
-            function initParticles() { particles = []; let numberOfParticles = Math.min(80, (canvas.width * canvas.height) / 10000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
-            function connectParticles() { for (let i = 0; i < particles.length; i++) { for (let j = i + 1; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < 140) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - distance / 140)})`; ctx.lineWidth = 0.4; ctx.stroke(); } } } }
-            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); requestAnimationFrame(animate); }
-            window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
-            setupCanvas(); initParticles(); animate();
+    {/* No complex JS needed for this simple version */}
 
-            // Sticky header
-            const header = document.getElementById('header');
-            window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.scrollY > 50); });
-        });
-    </script>
 </body>
 </html>
