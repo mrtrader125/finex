@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest Dashboard | Finclarity</title>
+    <title>Guest Dashboard | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,93 +17,45 @@
         body { 
             font-family: 'Source Sans Pro', sans-serif; 
             transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: #0c111e; /* Default to dark theme */
+            color: #f4f6f9; 
+            position: relative; /* Needed for canvas */
+            overflow-x: hidden;
         }
         h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
         
-        /* --- Light Theme (Main Content) --- */
-        body { 
-            background-color: #f4f6f9; /* Light gray background */
-            color: #1f2937; /* Dark text */
-        }
         .glass-card { 
-            background: rgba(255, 255, 255, 0.8); /* Lighter white */
+            background: rgba(17, 24, 39, 0.7); 
             backdrop-filter: blur(15px); 
-            border: 1px solid rgba(0, 0, 0, 0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
             border-radius: 1.5rem; 
-            color: #1f2937; /* Dark text for cards */
+            color: #f4f6f9; 
         }
-         .header { /* Header style for light mode */
-             background-color: #f9fafb/30; /* Very light gray header */
-         }
-        .form-input, .form-switch-bg { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937; }
-        .text-color-base { color: #1f2937; }
-        .text-color-muted { color: #4b5563; }
-        .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
-        .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
+        .header { background-color: #111827/30; }
+        .sidebar-link { transition: all 0.2s ease; color: #a9a9b3; }
+        .sidebar-link:hover, .sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
         .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; }
         .main-button:hover { background-color: #0065ff; transform: scale(1.05); }
-        /* Background pattern for light mode */
-        .textured-background {
-             background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-             background-size: 2rem 2rem;
-        }
-
-        /* --- Dark Theme (Main Content) --- */
-        .dark body { 
-            background-color: #0c111e; 
-            color: #f4f6f9; 
-        }
-        .dark .glass-card { 
-            background: rgba(17, 24, 39, 0.7); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            color: #f4f6f9; 
-        }
-         .dark .header { /* Header style for dark mode */
-             background-color: #111827/30;
-         }
-        .dark .form-input, .dark .form-switch-bg { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9; }
-        .dark .text-color-base { color: #f4f6f9; }
-        .dark .text-color-muted { color: #a9a9b3; }
-        .dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
-        .dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
-        .dark .main-button { background-color: #0052cc; color: white; }
-        .dark .main-button:hover { background-color: #0065ff; }
-        /* Background pattern for dark mode */
-        .dark .textured-background {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-             background-size: 2rem 2rem;
-        }
-
-        /* --- Sidebar Styles (Static - Always Dark) --- */
-        /* Use the styles from the 'articles.html' version */
-        .sidebar-link { 
-            transition: all 0.2s ease; 
-            color: #a9a9b3; /* Default text color (was text-gray-300 in some versions, adjust if needed) */
-        }
-        .sidebar-link:hover, .sidebar-link.active { 
-            color: #ffffff; /* White text on hover/active */
-            background-color: rgba(255, 255, 255, 0.08); /* Subtle white background */
-        }
-        /* Styles for the sidebar container itself are handled by Tailwind classes in _sidebar.html */
-        /* Styles for the logout link are handled by Tailwind classes in _sidebar.html */
         
-        /* General styles */
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-        .form-switch { display: inline-flex; align-items: center; cursor: pointer; }
-        .form-switch-bg { width: 40px; height: 20px; border-radius: 9999px; position: relative; transition: background-color 0.2s ease; }
-        .form-switch-knob { width: 16px; height: 16px; background-color: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s ease; }
-        .form-switch input:checked + .form-switch-bg { background-color: #0052cc; } /* Use blue for checked */
-        .form-switch input:checked + .form-switch-bg .form-switch-knob { transform: translateX(20px); }
-        .checkbox-label { user-select: none; } 
+        /* Constellation Background */
+        #constellation-bg { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: -1; 
+            opacity: 0.7;
+        }
     </style>
 </head>
+<!-- REMOVED style="display: none;" from body -->
 <body class="antialiased">
     <canvas id="constellation-bg"></canvas>
-    <header id="header" class="bg-[#111827]/30 backdrop-blur-md sticky top-0 z-40">
+    <header id="header" class="header backdrop-blur-md sticky top-0 z-40">
         <div class="container mx-auto flex justify-between items-center p-4">
             <div class="text-2xl font-bold tracking-wider text-white" id="logo">
-                <a href="index.html">FINCLARITY</a>
+                <a href="index.html">Finex</a> 
             </div>
             <nav>
                  <a href="login.html" class="main-button font-semibold py-2 px-5 rounded-lg">Get Full Access</a>
@@ -112,8 +64,8 @@
     </header>
     <div class="container mx-auto p-4 md:p-8">
         <div class="md:flex md:space-x-8">
-            <aside class="w-full md:w-64 mb-8 md:mb-0">
-                <div class="glass-card p-4">
+            <aside class="w-full md:w-64 mb-8 md:mb-0 flex-shrink-0">
+                <div class="glass-card p-4 sticky top-24"> 
                     <h2 class="text-lg font-bold p-4">Guest Menu</h2>
                     <nav class="flex flex-col space-y-2">
                         <a href="guest_dashboard.html" class="sidebar-link active flex items-center space-x-3 py-3 px-4 rounded-lg">
@@ -139,7 +91,7 @@
             </aside>
             <main class="flex-1">
                 <div>
-                    <h1 class="text-4xl font-bold mb-6">Articles & Guides</h1>
+                    <h1 class="text-4xl font-bold mb-6">Sample Article Preview</h1>
                     <div class="space-y-6">
                         <div class="glass-card p-6 md:p-8 hover:border-blue-400/50">
                             <h3 class="text-2xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation</h3>
@@ -152,16 +104,28 @@
         </div>
     </div>
     <script>
+        // Constellation background script 
         document.addEventListener('DOMContentLoaded', function() {
-            const canvas = document.getElementById('constellation-bg'); const ctx = canvas.getContext('2d'); let particles = [];
-            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.4 - 0.2; this.vy = Math.random() * 0.4 - 0.2; this.radius = 1.5; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
-            function initParticles() { particles = []; let numberOfParticles = (canvas.width * canvas.height) / 9000; for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
-            function connectParticles() { for (let i = 0; i < particles.length; i++) { for (let j = i; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance / 120})`; ctx.lineWidth = 0.5; ctx.stroke(); } } } }
-            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); requestAnimationFrame(animate); }
-            window.addEventListener('resize', () => { setupCanvas(); initParticles(); });
+            const canvas = document.getElementById('constellation-bg'); 
+            if (!canvas) return; 
+            const ctx = canvas.getContext('2d'); 
+            let particles = [];
+            const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = document.documentElement.scrollHeight; }; 
+            class Particle { 
+                constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = Math.random() * 1.5 + 0.5; } 
+                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); } 
+                update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } 
+            }
+            function initParticles() { particles = []; let numberOfParticles = Math.min(80, (canvas.width * canvas.height) / 15000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
+            function connectParticles() { let maxDistance = 150; for (let i = 0; i < particles.length; i++) { for (let j = i + 1; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < maxDistance) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - distance / maxDistance)})`; ctx.lineWidth = 0.3; ctx.stroke(); } } } }
+            let animationFrameId = null;
+            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); connectParticles(); animationFrameId = requestAnimationFrame(animate); }
+            function debounce(func, wait) { let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func(...args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); }; };
+            const handleResize = debounce(() => { cancelAnimationFrame(animationFrameId); setupCanvas(); initParticles(); animate(); }, 250); 
+            window.addEventListener('resize', handleResize);
             setupCanvas(); initParticles(); animate();
         });
     </script>
 </body>
 </html>
+
