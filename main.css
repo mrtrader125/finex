@@ -1,200 +1,175 @@
-<style>
-        html { scrollbar-width: none; -ms-overflow-style: none; }
-        html::-webkit-scrollbar { display: none; }
-       
-        /* Hide default arrows on number inputs - Chrome, Safari, Edge, Opera */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
+/* main.css */
 
-        /* Hide default arrows on number inputs - Firefox */
-        input[type=number] {
-          -moz-appearance: textfield;
-        } 
-        /* Add these rules to main.css */
-        /* Base styles */
-        body { 
-            font-family: 'Source Sans Pro', sans-serif; 
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        
-        /* --- Light Theme (Main Content) --- */
-        body { 
-            background-color: #f4f6f9; /* Light gray background */
-            color: #1f2937; /* Dark text */
-        }
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.8); /* Lighter white */
-            backdrop-filter: blur(15px); 
-            border: 1px solid rgba(0, 0, 0, 0.08); 
-            border-radius: 1.5rem; 
-            color: #1f2937; /* Dark text for cards */
-        }
-         .header { /* Header style for light mode */
-             background-color: #f9fafb/30; /* Very light gray header */
-         }
-        .form-input, .form-switch-bg, .form-textarea, .form-select, .form-checkbox { /* Added form elements */
-            background: rgba(0, 0, 0, 0.03); 
-            border: 1px solid rgba(0, 0, 0, 0.1); 
-            color: #1f2937; 
-            border-radius: 0.5rem; /* Consistent radius */
-        }
-        .form-checkbox { padding: 0.5rem; } /* Specific padding for checkboxes */
-        .form-input, .form-textarea, .form-select { padding: 0.75rem; } /* Consistent padding */
+html {
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For IE and Edge */
+    scroll-behavior: smooth; /* <<< ADDED THIS LINE >>> */
+}
+html::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, Opera */
+}
 
-        .text-color-base { color: #1f2937; }
-        .text-color-muted { color: #4b5563; }
-        .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
-        .hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; border-radius: 0.5rem; padding: 0.75rem 1.5rem; } /* Added radius/padding */
-        .main-button:hover { background-color: #0065ff; transform: scale(1.02); } /* Adjusted hover scale */
-        /* Background pattern for light mode */
-        .textured-background {
-             background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-             background-size: 2rem 2rem;
-        }
+/* Hide default arrows on number inputs - Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
-        /* --- Dark Theme (Main Content) --- */
-        .dark body { 
-            background-color: #0c111e; 
-            color: #f4f6f9; 
-        }
-        .dark .glass-card { 
-            background: rgba(17, 24, 39, 0.7); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            color: #f4f6f9; 
-        }
-         .dark .header { /* Header style for dark mode */
-             background-color: #111827/30;
-         }
-        .dark .form-input, .dark .form-switch-bg, .dark .form-textarea, .dark .form-select, .dark .form-checkbox { /* Added form elements */
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            color: #f4f6f9; 
-            border-radius: 0.5rem; /* Consistent radius */
-        }
-        .dark .form-checkbox { padding: 0.5rem; }
-        .dark .form-input, .dark .form-textarea, .dark .form-select { padding: 0.75rem; }
-        /* Style for select dropdown arrow in dark mode */
-        .dark .form-select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a9a9b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
+/* Hide default arrows on number inputs - Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+/* Base styles */
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
 
-        .dark .text-color-base { color: #f4f6f9; }
-        .dark .text-color-muted { color: #a9a9b3; }
-        .dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
-        .dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
-        .dark .main-button { background-color: #0052cc; color: white; border-radius: 0.5rem; padding: 0.75rem 1.5rem;}
-        .dark .main-button:hover { background-color: #0065ff; transform: scale(1.02); }
-         .dark .main-button:disabled { background-color: #003d99; cursor: not-allowed; opacity: 0.7; } /* Added disabled style */
-        /* Background pattern for dark mode */
-        .dark .textured-background {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-             background-size: 2rem 2rem;
-        }
+/* --- Light Theme (Main Content) --- */
+body {
+    background-color: #f4f6f9; /* Light gray background */
+    color: #1f2937; /* Dark text */
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.8); /* Lighter white */
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 1.5rem;
+    color: #1f2937; /* Dark text for cards */
+}
+ .header { /* Header style for light mode */
+     background-color: #f9fafb/30; /* Very light gray header */
+ }
+.form-input, .form-switch-bg, .form-textarea, .form-select, .form-checkbox { /* Added form elements */
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+    border-radius: 0.5rem; /* Consistent radius */
+}
+.form-checkbox { padding: 0.5rem; } /* Specific padding for checkboxes */
+.form-input, .form-textarea, .form-select { padding: 0.75rem; } /* Consistent padding */
 
-        /* --- Sidebar Styles (Static - Always Dark) --- */
-        /* Base style for sidebar links */
-        .sidebar-link { 
-            transition: all 0.2s ease; 
-            color: #a9a9b3; /* Default text color (medium gray) */
-            border-radius: 0.5rem; /* Match other elements */
-        }
-        /* Hover and Active state for sidebar links */
-        .sidebar-link:hover, .sidebar-link.active { 
-            color: #ffffff; /* White text */
-            background-color: rgba(255, 255, 255, 0.08); /* Subtle white background */
-        }
-        /* Styles for the sidebar container itself (aside#sidebar) are handled by Tailwind classes in _sidebar.html */
-        /* Styles for the logout link (a#logout-btn) are handled by Tailwind classes in _sidebar.html */
-        
-        /* General styles & Utilities */
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-        
-        /* Sidebar Scrollbar Hiding */
-        #sidebar-nav {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
-        }
-        #sidebar-nav::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-        }
+.text-color-base { color: #1f2937; }
+.text-color-muted { color: #4b5563; }
+.border-color-base { border-color: rgba(0, 0, 0, 0.1); }
+.hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
+.main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; border-radius: 0.5rem; padding: 0.75rem 1.5rem; } /* Added radius/padding */
+.main-button:hover { background-color: #0065ff; transform: scale(1.02); } /* Adjusted hover scale */
+/* Background pattern for light mode */
+.textured-background {
+     background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+     background-size: 2rem 2rem;
+}
 
-        /* Theme Toggle Switch Styles (from settings.html, needed globally if toggle exists elsewhere) */
-        .form-switch { display: inline-flex; align-items: center; cursor: pointer; }
-        .form-switch-bg { width: 40px; height: 20px; border-radius: 9999px; position: relative; transition: background-color 0.2s ease; }
-        .form-switch-knob { width: 16px; height: 16px; background-color: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); } /* Added subtle shadow */
-        .form-switch input:checked + .form-switch-bg { background-color: #0052cc; } /* Use blue for checked */
-        .dark .form-switch input:checked + .form-switch-bg { background-color: #0065ff; } /* Slightly brighter blue in dark */
-        .form-switch input:checked + .form-switch-bg .form-switch-knob { transform: translateX(20px); }
-        .checkbox-label { user-select: none; } 
+/* --- Dark Theme (Main Content) --- */
+.dark body {
+    background-color: #0c111e;
+    color: #f4f6f9;
+}
+.dark .glass-card {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f6f9;
+}
+ .dark .header { /* Header style for dark mode */
+     background-color: #111827/30;
+ }
+.dark .form-input, .dark .form-switch-bg, .dark .form-textarea, .dark .form-select, .dark .form-checkbox { /* Added form elements */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f6f9;
+    border-radius: 0.5rem; /* Consistent radius */
+}
+.dark .form-checkbox { padding: 0.5rem; }
+.dark .form-input, .dark .form-textarea, .dark .form-select { padding: 0.75rem; }
+/* Style for select dropdown arrow in dark mode */
+.dark .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a9a9b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
 
-        /* Ensure consistency for specific elements if needed */
-        .modal { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s ease; }
-        .tag { background-color: rgba(255, 255, 255, 0.1); cursor: pointer; transition: background-color 0.2s; border-radius: 9999px; } /* Rounded tags */
-        .tag:hover, .tag.active { background-color: #0052cc; }
-        .dark .tag { background-color: rgba(255, 255, 255, 0.1); }
-        .dark .tag:hover, .dark .tag.active { background-color: #0052cc; }
+.dark .text-color-base { color: #f4f6f9; }
+.dark .text-color-muted { color: #a9a9b3; }
+.dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
+.dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
+.dark .main-button { background-color: #0052cc; color: white; border-radius: 0.5rem; padding: 0.75rem 1.5rem;}
+.dark .main-button:hover { background-color: #0065ff; transform: scale(1.02); }
+ .dark .main-button:disabled { background-color: #003d99; cursor: not-allowed; opacity: 0.7; } /* Added disabled style */
+/* Background pattern for dark mode */
+.dark .textured-background {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+     background-size: 2rem 2rem;
+}
+
+/* --- Sidebar Styles (Static - Always Dark) --- */
+/* Base style for sidebar links */
+.sidebar-link {
+    transition: all 0.2s ease;
+    color: #a9a9b3; /* Default text color (medium gray) */
+    border-radius: 0.5rem; /* Match other elements */
+}
+/* Hover and Active state for sidebar links */
+.sidebar-link:hover, .sidebar-link.active {
+    color: #ffffff; /* White text */
+    background-color: rgba(255, 255, 255, 0.08); /* Subtle white background */
+}
+/* Styles for the sidebar container itself (aside#sidebar) are handled by Tailwind classes in _sidebar.html */
+/* Styles for the logout link (a#logout-btn) are handled by Tailwind classes in _sidebar.html */
+
+/* General styles & Utilities */
+#sidebar { transition: transform 0.3s ease-in-out; }
+#sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+
+/* Sidebar Scrollbar Hiding */
+#sidebar-nav {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+#sidebar-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Theme Toggle Switch Styles */
+.form-switch { display: inline-flex; align-items: center; cursor: pointer; }
+.form-switch-bg { width: 40px; height: 20px; border-radius: 9999px; position: relative; transition: background-color 0.2s ease; }
+.form-switch-knob { width: 16px; height: 16px; background-color: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.form-switch input:checked + .form-switch-bg { background-color: #0052cc; }
+.dark .form-switch input:checked + .form-switch-bg { background-color: #0065ff; }
+.form-switch input:checked + .form-switch-bg .form-switch-knob { transform: translateX(20px); }
+.checkbox-label { user-select: none; }
+
+/* Ensure consistency for specific elements if needed */
+.modal { transition: opacity 0.3s ease; }
+.modal-content { transition: transform 0.3s ease; }
+.tag { background-color: rgba(255, 255, 255, 0.1); cursor: pointer; transition: background-color 0.2s; border-radius: 9999px; }
+.tag:hover, .tag.active { background-color: #0052cc; }
+.dark .tag { background-color: rgba(255, 255, 255, 0.1); }
+.dark .tag:hover, .dark .tag.active { background-color: #0052cc; }
+
 /* === Dropdown Sidebar Styles === */
+button[data-toggle].sidebar-link { cursor: pointer; }
+.sidebar-link.active-parent { color: #ffffff; background-color: rgba(255, 255, 255, 0.05); }
+button[data-toggle].sidebar-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+.sidebar-submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
+.sidebar-submenu a.sidebar-link { font-size: 0.9rem; padding-top: 0.5rem; padding-bottom: 0.5rem; padding-left: 0.75rem; color: #a9a9b3; }
+.sidebar-submenu a.sidebar-link:hover, .sidebar-submenu a.sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.1); }
+.sidebar-link .fa-chevron-down { transition: transform 0.2s ease-in-out; }
+.sidebar-link .fa-chevron-down.rotate-180 { transform: rotate(180deg); }
 
-/* Style for the dropdown toggle button */
-button[data-toggle].sidebar-link {
-    cursor: pointer;
-}
-
-/* Style for the parent item when its dropdown is open or a child is active */
-.sidebar-link.active-parent {
-    color: #ffffff; /* White text like active links */
-    background-color: rgba(255, 255, 255, 0.05); /* Slightly different background? Or same as active? */
-}
-/* Ensure hover works correctly too */
-button[data-toggle].sidebar-link:hover {
-     color: #ffffff;
-     background-color: rgba(255, 255, 255, 0.08);
-}
-
-
-/* Submenu container - transition max-height */
-.sidebar-submenu {
-    max-height: 0; /* Hidden by default */
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out; /* Smooth transition */
-}
-
-/* Style for links within the submenu */
-.sidebar-submenu a.sidebar-link {
-    /* Base styles inherited */
-    font-size: 0.9rem; /* Slightly smaller text */
-    padding-top: 0.5rem; /* Adjust padding */
-    padding-bottom: 0.5rem;
-    padding-left: 0.75rem; /* Indentation handled by parent div's pl-6 */
-    color: #a9a9b3; /* Default color */
-}
-
-/* Hover/Active for submenu links */
-.sidebar-submenu a.sidebar-link:hover,
-.sidebar-submenu a.sidebar-link.active {
-    color: #ffffff; /* White */
-    background-color: rgba(255, 255, 255, 0.1); /* Slightly more prominent background */
-}
-
-/* Chevron icon rotation */
-.sidebar-link .fa-chevron-down {
-    transition: transform 0.2s ease-in-out;
-}
-.sidebar-link .fa-chevron-down.rotate-180 {
-    transform: rotate(180deg);
-}
-    </style>
+/* Added Stat Card styles from Journal page for consistency if used elsewhere */
+.stat-card { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+.stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
+.stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
+/* Added Inset Card Style from Journal page */
+.glass-card-inset { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+/* Added Ghost Button Style */
+.main-button-ghost { @apply inline-flex items-center justify-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition; }
+.main-button-ghost.active { @apply bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300; }
