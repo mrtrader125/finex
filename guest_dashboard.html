@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest Dashboard | Finex</title>
+    <title>Guest Dashboard | Finex</title> <!-- Changed Finclarity to Finex -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +49,6 @@
         }
     </style>
 </head>
-<!-- REMOVED style="display: none;" from body -->
 <body class="antialiased">
     <canvas id="constellation-bg"></canvas>
     <header id="header" class="header backdrop-blur-md sticky top-0 z-40">
@@ -68,7 +67,8 @@
                 <div class="glass-card p-4 sticky top-24"> 
                     <h2 class="text-lg font-bold p-4">Guest Menu</h2>
                     <nav class="flex flex-col space-y-2">
-                        <a href="guest_dashboard.html" class="sidebar-link active flex items-center space-x-3 py-3 px-4 rounded-lg">
+                        <!-- CORRECTED: Ensure href points to guest_article.html -->
+                        <a href="guest_article.html" class="sidebar-link active flex items-center space-x-3 py-3 px-4 rounded-lg">
                             <i class="fa-solid fa-newspaper w-5 text-center"></i>
                             <span>Sample Article</span>
                         </a>
@@ -91,12 +91,21 @@
             </aside>
             <main class="flex-1">
                 <div>
-                    <h1 class="text-4xl font-bold mb-6">Sample Article Preview</h1>
+                    <h1 class="text-4xl font-bold mb-6">Explore Finex Features</h1> <!-- Updated Title -->
                     <div class="space-y-6">
-                        <div class="glass-card p-6 md:p-8 hover:border-blue-400/50">
-                            <h3 class="text-2xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation</h3>
-                            <p class="text-gray-300 mb-4">An essential primer on the foundational principles you need to understand before choosing a financial path. We cover Mindset, Capital, Effort, Time Horizon, and Scalability.</p>
-                            <a href="guest_article.html" class="text-blue-400 font-semibold hover:text-blue-300">Read Preview &rarr;</a>
+                        <!-- Updated Card to point to guest_article.html -->
+                        <div class="glass-card p-6 md:p-8 hover:border-blue-400/50 transition-all duration-300">
+                             <a href="guest_article.html" class="block">
+                                <h3 class="text-2xl font-bold mb-2">The 5 Pillars of Modern Wealth Creation</h3>
+                                <p class="text-gray-300 mb-4">Read a preview of our foundational guide covering Mindset, Capital, Effort, Time Horizon, and Scalability.</p>
+                                <span class="text-blue-400 font-semibold hover:text-blue-300">Read Preview &rarr;</span>
+                            </a>
+                        </div>
+                         <!-- Placeholder for more sample content if needed -->
+                         <div class="glass-card p-6 md:p-8 opacity-70">
+                            <h3 class="text-2xl font-bold mb-2">Full Access Required</h3>
+                            <p class="text-gray-400 mb-4">Log in or create an account to unlock the complete library of articles, analysis, and tools.</p>
+                            <a href="login.html" class="text-blue-400 font-semibold hover:text-blue-300">Become a Member &rarr;</a>
                         </div>
                     </div>
                 </div>
@@ -111,11 +120,7 @@
             const ctx = canvas.getContext('2d'); 
             let particles = [];
             const setupCanvas = () => { canvas.width = window.innerWidth; canvas.height = document.documentElement.scrollHeight; }; 
-            class Particle { 
-                constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = Math.random() * 1.5 + 0.5; } 
-                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); } 
-                update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } 
-            }
+            class Particle { constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = Math.random() * 0.3 - 0.15; this.vy = Math.random() * 0.3 - 0.15; this.radius = Math.random() * 1.5 + 0.5; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); } update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; } }
             function initParticles() { particles = []; let numberOfParticles = Math.min(80, (canvas.width * canvas.height) / 15000); for (let i = 0; i < numberOfParticles; i++) { particles.push(new Particle()); } }
             function connectParticles() { let maxDistance = 150; for (let i = 0; i < particles.length; i++) { for (let j = i + 1; j < particles.length; j++) { let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2)); if (distance < maxDistance) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - distance / maxDistance)})`; ctx.lineWidth = 0.3; ctx.stroke(); } } } }
             let animationFrameId = null;
