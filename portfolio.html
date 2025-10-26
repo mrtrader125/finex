@@ -31,6 +31,45 @@
         .modal-content { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
         .modal:not(.opacity-100) .modal-content { transform: scale(0.95); opacity: 0; }
         .modal.opacity-100 .modal-content { transform: scale(1); opacity: 1; }
+
+        /* === CUSTOM DROPDOWN STYLES === */
+        .custom-select-wrapper { position: relative; }
+        .custom-select-trigger {
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            padding: 0.75rem; border-radius: 0.5rem;
+            background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        html.dark .custom-select-trigger {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
+        }
+        .custom-select-trigger .fa-chevron-down {
+            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out;
+        }
+        html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
+        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
+        .custom-select-options {
+            position: absolute; z-index: 20; width: 100%;
+            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
+            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        html.dark .custom-select-options { background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1); }
+        .custom-select-wrapper.open .custom-select-options { display: block; }
+        .custom-option { padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937; }
+        html.dark .custom-option { color: #f4f6f9; }
+        .custom-option:hover { background-color: #dbeafe; }
+        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
+        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
+        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
+
+        /* Color styles for Asset Type triggers */
+        .type-stock { border-color: rgba(59, 130, 246, 0.5) !important; background-color: rgba(59, 130, 246, 0.05) !important; }
+        .type-crypto { border-color: rgba(234, 179, 8, 0.5) !important; background-color: rgba(234, 179, 8, 0.05) !important; }
+        .type-etf { border-color: rgba(16, 185, 129, 0.5) !important; background-color: rgba(16, 185, 129, 0.05) !important; }
+        .type-other { border-color: rgba(107, 114, 128, 0.5) !important; background-color: rgba(107, 114, 128, 0.05) !important; }
+        /* === END OF NEW STYLES === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -47,7 +86,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start"> 
-                <div class="lg:col-span-1 space-y-8">
+                    <div class="lg:col-span-1 space-y-8">
                         <div class="glass-card p-6 text-center">
                             <h2 class="text-2xl font-bold mb-4">Portfolio Summary</h2>
                              <div class="stat-card">
@@ -58,7 +97,8 @@
                         </div>
 
                         <div class="glass-card">
-                            <details class="group"> <summary class="p-6 cursor-pointer flex justify-between items-center list-none group-open:border-b group-open:border-color-base">
+                            <details class="group"> 
+                                <summary class="p-6 cursor-pointer flex justify-between items-center list-none group-open:border-b group-open:border-color-base">
                                     <h2 class="text-2xl font-bold">Add New Holding</h2>
                                     <i class="fas fa-chevron-down chevron-icon text-color-muted group-hover:text-color-base"></i>
                                 </summary>
@@ -67,14 +107,19 @@
                                         <label for="asset-symbol" class="text-sm text-color-muted block mb-1">Asset Symbol</label>
                                         <input type="text" id="asset-symbol" required class="form-input w-full" placeholder="e.g., AAPL, BTC, VOO">
                                     </div>
-                                    <div>
-                                        <label for="asset-type" class="text-sm text-color-muted block mb-1">Asset Type</label>
-                                        <select id="asset-type" class="form-select w-full">
-                                            <option value="stock">Stock</option>
-                                            <option value="crypto">Crypto</option>
-                                            <option value="etf">ETF</option>
-                                            <option value="other">Other</option>
-                                        </select>
+                                    <div class="custom-select-wrapper">
+                                        <label class="text-sm text-color-muted block mb-1">Asset Type</label>
+                                        <input type="hidden" id="asset-type" name="asset-type" value="stock">
+                                        <div class="custom-select-trigger type-stock" data-dropdown-trigger="asset-type">
+                                            <span>Stock</span>
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                        <div class="custom-select-options">
+                                            <div class="custom-option selected" data-value="stock">Stock</div>
+                                            <div class="custom-option" data-value="crypto">Crypto</div>
+                                            <div class="custom-option" data-value="etf">ETF</div>
+                                            <div class="custom-option" data-value="other">Other</div>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
@@ -89,7 +134,7 @@
                                     <button type="submit" id="save-asset-btn" class="main-button w-full font-bold py-3">Add Holding</button>
                                     <p id="form-message" class="text-center text-sm mt-3 h-4"></p>
                                 </form>
-                            </details>
+                                </details>
                         </div>
                     </div>
 
@@ -125,15 +170,21 @@
                      <input type="hidden" id="edit-asset-id">
                      <div>
                          <label for="edit-asset-symbol" class="text-sm text-color-muted block mb-1">Asset Symbol</label>
-                         <input type="text" id="edit-asset-symbol" required class="form-input w-full" readonly disabled> </div>
-                     <div>
-                         <label for="edit-asset-type" class="text-sm text-color-muted block mb-1">Asset Type</label>
-                         <select id="edit-asset-type" class="form-select w-full">
-                             <option value="stock">Stock</option>
-                             <option value="crypto">Crypto</option>
-                             <option value="etf">ETF</option>
-                             <option value="other">Other</option>
-                         </select>
+                         <input type="text" id="edit-asset-symbol" required class="form-input w-full" readonly disabled> 
+                     </div>
+                     <div class="custom-select-wrapper">
+                         <label class="text-sm text-color-muted block mb-1">Asset Type</label>
+                         <input type="hidden" id="edit-asset-type" name="edit-asset-type" value="stock">
+                         <div class="custom-select-trigger type-stock" data-dropdown-trigger="edit-asset-type">
+                             <span>Stock</span>
+                             <i class="fas fa-chevron-down"></i>
+                         </div>
+                         <div class="custom-select-options">
+                             <div class="custom-option selected" data-value="stock">Stock</div>
+                             <div class="custom-option" data-value="crypto">Crypto</div>
+                             <div class="custom-option" data-value="etf">ETF</div>
+                             <div class="custom-option" data-value="other">Other</div>
+                         </div>
                      </div>
                      <div class="grid grid-cols-2 gap-4">
                          <div>
@@ -148,7 +199,7 @@
                      <button type="submit" id="update-asset-btn" class="main-button w-full font-bold py-3">Update Holding</button>
                      <p id="edit-form-message" class="text-center text-sm mt-3 h-4"></p>
                  </form>
-             </div>
+                 </div>
         </div>
         
     </div> <script type="module" src="app.js"></script>
@@ -159,7 +210,7 @@
         function initPortfolioPage(user, db) {
             console.log("Setting up Portfolio page specific logic...");
             
-            // --- JAVASCRIPT IS UNCHANGED ---
+            // --- JAVASCRIPT IS UPDATED ---
             const elements = {
                 assetForm: document.getElementById('asset-form'),
                 saveAssetBtn: document.getElementById('save-asset-btn'),
@@ -176,7 +227,7 @@
                 editAssetForm: document.getElementById('edit-asset-form'),
                 editAssetId: document.getElementById('edit-asset-id'),
                 editAssetSymbol: document.getElementById('edit-asset-symbol'),
-                editAssetType: document.getElementById('edit-asset-type'),
+                editAssetType: document.getElementById('edit-asset-type'), // Hidden input
                 editAssetQuantity: document.getElementById('edit-asset-quantity'),
                 editAssetAvgPrice: document.getElementById('edit-asset-avg-price'),
                 updateAssetBtn: document.getElementById('update-asset-btn'),
@@ -195,10 +246,11 @@
                 elements.saveAssetBtn.textContent = 'Saving...';
                 showFormMessage('Saving asset...', false, elements.formMessage);
 
+                // Read value from hidden input for custom dropdown
                 const assetData = {
                     userId: currentUserId,
                     symbol: elements.assetForm['asset-symbol'].value.toUpperCase().trim(),
-                    type: elements.assetForm['asset-type'].value,
+                    type: elements.assetForm['asset-type'].value, // Reads hidden input
                     quantity: parseFloat(elements.assetForm['asset-quantity'].value),
                     avgPrice: parseFloat(elements.assetForm['asset-avg-price'].value),
                     addedAt: serverTimestamp()
@@ -214,6 +266,8 @@
                 try {
                     await addDoc(portfolioCollectionRef, assetData);
                     elements.assetForm.reset();
+                    // Manually reset custom dropdown after form reset
+                    resetCustomDropdown(elements.assetForm.querySelector('[data-dropdown-trigger="asset-type"]'));
                     showFormMessage('Holding Added!', false, elements.formMessage);
                 } catch (error) {
                     console.error("Error adding holding: ", error);
@@ -249,8 +303,9 @@
                 elements.updateAssetBtn.textContent = 'Updating...';
                 showFormMessage('Saving changes...', false, elements.editFormMessage);
 
+                // Read value from hidden input for custom dropdown
                 const updatedData = {
-                     type: elements.editAssetType.value,
+                     type: elements.editAssetType.value, // Reads hidden input
                      quantity: parseFloat(elements.editAssetQuantity.value),
                      avgPrice: parseFloat(elements.editAssetAvgPrice.value),
                      lastUpdated: serverTimestamp()
@@ -341,10 +396,10 @@
 
             function getTypeColor(type) {
                 switch(type?.toLowerCase()) {
-                    case 'stock': return 'bg-blue-600/20 text-blue-400';
-                    case 'crypto': return 'bg-yellow-600/20 text-yellow-400';
-                    case 'etf': return 'bg-green-600/20 text-green-400';
-                    default: return 'bg-gray-600/20 text-gray-400';
+                    case 'stock': return 'bg-blue-600/20 text-blue-400 type-stock'; // Add type class
+                    case 'crypto': return 'bg-yellow-600/20 text-yellow-400 type-crypto'; // Add type class
+                    case 'etf': return 'bg-green-600/20 text-green-400 type-etf'; // Add type class
+                    default: return 'bg-gray-600/20 text-gray-400 type-other'; // Add type class
                 }
             }
             
@@ -379,12 +434,97 @@
                 
                 elements.editAssetId.value = assetToEdit.id;
                 elements.editAssetSymbol.value = assetToEdit.symbol || '';
-                elements.editAssetType.value = assetToEdit.type || 'other';
+                // Set value for custom dropdown in edit modal
+                setCustomDropdownValue(elements.editAssetForm.querySelector('[data-dropdown-trigger="edit-asset-type"]'), assetToEdit.type || 'stock');
                 elements.editAssetQuantity.value = assetToEdit.quantity != null ? assetToEdit.quantity : '';
                 elements.editAssetAvgPrice.value = assetToEdit.avgPrice != null ? assetToEdit.avgPrice : '';
                 
                 openModal(elements.editModal);
             }
+
+            // === NEW FUNCTIONS FOR CUSTOM DROPDOWNS ===
+            function setupCustomDropdowns() {
+                document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+                    const trigger = wrapper.querySelector('.custom-select-trigger');
+                    const optionsContainer = wrapper.querySelector('.custom-select-options');
+                    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                    const triggerText = trigger.querySelector('span');
+
+                    trigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        document.querySelectorAll('.custom-select-wrapper.open').forEach(openWrapper => {
+                            if (openWrapper !== wrapper) openWrapper.classList.remove('open');
+                        });
+                        wrapper.classList.toggle('open');
+                    });
+
+                    optionsContainer.addEventListener('click', (e) => {
+                        const option = e.target.closest('.custom-option');
+                        if (!option) return;
+                        const selectedValue = option.dataset.value;
+                        const selectedText = option.textContent;
+                        hiddenInput.value = selectedValue;
+                        triggerText.textContent = selectedText;
+                        optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        updateDropdownColor(trigger, selectedValue);
+                        wrapper.classList.remove('open');
+                    });
+                });
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => wrapper.classList.remove('open'));
+                });
+            }
+
+            function updateDropdownColor(triggerElement, value) {
+                if (!triggerElement) return;
+                triggerElement.classList.remove('type-stock', 'type-crypto', 'type-etf', 'type-other'); // Clear only type colors
+                if (value === 'stock') triggerElement.classList.add('type-stock');
+                else if (value === 'crypto') triggerElement.classList.add('type-crypto');
+                else if (value === 'etf') triggerElement.classList.add('type-etf');
+                else if (value === 'other') triggerElement.classList.add('type-other');
+            }
+
+            // Helper to reset custom dropdown to first option
+            function resetCustomDropdown(triggerElement) {
+                 if (!triggerElement) return;
+                 const wrapper = triggerElement.closest('.custom-select-wrapper');
+                 const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                 const optionsContainer = wrapper.querySelector('.custom-select-options');
+                 const firstOption = optionsContainer.querySelector('.custom-option');
+                 if (firstOption) {
+                     const defaultValue = firstOption.dataset.value;
+                     const defaultText = firstOption.textContent;
+                     hiddenInput.value = defaultValue;
+                     triggerElement.querySelector('span').textContent = defaultText;
+                     optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                     firstOption.classList.add('selected');
+                     updateDropdownColor(triggerElement, defaultValue);
+                 }
+            }
+            
+            // Helper to set custom dropdown value (e.g., for edit modal)
+            function setCustomDropdownValue(triggerElement, value) {
+                if (!triggerElement) return;
+                const wrapper = triggerElement.closest('.custom-select-wrapper');
+                const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                const optionsContainer = wrapper.querySelector('.custom-select-options');
+                const targetOption = optionsContainer.querySelector(`.custom-option[data-value="${value}"]`);
+                
+                if (targetOption) {
+                     const selectedValue = targetOption.dataset.value;
+                     const selectedText = targetOption.textContent;
+                     hiddenInput.value = selectedValue;
+                     triggerElement.querySelector('span').textContent = selectedText;
+                     optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                     targetOption.classList.add('selected');
+                     updateDropdownColor(triggerElement, selectedValue);
+                } else {
+                     // Fallback to first option if value not found
+                     resetCustomDropdown(triggerElement);
+                }
+            }
+            // === END OF NEW FUNCTIONS ===
 
             function setupEventListeners() {
                 elements.assetForm.addEventListener('submit', addHolding);
@@ -414,6 +554,9 @@
                          if (!elements.editModal.classList.contains('opacity-0')) closeModal(elements.editModal);
                      }
                  });
+                 
+                 // Initialize custom dropdowns
+                 setupCustomDropdowns();
             }
 
             // --- Initial Load ---
