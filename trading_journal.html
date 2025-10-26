@@ -179,7 +179,7 @@
                                     <button type="submit" id="save-trade-btn" class="main-button w-full font-bold py-3">Save Trade</button>
                                     <p id="form-message" class="text-center text-sm mt-3 h-4"></p>
                                 </form>
-                                </details>
+                            </details>
                         </div>
 
                         <div id="weekly-plan-card" class="glass-card p-6">
@@ -221,8 +221,6 @@
         function initJournalPage(user, db) {
             console.log("Setting up Trading Journal specific logic...");
             
-            // === THIS JAVASCRIPT IS UPDATED ===
-            
             const elements = { 
                 totalPl: document.getElementById('total-pl'), totalTrades: document.getElementById('total-trades'),
                 winRate: document.getElementById('win-rate'), profitFactor: document.getElementById('profit-factor'),
@@ -263,7 +261,6 @@
             function openModal(e){if(!e)return;e.classList.remove("opacity-0","pointer-events-none"),e.querySelector(".modal-content")?.classList.remove("scale-95")}
             function closeModal(e){if(!e)return;e.classList.add("opacity-0","pointer-events-none"),e.querySelector(".modal-content")?.classList.add("scale-95"),e===elements.deleteModal&&(tradeToDeleteId=null),e===elements.imageModal&&setTimeout(()=>{elements.modalImageSrc.src=""},300)}
             
-            // === NEW FUNCTION FOR CUSTOM DROPDOWNS ===
             function setupCustomDropdowns() {
                 document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
                     const trigger = wrapper.querySelector('.custom-select-trigger');
@@ -271,10 +268,8 @@
                     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
                     const triggerText = trigger.querySelector('span');
 
-                    // 1. Toggle dropdown
                     trigger.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        // Close all other dropdowns
                         document.querySelectorAll('.custom-select-wrapper.open').forEach(openWrapper => {
                             if (openWrapper !== wrapper) {
                                 openWrapper.classList.remove('open');
@@ -283,38 +278,24 @@
                         wrapper.classList.toggle('open');
                     });
 
-                    // 2. Handle option selection
                     optionsContainer.addEventListener('click', (e) => {
                         const option = e.target.closest('.custom-option');
                         if (!option) return;
-
                         const selectedValue = option.dataset.value;
                         const selectedText = option.textContent;
-
-                        // Update hidden input
                         hiddenInput.value = selectedValue;
-                        // Update trigger text
                         triggerText.textContent = selectedText;
-
-                        // Update selected state in options
                         optionsContainer.querySelectorAll('.custom-option').forEach(opt => {
                             opt.classList.remove('selected');
                         });
                         option.classList.add('selected');
-
-                        // Update trigger colors
                         updateDropdownColor(trigger, selectedValue);
-                        
-                        // Manually trigger 'input' event on hidden input for P/L calc
                         if (hiddenInput.id === 'trade-direction') {
                             calculatePL();
                         }
-
                         wrapper.classList.remove('open');
                     });
                 });
-
-                // 3. Close when clicking outside
                 document.addEventListener('click', () => {
                     document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => {
                         wrapper.classList.remove('open');
@@ -322,13 +303,9 @@
                 });
             }
 
-            // === NEW FUNCTION TO STYLE DROPDOWNS ===
             function updateDropdownColor(triggerElement, value) {
                 if (!triggerElement) return;
-                
-                // Clear all color classes
                 triggerElement.classList.remove('source-impulse', 'source-watchlist', 'source-focus', 'dir-long', 'dir-short');
-                
                 if (value === 'impulse') triggerElement.classList.add('source-impulse');
                 else if (value === 'watchlist') triggerElement.classList.add('source-watchlist');
                 else if (value === 'focus') triggerElement.classList.add('source-focus');
@@ -336,13 +313,10 @@
                 else if (value === 'short') triggerElement.classList.add('dir-short');
             }
 
-            // === THIS FUNCTION IS UPDATED ===
+            // === THIS FUNCTION IS UPDATED (Bug Fix) ===
             function setupEventListeners(){
-                // Note: The form submit now reads from the hidden inputs, which have the correct IDs.
-                // The 't' (tradeData) object is UNCHANGED and works correctly.
                 elements.tradeForm.addEventListener("submit",async e=>{e.preventDefault(),elements.saveBtn.disabled=!0,elements.saveBtn.textContent="Saving...";const t={userId:userId,symbol:elements.tradeForm["trade-symbol"].value,direction:elements.tradeForm["trade-direction"].value,setupSource:elements.tradeForm["trade-setup-source"].value,entryPrice:parseFloat(elements.tradeForm["trade-entry"].value),exitPrice:parseFloat(elements.tradeForm["trade-exit"].value),positionSize:parseFloat(elements.tradeForm["trade-size"].value),image:elements.tradeForm["trade-image"].value,tags:elements.tradeForm["trade-tags"].value.split(",").map(e=>e.trim().toLowerCase()).filter(Boolean),notes:elements.tradeForm["trade-notes"].value,createdAt:serverTimestamp()};try{await addDoc(tradesCollectionRef,t),elements.tradeForm.reset(),elements.plDisplay.value="",
                 
-                // Manually reset custom dropdowns
                 document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
                     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
                     const optionsContainer = wrapper.querySelector('.custom-select-options');
@@ -360,12 +334,16 @@
                 
                 showFormMessage("Trade Saved!")}catch(e){console.error("Error adding trade:",e),showFormMessage("Error: Could not save trade.",!0)}finally{elements.saveBtn.disabled=!1,elements.saveBtn.textContent="Save Trade"}}),
                 
-                // Updated P/L calc listeners
                 ["trade-entry","trade-exit","trade-size"].forEach(e=>{const t=elements.tradeForm[e];t&&t.addEventListener("input",calculatePL)}),
                 
-                elements.tradeHistory.addEventListener("click",e=>{const t=e.target.closest(".delete-trade-btn"),l=e.target.closest(".view-chart-btn");t?(tradeToDeleteId=t.dataset.id,openModal(elements.deleteModal)):l&&(elements.modalImageSrc.src=l.dataset.imgSrc,openModal(elements.imageModal))}),elements.tagsContainer.addEventListener("click",e=>{if(e.target.matches(".tag")){const t=e.target.dataset.tag;activeTag="all"===t?null:t,applyFilters()}}),[elements.cancelDelete,elements-closeImageModal].forEach(e=>{e&&e.addEventListener("click",()=>{closeModal(elements.deleteModal),closeModal(elements.imageModal)})}),[elements.deleteModal,elements.imageModal].forEach(e=>{e&&e.addEventListener("click",t=>{t.target===e&&closeModal(e)})}),elements.confirmDelete&&elements.confirmDelete.addEventListener("click",async()=>{if(tradeToDeleteId){try{elements.confirmDelete.textContent="Deleting...",elements.confirmDelete.disabled=!0,await deleteDoc(doc(db,"trades",tradeToDeleteId)),console.log("Trade deleted:",tradeToDeleteId)}catch(e){console.error("Error deleting trade:",e),alert("Error deleting trade.")}finally{elements.confirmDelete.textContent="Delete",elements.confirmDelete.disabled=!1,closeModal(elements.deleteModal)}}}),document.addEventListener("keydown",e=>{if("Escape"===e.key){elements.deleteModal&&!elements.deleteModal.classList.contains("opacity-0")&&closeModal(elements.deleteModal),elements.imageModal&&!elements.imageModal.classList.contains("opacity-0")&&closeModal(elements.imageModal)}})
+                elements.tradeHistory.addEventListener("click",e=>{const t=e.target.closest(".delete-trade-btn"),l=e.target.closest(".view-chart-btn");t?(tradeToDeleteId=t.dataset.id,openModal(elements.deleteModal)):l&&(elements.modalImageSrc.src=l.dataset.imgSrc,openModal(elements.imageModal))}),elements.tagsContainer.addEventListener("click",e=>{if(e.target.matches(".tag")){const t=e.target.dataset.tag;activeTag="all"===t?null:t,applyFilters()}}),
+                
+                // === THIS LINE IS FIXED ===
+                [elements.cancelDelete, elements.closeImageModal].forEach(e=>{e&&e.addEventListener("click",()=>{closeModal(elements.deleteModal),closeModal(elements.imageModal)})}),
+                // === END OF FIX ===
+
+                [elements.deleteModal,elements.imageModal].forEach(e=>{e&&e.addEventListener("click",t=>{t.target===e&&closeModal(e)})}),elements.confirmDelete&&elements.confirmDelete.addEventListener("click",async()=>{if(tradeToDeleteId){try{elements.confirmDelete.textContent="Deleting...",elements.confirmDelete.disabled=!0,await deleteDoc(doc(db,"trades",tradeToDeleteId)),console.log("Trade deleted:",tradeToDeleteId)}catch(e){console.error("Error deleting trade:",e),alert("Error deleting trade.")}finally{elements.confirmDelete.textContent="Delete",elements.confirmDelete.disabled=!1,closeModal(elements.deleteModal)}}}),document.addEventListener("keydown",e=>{if("Escape"===e.key){elements.deleteModal&&!elements.deleteModal.classList.contains("opacity-0")&&closeModal(elements.deleteModal),elements.imageModal&&!elements.imageModal.classList.contains("opacity-0")&&closeModal(elements.imageModal)}})
             
-                // Call the new dropdown setup function
                 setupCustomDropdowns();
             }
             // === END OF UPDATE ===
