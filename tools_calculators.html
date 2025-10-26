@@ -13,7 +13,22 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
-    </head>
+    <style>
+        /* Add slight bottom margin to result divs for spacing */
+        .calc-result { 
+            @apply mt-6 text-center bg-gray-100 dark:bg-white/5 p-4 rounded-lg; 
+        }
+        .calc-result-label {
+            @apply text-sm text-color-muted block;
+        }
+         .calc-result-value {
+             @apply text-3xl font-bold text-green-600 dark:text-green-400;
+         }
+         /* Style for compounding details */
+         .compounding-details p { @apply text-sm text-color-muted; }
+         .compounding-details strong { @apply text-color-base font-semibold; }
+    </style>
+</head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
 
@@ -22,56 +37,95 @@
 
         <div class="min-h-screen flex flex-col">
             <main class="container mx-auto p-4 md:p-8 flex-grow">
-                <div class="text-center mb-8">
+                <div class="text-center mb-12">
                     <h1 class="text-4xl font-bold text-color-base">Trading Calculators</h1>
-                    <p class="text-lg text-color-muted mt-2 max-w-3xl mx-auto">Essential tools for risk management and trade planning. More calculators coming soon.</p>
+                    <p class="text-lg text-color-muted mt-2 max-w-3xl mx-auto">Essential tools for risk management and trade planning.</p>
                 </div>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
                     <div class="glass-card p-6">
                         <h2 class="text-2xl font-bold mb-4">Position Size Calculator</h2>
                         <form id="position-size-form" class="space-y-4">
-                            <div>
-                                <label for="account-size" class="text-sm text-color-muted block mb-1">Account Size ($)</label>
-                                <input type="number" id="account-size" step="any" min="0" class="form-input w-full p-2" value="10000" required>
-                            </div>
-                            <div>
-                                <label for="risk-percent" class="text-sm text-color-muted block mb-1">Risk per Trade (%)</label>
-                                <input type="number" id="risk-percent" step="any" min="0.1" max="100" class="form-input w-full p-2" value="1" required>
-                            </div>
-                            <div>
-                                <label for="stop-loss-pips" class="text-sm text-color-muted block mb-1">Stop Loss (pips/points)</label>
-                                <input type="number" id="stop-loss-pips" step="any" min="1" class="form-input w-full p-2" value="20" required>
-                            </div>
-                             <input type="hidden" id="pip-value-per-lot" value="10">
-                             </form>
-                         <div class="mt-6 text-center bg-gray-100 dark:bg-white/5 p-4 rounded-lg">
-                            <span class="text-sm text-color-muted block">Recommended Position Size</span>
-                            <span id="position-size-result" class="text-3xl font-bold text-green-600 dark:text-green-400">0.05 Lots</span>
+                            <div><label for="account-size" class="text-sm text-color-muted block mb-1">Account Size ($)</label><input type="number" id="account-size" step="any" min="0" class="form-input w-full p-2" value="10000" required></div>
+                            <div><label for="risk-percent" class="text-sm text-color-muted block mb-1">Risk per Trade (%)</label><input type="number" id="risk-percent" step="any" min="0.1" max="100" class="form-input w-full p-2" value="1" required></div>
+                            <div><label for="stop-loss-pips" class="text-sm text-color-muted block mb-1">Stop Loss (pips/points)</label><input type="number" id="stop-loss-pips" step="any" min="1" class="form-input w-full p-2" value="20" required></div>
+                             <input type="hidden" id="pip-value-per-lot" value="10"> </form>
+                         <div class="calc-result">
+                            <span class="calc-result-label">Recommended Position Size</span>
+                            <span id="position-size-result" class="calc-result-value">0.05 Lots</span>
                         </div>
                     </div>
                     <div class="glass-card p-6">
                          <h2 class="text-2xl font-bold mb-4">Risk/Reward Calculator</h2>
                         <form id="risk-reward-form" class="space-y-4">
-                            <div>
-                                <label for="entry-price" class="text-sm text-color-muted block mb-1">Entry Price</label>
-                                <input type="number" id="entry-price" step="any" class="form-input w-full p-2" value="1.25000" required>
-                            </div>
-                            <div>
-                                <label for="stop-loss-price" class="text-sm text-color-muted block mb-1">Stop Loss Price</label>
-                                <input type="number" id="stop-loss-price" step="any" class="form-input w-full p-2" value="1.24800" required>
-                            </div>
-                            <div>
-                                <label for="take-profit-price" class="text-sm text-color-muted block mb-1">Take Profit Price</label>
-                                <input type="number" id="take-profit-price" step="any" class="form-input w-full p-2" value="1.25600" required>
-                            </div>
+                            <div><label for="entry-price" class="text-sm text-color-muted block mb-1">Entry Price</label><input type="number" id="entry-price" step="any" class="form-input w-full p-2" value="1.25000" required></div>
+                            <div><label for="stop-loss-price" class="text-sm text-color-muted block mb-1">Stop Loss Price</label><input type="number" id="stop-loss-price" step="any" class="form-input w-full p-2" value="1.24800" required></div>
+                            <div><label for="take-profit-price" class="text-sm text-color-muted block mb-1">Take Profit Price</label><input type="number" id="take-profit-price" step="any" class="form-input w-full p-2" value="1.25600" required></div>
                         </form>
-                         <div class="mt-6 text-center bg-gray-100 dark:bg-white/5 p-4 rounded-lg">
-                            <span class="text-sm text-color-muted block">Risk/Reward Ratio</span>
-                            <span id="risk-reward-result" class="text-3xl font-bold text-green-600 dark:text-green-400">1 : 3.00</span>
+                         <div class="calc-result">
+                            <span class="calc-result-label">Risk/Reward Ratio</span>
+                            <span id="risk-reward-result" class="calc-result-value">1 : 3.00</span>
                         </div>
                     </div>
+                    
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold mb-4">Pip Value Calculator (Forex)</h2>
+                        <form id="pip-value-form" class="space-y-4">
+                             <div>
+                                 <label for="pv-pair" class="text-sm text-color-muted block mb-1">Currency Pair</label>
+                                 <select id="pv-pair" class="form-select w-full">
+                                     <option value="EURUSD">EUR/USD</option>
+                                     <option value="GBPUSD">GBP/USD</option>
+                                     <option value="USDJPY">USD/JPY</option>
+                                     <option value="USDCAD">USD/CAD</option>
+                                     <option value="AUDUSD">AUD/USD</option>
+                                     <option value="NZDUSD">NZD/USD</option>
+                                     <option value="USDCHF">USD/CHF</option>
+                                     </select>
+                             </div>
+                             <div>
+                                <label for="pv-lots" class="text-sm text-color-muted block mb-1">Trade Size (Lots)</label>
+                                <input type="number" id="pv-lots" step="0.01" min="0.01" class="form-input w-full p-2" value="0.10" required>
+                             </div>
+                             <div>
+                                 <label for="pv-account-currency" class="text-sm text-color-muted block mb-1">Account Currency</label>
+                                 <select id="pv-account-currency" class="form-select w-full">
+                                     <option value="USD" selected>USD</option>
+                                     <option value="EUR">EUR</option>
+                                     <option value="GBP">GBP</option>
+                                     <option value="JPY">JPY</option>
+                                     </select>
+                             </div>
+                              <p class="text-xs text-color-muted text-center pt-2">Note: Uses simplified calculation. Assumes standard lot sizes & pip definitions. Actual broker values may vary slightly based on current rates.</p>
+                         </form>
+                         <div class="calc-result">
+                             <span class="calc-result-label">Value per Pip</span>
+                             <span id="pip-value-result" class="calc-result-value">$1.00</span>
+                         </div>
                     </div>
-            </main>
+                    
+                    <div class="glass-card p-6">
+                         <h2 class="text-2xl font-bold mb-4">Compounding Calculator</h2>
+                         <form id="compounding-form" class="space-y-4">
+                             <div class="grid grid-cols-2 gap-4">
+                                <div><label for="cp-initial" class="text-sm text-color-muted block mb-1">Initial Balance ($)</label><input type="number" id="cp-initial" step="any" min="0" class="form-input w-full p-2" value="10000" required></div>
+                                <div><label for="cp-contrib" class="text-sm text-color-muted block mb-1">Monthly Contrib. ($)</label><input type="number" id="cp-contrib" step="any" min="0" class="form-input w-full p-2" value="100" required></div>
+                            </div>
+                             <div class="grid grid-cols-2 gap-4">
+                                <div><label for="cp-rate" class="text-sm text-color-muted block mb-1">Annual Rate (%)</label><input type="number" id="cp-rate" step="any" min="0" class="form-input w-full p-2" value="8" required></div>
+                                <div><label for="cp-years" class="text-sm text-color-muted block mb-1">Years</label><input type="number" id="cp-years" step="1" min="1" class="form-input w-full p-2" value="10" required></div>
+                             </div>
+                             <input type="hidden" id="cp-frequency" value="12"> </form>
+                         <div class="calc-result">
+                             <span class="calc-result-label">Future Value</span>
+                             <span id="compounding-result" class="calc-result-value">$0.00</span>
+                             <div id="compounding-details" class="mt-2 text-xs text-color-muted">
+                                 <p>Total Principal: <strong id="cp-total-principal">$0.00</strong></p>
+                                 <p>Total Interest: <strong id="cp-total-interest">$0.00</strong></p>
+                             </div>
+                         </div>
+                     </div>
+
+                 </div> </main>
         </div>
         </div>
 
@@ -89,26 +143,27 @@
             const accountSizeInput = document.getElementById('account-size');
             const riskPercentInput = document.getElementById('risk-percent');
             const stopLossPipsInput = document.getElementById('stop-loss-pips');
-            const pipValuePerLotInput = document.getElementById('pip-value-per-lot');
+            const pipValuePerLotInput = document.getElementById('pip-value-per-lot'); // Still using simplified value
 
             function calculatePositionSize() {
                 if (!psResult || !accountSizeInput || !riskPercentInput || !stopLossPipsInput || !pipValuePerLotInput) return;
                 const accountSize = parseFloat(accountSizeInput.value);
                 const riskPercent = parseFloat(riskPercentInput.value) / 100;
                 const stopLossPips = parseFloat(stopLossPipsInput.value);
-                const pipValuePerLot = parseFloat(pipValuePerLotInput.value);
+                // NOTE: Using a fixed $10/pip/lot. For accurate Forex, this needs pv-calc logic.
+                const pipValuePerLot = parseFloat(pipValuePerLotInput.value); 
 
                 if (isNaN(accountSize) || isNaN(riskPercent) || isNaN(stopLossPips) || isNaN(pipValuePerLot) ||
                     accountSize <= 0 || riskPercent <= 0 || stopLossPips <= 0 || pipValuePerLot <= 0) {
                     psResult.textContent = '-- Lots';
-                    psResult.className = 'text-3xl font-bold text-color-muted'; // Use theme color
+                    psResult.className = 'calc-result-value text-color-muted'; 
                     return;
                 }
                 const riskAmount = accountSize * riskPercent;
                 const riskPerLot = stopLossPips * pipValuePerLot;
                 const positionSizeLots = riskAmount / riskPerLot;
                 psResult.textContent = `${positionSizeLots.toFixed(2)} Lots`;
-                psResult.className = 'text-3xl font-bold text-green-600 dark:text-green-400';
+                psResult.className = 'calc-result-value text-green-600 dark:text-green-400';
             }
             if (psForm) { calculatePositionSize(); psForm.addEventListener('input', calculatePositionSize); }
 
@@ -127,22 +182,129 @@
 
                  if (isNaN(entry) || isNaN(stop) || isNaN(target)) {
                      rrResult.textContent = '1 : --';
-                     rrResult.className = 'text-3xl font-bold text-color-muted';
+                     rrResult.className = 'calc-result-value text-color-muted';
                      return;
                  }
                  const risk = Math.abs(entry - stop);
                  const reward = Math.abs(target - entry);
 
-                 if (risk === 0) { rrResult.textContent = '1 : ∞'; rrResult.className = 'text-3xl font-bold text-green-600 dark:text-green-400'; return; }
-                 if (reward === 0) { rrResult.textContent = '1 : 0.00'; rrResult.className = 'text-3xl font-bold text-red-500'; return; } // Show 0 reward as red
+                 if (risk === 0) { rrResult.textContent = '1 : ∞'; rrResult.className = 'calc-result-value text-green-600 dark:text-green-400'; return; }
+                 if (reward === 0) { rrResult.textContent = '1 : 0.00'; rrResult.className = 'calc-result-value text-red-500'; return; } 
 
                  const ratio = reward / risk;
                  rrResult.textContent = `1 : ${ratio.toFixed(2)}`;
-                 if (ratio >= 1) { rrResult.className = 'text-3xl font-bold text-green-600 dark:text-green-400'; }
-                 else { rrResult.className = 'text-3xl font-bold text-red-500'; }
+                 if (ratio >= 1) { rrResult.className = 'calc-result-value text-green-600 dark:text-green-400'; }
+                 else { rrResult.className = 'calc-result-value text-red-500'; }
             }
             if (rrForm) { calculateRiskReward(); rrForm.addEventListener('input', calculateRiskReward); }
-        }
+            
+            // --- Pip Value Calculator ---
+            const pvForm = document.getElementById('pip-value-form');
+            const pvResult = document.getElementById('pip-value-result');
+            const pvPairSelect = document.getElementById('pv-pair');
+            const pvLotsInput = document.getElementById('pv-lots');
+            const pvAccountCurrencySelect = document.getElementById('pv-account-currency');
+
+            function calculatePipValue() {
+                if (!pvResult || !pvPairSelect || !pvLotsInput || !pvAccountCurrencySelect) return;
+
+                const pair = pvPairSelect.value;
+                const lots = parseFloat(pvLotsInput.value);
+                const accountCurrency = pvAccountCurrencySelect.value;
+
+                if (isNaN(lots) || lots <= 0 || !pair || !accountCurrency) {
+                     pvResult.textContent = '$--.--';
+                     pvResult.className = 'calc-result-value text-color-muted';
+                     return;
+                }
+
+                // Simplified Calculation Logic (needs real-time rates for accuracy)
+                let pipValueInQuoteCurrencyPerLot = 10; // Standard for most pairs (like EURUSD)
+                const quoteCurrency = pair.substring(3); // e.g., USD from EURUSD, JPY from USDJPY
+
+                if (quoteCurrency === 'JPY') {
+                    pipValueInQuoteCurrencyPerLot = 1000; // JPY pairs often have 1000 per lot
+                } 
+                // Add more exceptions if needed (e.g., XAUUSD often $1 per 0.01 move per lot)
+
+                let pipValueInAccountCurrency = (pipValueInQuoteCurrencyPerLot * lots);
+
+                // Basic Conversion (VERY simplified - NEEDS REAL RATES)
+                // This assumes 1:1 or requires manual adjustment
+                if (quoteCurrency !== accountCurrency) {
+                     // *** PLACEHOLDER: Ideally fetch conversion rate here ***
+                     // Example: if quote is JPY and account is USD, divide by USDJPY rate
+                     // For now, we'll just show it in the quote currency if different
+                     if (accountCurrency === 'USD' && quoteCurrency === 'JPY') pipValueInAccountCurrency /= 150; // Example static rate
+                     else if (accountCurrency === 'EUR' && quoteCurrency === 'USD') pipValueInAccountCurrency /= 1.1; // Example static rate
+                     // ... add more static rates or keep as quote currency
+                }
+
+                // Format based on Account Currency
+                let currencySymbol = '$'; // Default USD
+                if (accountCurrency === 'EUR') currencySymbol = '€';
+                else if (accountCurrency === 'GBP') currencySymbol = '£';
+                else if (accountCurrency === 'JPY') currencySymbol = '¥';
+                
+                pvResult.textContent = `${currencySymbol}${pipValueInAccountCurrency.toFixed(2)}`;
+                pvResult.className = 'calc-result-value text-green-600 dark:text-green-400';
+            }
+            if (pvForm) { calculatePipValue(); pvForm.addEventListener('input', calculatePipValue); }
+
+             // --- Compounding Calculator ---
+             const cpForm = document.getElementById('compounding-form');
+             const cpResult = document.getElementById('compounding-result');
+             const cpInitialInput = document.getElementById('cp-initial');
+             const cpContribInput = document.getElementById('cp-contrib');
+             const cpRateInput = document.getElementById('cp-rate');
+             const cpYearsInput = document.getElementById('cp-years');
+             const cpFrequencyInput = document.getElementById('cp-frequency'); // Hidden, assumed monthly (12)
+             const cpDetails = document.getElementById('compounding-details');
+             const cpTotalPrincipal = document.getElementById('cp-total-principal');
+             const cpTotalInterest = document.getElementById('cp-total-interest');
+
+             function calculateCompounding() {
+                 if (!cpResult || !cpInitialInput || !cpContribInput || !cpRateInput || !cpYearsInput || !cpFrequencyInput || !cpDetails || !cpTotalPrincipal || !cpTotalInterest) return;
+
+                 const P = parseFloat(cpInitialInput.value); // Principal
+                 const PMT = parseFloat(cpContribInput.value); // Periodic Payment (Monthly)
+                 const r = parseFloat(cpRateInput.value) / 100; // Annual rate
+                 const t = parseFloat(cpYearsInput.value); // Years
+                 const n = parseFloat(cpFrequencyInput.value); // Compounding frequency (per year) - monthly = 12
+
+                 if (isNaN(P) || isNaN(PMT) || isNaN(r) || isNaN(t) || isNaN(n) || P < 0 || PMT < 0 || r < 0 || t <= 0 || n <= 0) {
+                     cpResult.textContent = '$--.--';
+                     cpResult.className = 'calc-result-value text-color-muted';
+                     cpDetails.style.display = 'none';
+                     return;
+                 }
+
+                 const nt = n * t; // Total number of compounds
+                 const ratePerPeriod = r / n;
+
+                 // Compound interest formula for principal
+                 const principalFutureValue = P * Math.pow(1 + ratePerPeriod, nt);
+
+                 // Future value of a series formula for contributions
+                 const contributionFutureValue = PMT * ( (Math.pow(1 + ratePerPeriod, nt) - 1) / ratePerPeriod );
+
+                 const totalFutureValue = principalFutureValue + contributionFutureValue;
+                 
+                 // Calculate total principal and interest
+                 const totalPrincipal = P + (PMT * 12 * t);
+                 const totalInterest = totalFutureValue - totalPrincipal;
+
+                 cpResult.textContent = totalFutureValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                 cpResult.className = 'calc-result-value text-green-600 dark:text-green-400';
+                 
+                 cpTotalPrincipal.textContent = totalPrincipal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                 cpTotalInterest.textContent = totalInterest.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                 cpDetails.style.display = 'block';
+
+             }
+             if (cpForm) { calculateCompounding(); cpForm.addEventListener('input', calculateCompounding); }
+
+        } // End initToolsPage
         initializeAppCore(initToolsPage);
     </script>
 </body>
