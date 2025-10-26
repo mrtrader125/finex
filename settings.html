@@ -42,53 +42,80 @@
                     </div>
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Account</h2>
-                         <div class="space-y-4">
-                             <div><span class="font-semibold text-color-base block mb-1">Email Address</span><span id="account-email" class="text-color-muted">Loading...</span></div>
-                             <div><span class="font-semibold text-color-base block mb-1">Password</span><button class="text-sm text-blue-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed" disabled>Change Password (Coming Soon)</button></div>
+                         <div class="space-y-6">
+                             <div>
+                                 <span class="font-semibold text-color-base block mb-1">Email Address</span>
+                                 <span id="account-email" class="text-color-muted">Loading...</span>
+                             </div>
+                             <div class="space-y-2">
+                                 <label for="display-name" class="font-semibold text-color-base block">Display Name</label>
+                                 <div class="flex items-center gap-3">
+                                     <input type="text" id="display-name" class="form-input flex-grow" placeholder="Enter your name">
+                                     <button id="save-display-name-btn" class="main-button py-2 px-4 text-sm disabled:opacity-50" disabled>Save</button>
+                                 </div>
+                                 <p id="display-name-status" class="text-xs h-3"></p>
+                             </div>
+                              <div>
+                                 <span class="font-semibold text-color-base block mb-1">Password</span>
+                                 <button id="change-password-btn" class="text-sm text-blue-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed">Send Password Reset Email</button>
+                                 <p id="password-status" class="text-xs h-3 mt-1"></p>
+                             </div>
                          </div>
                     </div>
-                   
-                     <p id="save-status" class="text-center text-sm text-color-muted h-4"></p>
-                </div>
+
+                     <p id="save-status" class="text-center text-sm text-color-muted h-4"></p> </div>
             </main>
         </div>
         </div>
 
     <script type="module" src="app.js"></script>
     <script type="module">
+        // === JAVASCRIPT IS UPDATED ===
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
-        import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"; // Added updateDoc
+        import { updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js"; // Added updateProfile, sendPasswordResetEmail
 
         function initSettingsPage(user, db) {
             console.log("Setting up Settings page specific logic...");
+            // Existing elements
             const accountEmailSpan = document.getElementById('account-email');
             const themeToggle = document.getElementById('theme-toggle');
             const sidebarOptionsContainer = document.getElementById('sidebar-options-container');
             const saveStatus = document.getElementById('save-status');
+            // New elements
+            const displayNameInput = document.getElementById('display-name');
+            const saveDisplayNameBtn = document.getElementById('save-display-name-btn');
+            const displayNameStatus = document.getElementById('display-name-status');
+            const changePasswordBtn = document.getElementById('change-password-btn');
+            const passwordStatus = document.getElementById('password-status');
 
-            if (!accountEmailSpan || !themeToggle || !sidebarOptionsContainer || !saveStatus) {
+            // Check essential elements
+            if (!accountEmailSpan || !themeToggle || !sidebarOptionsContainer || !saveStatus ||
+                !displayNameInput || !saveDisplayNameBtn || !displayNameStatus || !changePasswordBtn || !passwordStatus) {
                 console.error("Critical settings elements missing!");
                  const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; return;
             }
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
+            let userDocRef = doc(db, `users`, currentUserId); // Reference to user document for display name
             let userPreferences = { theme: 'dark', sidebarItems: {} };
-            // Initialize local defaults using the imported allSidebarItems
+            let originalDisplayName = user.displayName || ''; // Store original name
+
             allSidebarItems.forEach(item => {
-                userPreferences.sidebarItems[item.id] = true; // Default parent to true
-                if(item.subItems) { item.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = true); } // Default subitems to true
+                userPreferences.sidebarItems[item.id] = true;
+                if(item.subItems) { item.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = true); }
             });
 
-            let debounceTimer = null;
+            let debounceTimer = null; // For sidebar save
 
             async function loadPreferencesForSettings() {
                 try {
-                    const docSnap = await getDoc(settingsDocRef);
-                    if (docSnap.exists()) {
-                        const loadedPrefs = docSnap.data();
+                    // Load theme/sidebar preferences
+                    const settingsSnap = await getDoc(settingsDocRef);
+                    if (settingsSnap.exists()) {
+                        const loadedPrefs = settingsSnap.data();
                         userPreferences.theme = loadedPrefs.theme || 'dark';
-                        // Merge sidebar items from Firestore, keeping ALL possible keys from allSidebarItems
                         if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
                             for (const key in userPreferences.sidebarItems) {
                                 if (loadedPrefs.sidebarItems.hasOwnProperty(key)) {
@@ -97,13 +124,21 @@
                             }
                         }
                     }
-                } catch (error) { console.error("Error loading preferences for settings:", error); }
-                accountEmailSpan.textContent = user.email;
+
+                    // Load user profile data (displayName)
+                     originalDisplayName = user.displayName || user.email?.split('@')[0] || ''; // Use email prefix as fallback
+                     displayNameInput.value = originalDisplayName;
+
+                } catch (error) { console.error("Error loading preferences/profile for settings:", error); }
+
+                accountEmailSpan.textContent = user.email || 'No email found';
                 themeToggle.checked = (userPreferences.theme === 'dark');
                 populateSidebarOptions();
+                // Initially disable save button until name changes
+                saveDisplayNameBtn.disabled = true;
             }
 
-            async function savePreferences() {
+            async function savePreferences() { // Saves theme/sidebar
                 if (!settingsDocRef) return; saveStatus.textContent = 'Saving...';
                  try { await setDoc(settingsDocRef, { ...userPreferences, lastUpdated: serverTimestamp() }, { merge: true });
                      saveStatus.textContent = 'Preferences Saved.'; setTimeout(() => saveStatus.textContent = '', 2000);
@@ -111,7 +146,7 @@
             }
             function debouncedSavePreferences() { clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...'; debounceTimer = setTimeout(savePreferences, 1000); }
 
-            function populateSidebarOptions() {
+            function populateSidebarOptions() { /* ... unchanged ... */
                 sidebarOptionsContainer.innerHTML = '';
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return; // Skip settings itself
@@ -121,7 +156,7 @@
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800';
-                    checkbox.checked = userPreferences.sidebarItems[item.id] ?? true; // Default true if undefined
+                    checkbox.checked = userPreferences.sidebarItems[item.id] ?? true;
                     checkbox.dataset.itemId = item.id;
                     const icon = document.createElement('i');
                     icon.className = `fas ${item.icon} fa-fw text-color-muted`;
@@ -134,31 +169,108 @@
                     checkbox.addEventListener('change', (e) => {
                          const itemId = e.target.dataset.itemId;
                          userPreferences.sidebarItems[itemId] = e.target.checked;
-                         // When hiding a parent, also hide its children in the local state for saving
                          const parentItem = allSidebarItems.find(i => i.id === itemId);
                          if (!e.target.checked && parentItem && parentItem.subItems) {
                              parentItem.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = false);
-                             // Refresh checkboxes to reflect child state change (optional but good UI)
-                             // populateSidebarOptions(); // This might be too much, renderSidebar handles display
                          }
-                         renderSidebar(); // Update the actual sidebar visually
+                         renderSidebar();
                          debouncedSavePreferences();
                     });
-
-                     // Note: If you want checkboxes for SUB-ITEMS, you'd add them here, indented.
-                     // The current setup only controls top-level visibility.
                 });
             }
 
+            // --- NEW: Account Functions ---
+            async function saveDisplayName() {
+                const newName = displayNameInput.value.trim();
+                if (newName === originalDisplayName || !newName) { // Don't save if unchanged or empty
+                    displayNameInput.value = originalDisplayName; // Reset if empty
+                    saveDisplayNameBtn.disabled = true;
+                    return;
+                }
+
+                saveDisplayNameBtn.disabled = true;
+                saveDisplayNameBtn.textContent = 'Saving...';
+                showStatusMessage(displayNameStatus, 'Saving name...', 'text-color-muted');
+
+                try {
+                    // 1. Update Firebase Auth profile
+                    await updateProfile(auth.currentUser, { displayName: newName });
+
+                    // 2. Update Firestore user document (optional but good practice)
+                    if (userDocRef) {
+                        await updateDoc(userDocRef, { displayName: newName, lastUpdated: serverTimestamp() });
+                    }
+
+                    originalDisplayName = newName; // Update original name tracker
+                    showStatusMessage(displayNameStatus, 'Display name updated!', 'text-green-500');
+                    // Update welcome message if on dashboard? (Requires communication or refresh)
+                     // Simple solution: update header directly if possible
+                     const headerNameSpan = document.getElementById('member-name'); // Check if header has this ID
+                     if (headerNameSpan) headerNameSpan.textContent = newName.split(' ')[0] || 'Member';
+
+                } catch (error) {
+                    console.error("Error updating display name:", error);
+                    showStatusMessage(displayNameStatus, 'Error updating name.', 'text-red-500');
+                    displayNameInput.value = originalDisplayName; // Revert input on error
+                } finally {
+                    saveDisplayNameBtn.textContent = 'Save';
+                    // Keep button disabled as name now matches original
+                    saveDisplayNameBtn.disabled = true;
+                }
+            }
+
+            async function sendResetPasswordEmail() {
+                 if (!user.email) {
+                     showStatusMessage(passwordStatus, 'No email associated with account.', 'text-red-500');
+                     return;
+                 }
+                 changePasswordBtn.disabled = true;
+                 showStatusMessage(passwordStatus, 'Sending email...', 'text-color-muted');
+
+                 try {
+                     await sendPasswordResetEmail(auth, user.email);
+                     showStatusMessage(passwordStatus, 'Password reset email sent!', 'text-green-500');
+                 } catch (error) {
+                     console.error("Error sending password reset email:", error);
+                      showStatusMessage(passwordStatus, 'Error sending email. Try again.', 'text-red-500');
+                 } finally {
+                    // Re-enable button after a delay to prevent spamming
+                     setTimeout(() => { changePasswordBtn.disabled = false; }, 5000); 
+                 }
+            }
+
+            function showStatusMessage(element, message, colorClass) {
+                if (!element) return;
+                element.textContent = message;
+                element.className = `text-xs h-3 ${colorClass}`;
+                 // Clear message after a few seconds, unless it's an error
+                 if (!colorClass.includes('red')) {
+                     setTimeout(() => { if (element.textContent === message) element.textContent = ''; }, 3000);
+                 }
+            }
+
+
+            // --- Event Listeners ---
             themeToggle.addEventListener('change', () => {
                 userPreferences.theme = themeToggle.checked ? 'dark' : 'light';
                 applyTheme(userPreferences.theme);
-                savePreferences();
+                savePreferences(); // Use non-debounced for immediate theme save
             });
 
+            displayNameInput.addEventListener('input', () => {
+                // Enable save button only if name has changed and is not empty
+                saveDisplayNameBtn.disabled = (displayNameInput.value.trim() === originalDisplayName || displayNameInput.value.trim() === '');
+            });
+
+            saveDisplayNameBtn.addEventListener('click', saveDisplayName);
+            changePasswordBtn.addEventListener('click', sendResetPasswordEmail);
+
+
+            // --- Initial Load ---
             loadPreferencesForSettings();
         }
         initializeAppCore(initSettingsPage);
+        // === END OF JAVASCRIPT UPDATE ===
     </script>
 </body>
 </html>
