@@ -29,11 +29,17 @@
         html.dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* === CUSTOM DROPDOWN STYLES === */
-        .custom-select-wrapper { position: relative; width: 100%; @apply sm:w-auto; } /* Ensure wrapper takes space */
+        /* === CUSTOM DROPDOWN STYLES (Z-Index Fix) === */
+        /* UPDATED: Added position relative and z-index */
+        .custom-select-wrapper { 
+            position: relative; 
+            z-index: 10; /* Ensures this wrapper is above normal flow siblings */
+            width: 100%; 
+            @apply sm:w-auto; 
+        } 
         .custom-select-trigger {
             display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-            padding: 0.75rem; border-radius: 0.5rem; width: 100%; /* Ensure trigger takes full width */
+            padding: 0.75rem; border-radius: 0.5rem; width: 100%;
             background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
@@ -41,12 +47,15 @@
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
         }
         .custom-select-trigger .fa-chevron-down {
-            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem; /* Add margin */
+            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem;
         }
         html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
         .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
         .custom-select-options {
-            position: absolute; z-index: 20; width: 100%; /* Ensure options match trigger width */
+            position: absolute; 
+            /* UPDATED: z-index already present, ensure it's high enough */
+            z-index: 20; /* Keep this high to appear above trigger */
+            width: 100%; 
             background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
             overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -102,7 +111,7 @@
 
                         <div id="loading-indicator" class="loader hidden ml-2"></div>
                     </div>
-                     </div>
+                </div>
 
                 <div class="glass-card p-6 md:p-8 mb-8">
                     <h2 class="text-2xl font-bold mb-6 text-center">Monthly Performance Summary</h2>
@@ -170,12 +179,12 @@
         function initMonthlyReviewPage(user, db) {
             console.log("Setting up Monthly Review page specific logic...");
             
-            // --- JAVASCRIPT IS UPDATED ---
+            // --- JAVASCRIPT IS UNCHANGED ---
             const elements = {
-                monthSelect: document.getElementById('month-select'), // Hidden input
-                yearSelect: document.getElementById('year-select'),   // Hidden input
-                monthSelectWrapper: document.getElementById('month-select-wrapper'), // Wrapper div
-                yearSelectWrapper: document.getElementById('year-select-wrapper'),   // Wrapper div
+                monthSelect: document.getElementById('month-select'), 
+                yearSelect: document.getElementById('year-select'),   
+                monthSelectWrapper: document.getElementById('month-select-wrapper'), 
+                yearSelectWrapper: document.getElementById('year-select-wrapper'),   
                 loadingIndicator: document.getElementById('loading-indicator'),
                 analyticsContent: document.getElementById('analytics-content'),
                 analyticsLoading: document.getElementById('analytics-loading'),
@@ -195,7 +204,6 @@
             let tradesCollectionRef = collection(db, "trades");
             let checklistsCollectionRef = collection(db, `users/${currentUserId}/weeklyChecklists`);
 
-            // --- Populate Selectors ---
             function populateSelectors() {
                 const now = new Date();
                 const currentMonth = now.getMonth();
@@ -203,7 +211,7 @@
                 
                 const monthWrapper = elements.monthSelectWrapper;
                 const yearWrapper = elements.yearSelectWrapper;
-                if (!monthWrapper || !yearWrapper) return; // Guard clause
+                if (!monthWrapper || !yearWrapper) return; 
 
                 const monthOptionsContainer = monthWrapper.querySelector('.custom-select-options');
                 const yearOptionsContainer = yearWrapper.querySelector('.custom-select-options');
@@ -212,7 +220,6 @@
                 const monthTriggerText = monthWrapper.querySelector('.custom-select-trigger span');
                 const yearTriggerText = yearWrapper.querySelector('.custom-select-trigger span');
                 
-                // Months
                 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                 monthOptionsContainer.innerHTML = months.map((month, index) => 
                     `<div class="custom-option ${index === currentMonth ? 'selected' : ''}" data-value="${index}">${month}</div>`
@@ -220,7 +227,6 @@
                 monthHiddenInput.value = currentMonth;
                 monthTriggerText.textContent = months[currentMonth];
 
-                // Years 
                 const years = [];
                 for (let y = currentYear - 2; y <= currentYear + 1; y++) {
                     years.push(y);
@@ -232,9 +238,7 @@
                 yearTriggerText.textContent = currentYear;
             }
 
-            // --- Data Fetching & Processing ---
             async function fetchAndDisplayData() {
-                // Read from hidden inputs
                 const selectedMonth = parseInt(elements.monthSelect.value);
                 const selectedYear = parseInt(elements.yearSelect.value);
 
@@ -346,7 +350,6 @@
                  }).join('');
             }
             
-            // --- Custom Dropdown JS (Copied from Journal) ---
             function setupCustomDropdowns() {
                 document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
                     const trigger = wrapper.querySelector('.custom-select-trigger');
@@ -374,7 +377,6 @@
                         // No color update needed here
                         wrapper.classList.remove('open');
                         
-                        // --- Trigger data fetch on selection ---
                         fetchAndDisplayData(); 
                     });
                 });
@@ -383,22 +385,18 @@
                 });
             }
 
-
-            // --- Event Listeners ---
             function setupEventListeners() {
-                // Initialize custom dropdowns which now handle the change events
                  setupCustomDropdowns();
             }
 
             // --- Initial Load ---
             populateSelectors();
             setupEventListeners();
-            fetchAndDisplayData(); // Fetch data for the initially selected month/year
+            fetchAndDisplayData(); 
 
         }
 
         initializeAppCore(initMonthlyReviewPage);
-        // --- END OF JAVASCRIPT UPDATE ---
     </script>
 </body>
 </html>
