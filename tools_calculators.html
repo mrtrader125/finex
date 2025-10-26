@@ -14,19 +14,45 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        /* Add slight bottom margin to result divs for spacing */
-        .calc-result { 
-            @apply mt-6 text-center bg-gray-100 dark:bg-white/5 p-4 rounded-lg; 
+        .calc-result { @apply mt-6 text-center bg-gray-100 dark:bg-white/5 p-4 rounded-lg; }
+        .calc-result-label { @apply text-sm text-color-muted block; }
+        .calc-result-value { @apply text-3xl font-bold text-green-600 dark:text-green-400; }
+        .compounding-details p { @apply text-sm text-color-muted; }
+        .compounding-details strong { @apply text-color-base font-semibold; }
+
+        /* === CUSTOM DROPDOWN STYLES === */
+        .custom-select-wrapper { position: relative; }
+        .custom-select-trigger {
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            padding: 0.75rem; border-radius: 0.5rem; width: 100%;
+            background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
-        .calc-result-label {
-            @apply text-sm text-color-muted block;
+        html.dark .custom-select-trigger {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
         }
-         .calc-result-value {
-             @apply text-3xl font-bold text-green-600 dark:text-green-400;
-         }
-         /* Style for compounding details */
-         .compounding-details p { @apply text-sm text-color-muted; }
-         .compounding-details strong { @apply text-color-base font-semibold; }
+        .custom-select-trigger .fa-chevron-down {
+            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem;
+        }
+        html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
+        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
+        .custom-select-options {
+            position: absolute; z-index: 50; width: 100%;
+            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
+            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        html.dark .custom-select-options { background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1); }
+        .custom-select-wrapper.open .custom-select-options { display: block; }
+        .custom-option { padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        html.dark .custom-option { color: #f4f6f9; }
+        .custom-option:hover { background-color: #dbeafe; }
+        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
+        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
+        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
+        /* No specific color styles needed for these triggers */
+        /* === END OF NEW STYLES === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -48,7 +74,8 @@
                             <div><label for="account-size" class="text-sm text-color-muted block mb-1">Account Size ($)</label><input type="number" id="account-size" step="any" min="0" class="form-input w-full p-2" value="10000" required></div>
                             <div><label for="risk-percent" class="text-sm text-color-muted block mb-1">Risk per Trade (%)</label><input type="number" id="risk-percent" step="any" min="0.1" max="100" class="form-input w-full p-2" value="1" required></div>
                             <div><label for="stop-loss-pips" class="text-sm text-color-muted block mb-1">Stop Loss (pips/points)</label><input type="number" id="stop-loss-pips" step="any" min="1" class="form-input w-full p-2" value="20" required></div>
-                             <input type="hidden" id="pip-value-per-lot" value="10"> </form>
+                             <input type="hidden" id="pip-value-per-lot" value="10">
+                         </form>
                          <div class="calc-result">
                             <span class="calc-result-label">Recommended Position Size</span>
                             <span id="position-size-result" class="calc-result-value">0.05 Lots</span>
@@ -66,43 +93,52 @@
                             <span id="risk-reward-result" class="calc-result-value">1 : 3.00</span>
                         </div>
                     </div>
-                    
+
                     <div class="glass-card p-6">
                         <h2 class="text-2xl font-bold mb-4">Pip Value Calculator (Forex)</h2>
                         <form id="pip-value-form" class="space-y-4">
-                             <div>
-                                 <label for="pv-pair" class="text-sm text-color-muted block mb-1">Currency Pair</label>
-                                 <select id="pv-pair" class="form-select w-full">
-                                     <option value="EURUSD">EUR/USD</option>
-                                     <option value="GBPUSD">GBP/USD</option>
-                                     <option value="USDJPY">USD/JPY</option>
-                                     <option value="USDCAD">USD/CAD</option>
-                                     <option value="AUDUSD">AUD/USD</option>
-                                     <option value="NZDUSD">NZD/USD</option>
-                                     <option value="USDCHF">USD/CHF</option>
-                                     </select>
+                             <div class="custom-select-wrapper">
+                                 <label class="text-sm text-color-muted block mb-1">Currency Pair</label>
+                                 <input type="hidden" id="pv-pair" name="pv-pair" value="EURUSD">
+                                 <div class="custom-select-trigger" data-dropdown-trigger="pv-pair">
+                                     <span>EUR/USD</span>
+                                     <i class="fas fa-chevron-down"></i>
+                                 </div>
+                                 <div class="custom-select-options">
+                                     <div class="custom-option selected" data-value="EURUSD">EUR/USD</div>
+                                     <div class="custom-option" data-value="GBPUSD">GBP/USD</div>
+                                     <div class="custom-option" data-value="USDJPY">USD/JPY</div>
+                                     <div class="custom-option" data-value="USDCAD">USD/CAD</div>
+                                     <div class="custom-option" data-value="AUDUSD">AUD/USD</div>
+                                     <div class="custom-option" data-value="NZDUSD">NZD/USD</div>
+                                     <div class="custom-option" data-value="USDCHF">USD/CHF</div>
+                                     </div>
                              </div>
                              <div>
                                 <label for="pv-lots" class="text-sm text-color-muted block mb-1">Trade Size (Lots)</label>
                                 <input type="number" id="pv-lots" step="0.01" min="0.01" class="form-input w-full p-2" value="0.10" required>
                              </div>
-                             <div>
-                                 <label for="pv-account-currency" class="text-sm text-color-muted block mb-1">Account Currency</label>
-                                 <select id="pv-account-currency" class="form-select w-full">
-                                     <option value="USD" selected>USD</option>
-                                     <option value="EUR">EUR</option>
-                                     <option value="GBP">GBP</option>
-                                     <option value="JPY">JPY</option>
-                                     </select>
+                             <div class="custom-select-wrapper">
+                                 <label class="text-sm text-color-muted block mb-1">Account Currency</label>
+                                 <input type="hidden" id="pv-account-currency" name="pv-account-currency" value="USD">
+                                 <div class="custom-select-trigger" data-dropdown-trigger="pv-account-currency">
+                                     <span>USD</span>
+                                     <i class="fas fa-chevron-down"></i>
+                                 </div>
+                                 <div class="custom-select-options">
+                                     <div class="custom-option selected" data-value="USD">USD</div>
+                                     <div class="custom-option" data-value="EUR">EUR</div>
+                                     <div class="custom-option" data-value="GBP">GBP</div>
+                                     <div class="custom-option" data-value="JPY">JPY</div>
+                                     </div>
                              </div>
-                              <p class="text-xs text-color-muted text-center pt-2">Note: Uses simplified calculation. Assumes standard lot sizes & pip definitions. Actual broker values may vary slightly based on current rates.</p>
+                             <p class="text-xs text-color-muted text-center pt-2">Note: Uses simplified calculation. Assumes standard lot sizes & pip definitions. Actual broker values may vary slightly based on current rates.</p>
                          </form>
                          <div class="calc-result">
                              <span class="calc-result-label">Value per Pip</span>
                              <span id="pip-value-result" class="calc-result-value">$1.00</span>
                          </div>
                     </div>
-                    
                     <div class="glass-card p-6">
                          <h2 class="text-2xl font-bold mb-4">Compounding Calculator</h2>
                          <form id="compounding-form" class="space-y-4">
@@ -114,7 +150,8 @@
                                 <div><label for="cp-rate" class="text-sm text-color-muted block mb-1">Annual Rate (%)</label><input type="number" id="cp-rate" step="any" min="0" class="form-input w-full p-2" value="8" required></div>
                                 <div><label for="cp-years" class="text-sm text-color-muted block mb-1">Years</label><input type="number" id="cp-years" step="1" min="1" class="form-input w-full p-2" value="10" required></div>
                              </div>
-                             <input type="hidden" id="cp-frequency" value="12"> </form>
+                             <input type="hidden" id="cp-frequency" value="12">
+                         </form>
                          <div class="calc-result">
                              <span class="calc-result-label">Future Value</span>
                              <span id="compounding-result" class="calc-result-value">$0.00</span>
@@ -137,33 +174,26 @@
         function initToolsPage(user, db) {
             console.log("Setting up Tools & Calculators page specific logic...");
 
+            // === JAVASCRIPT IS UPDATED ===
+
             // --- Position Size Calculator ---
             const psForm = document.getElementById('position-size-form');
             const psResult = document.getElementById('position-size-result');
             const accountSizeInput = document.getElementById('account-size');
             const riskPercentInput = document.getElementById('risk-percent');
             const stopLossPipsInput = document.getElementById('stop-loss-pips');
-            const pipValuePerLotInput = document.getElementById('pip-value-per-lot'); // Still using simplified value
+            const pipValuePerLotInput = document.getElementById('pip-value-per-lot'); 
 
-            function calculatePositionSize() {
+            function calculatePositionSize() { /* ... unchanged ... */
                 if (!psResult || !accountSizeInput || !riskPercentInput || !stopLossPipsInput || !pipValuePerLotInput) return;
-                const accountSize = parseFloat(accountSizeInput.value);
-                const riskPercent = parseFloat(riskPercentInput.value) / 100;
-                const stopLossPips = parseFloat(stopLossPipsInput.value);
-                // NOTE: Using a fixed $10/pip/lot. For accurate Forex, this needs pv-calc logic.
-                const pipValuePerLot = parseFloat(pipValuePerLotInput.value); 
-
-                if (isNaN(accountSize) || isNaN(riskPercent) || isNaN(stopLossPips) || isNaN(pipValuePerLot) ||
-                    accountSize <= 0 || riskPercent <= 0 || stopLossPips <= 0 || pipValuePerLot <= 0) {
-                    psResult.textContent = '-- Lots';
-                    psResult.className = 'calc-result-value text-color-muted'; 
-                    return;
+                const accountSize = parseFloat(accountSizeInput.value); const riskPercent = parseFloat(riskPercentInput.value) / 100;
+                const stopLossPips = parseFloat(stopLossPipsInput.value); const pipValuePerLot = parseFloat(pipValuePerLotInput.value); 
+                if (isNaN(accountSize) || isNaN(riskPercent) || isNaN(stopLossPips) || isNaN(pipValuePerLot) || accountSize <= 0 || riskPercent <= 0 || stopLossPips <= 0 || pipValuePerLot <= 0) {
+                    psResult.textContent = '-- Lots'; psResult.className = 'calc-result-value text-color-muted'; return;
                 }
-                const riskAmount = accountSize * riskPercent;
-                const riskPerLot = stopLossPips * pipValuePerLot;
+                const riskAmount = accountSize * riskPercent; const riskPerLot = stopLossPips * pipValuePerLot;
                 const positionSizeLots = riskAmount / riskPerLot;
-                psResult.textContent = `${positionSizeLots.toFixed(2)} Lots`;
-                psResult.className = 'calc-result-value text-green-600 dark:text-green-400';
+                psResult.textContent = `${positionSizeLots.toFixed(2)} Lots`; psResult.className = 'calc-result-value text-green-600 dark:text-green-400';
             }
             if (psForm) { calculatePositionSize(); psForm.addEventListener('input', calculatePositionSize); }
 
@@ -174,43 +204,32 @@
             const stopLossPriceInput = document.getElementById('stop-loss-price');
             const takeProfitPriceInput = document.getElementById('take-profit-price');
 
-            function calculateRiskReward() {
+            function calculateRiskReward() { /* ... unchanged ... */
                  if (!rrResult || !entryPriceInput || !stopLossPriceInput || !takeProfitPriceInput) return;
-                 const entry = parseFloat(entryPriceInput.value);
-                 const stop = parseFloat(stopLossPriceInput.value);
-                 const target = parseFloat(takeProfitPriceInput.value);
-
-                 if (isNaN(entry) || isNaN(stop) || isNaN(target)) {
-                     rrResult.textContent = '1 : --';
-                     rrResult.className = 'calc-result-value text-color-muted';
-                     return;
-                 }
-                 const risk = Math.abs(entry - stop);
-                 const reward = Math.abs(target - entry);
-
+                 const entry = parseFloat(entryPriceInput.value); const stop = parseFloat(stopLossPriceInput.value); const target = parseFloat(takeProfitPriceInput.value);
+                 if (isNaN(entry) || isNaN(stop) || isNaN(target)) { rrResult.textContent = '1 : --'; rrResult.className = 'calc-result-value text-color-muted'; return; }
+                 const risk = Math.abs(entry - stop); const reward = Math.abs(target - entry);
                  if (risk === 0) { rrResult.textContent = '1 : ∞'; rrResult.className = 'calc-result-value text-green-600 dark:text-green-400'; return; }
                  if (reward === 0) { rrResult.textContent = '1 : 0.00'; rrResult.className = 'calc-result-value text-red-500'; return; } 
-
-                 const ratio = reward / risk;
-                 rrResult.textContent = `1 : ${ratio.toFixed(2)}`;
-                 if (ratio >= 1) { rrResult.className = 'calc-result-value text-green-600 dark:text-green-400'; }
-                 else { rrResult.className = 'calc-result-value text-red-500'; }
+                 const ratio = reward / risk; rrResult.textContent = `1 : ${ratio.toFixed(2)}`;
+                 if (ratio >= 1) { rrResult.className = 'calc-result-value text-green-600 dark:text-green-400'; } else { rrResult.className = 'calc-result-value text-red-500'; }
             }
             if (rrForm) { calculateRiskReward(); rrForm.addEventListener('input', calculateRiskReward); }
             
             // --- Pip Value Calculator ---
             const pvForm = document.getElementById('pip-value-form');
             const pvResult = document.getElementById('pip-value-result');
-            const pvPairSelect = document.getElementById('pv-pair');
+            // Use hidden inputs now
+            const pvPairInput = document.getElementById('pv-pair'); 
             const pvLotsInput = document.getElementById('pv-lots');
-            const pvAccountCurrencySelect = document.getElementById('pv-account-currency');
+            const pvAccountCurrencyInput = document.getElementById('pv-account-currency'); 
 
             function calculatePipValue() {
-                if (!pvResult || !pvPairSelect || !pvLotsInput || !pvAccountCurrencySelect) return;
+                if (!pvResult || !pvPairInput || !pvLotsInput || !pvAccountCurrencyInput) return;
 
-                const pair = pvPairSelect.value;
+                const pair = pvPairInput.value; // Read from hidden input
                 const lots = parseFloat(pvLotsInput.value);
-                const accountCurrency = pvAccountCurrencySelect.value;
+                const accountCurrency = pvAccountCurrencyInput.value; // Read from hidden input
 
                 if (isNaN(lots) || lots <= 0 || !pair || !accountCurrency) {
                      pvResult.textContent = '$--.--';
@@ -218,30 +237,18 @@
                      return;
                 }
 
-                // Simplified Calculation Logic (needs real-time rates for accuracy)
-                let pipValueInQuoteCurrencyPerLot = 10; // Standard for most pairs (like EURUSD)
-                const quoteCurrency = pair.substring(3); // e.g., USD from EURUSD, JPY from USDJPY
-
-                if (quoteCurrency === 'JPY') {
-                    pipValueInQuoteCurrencyPerLot = 1000; // JPY pairs often have 1000 per lot
-                } 
-                // Add more exceptions if needed (e.g., XAUUSD often $1 per 0.01 move per lot)
-
+                let pipValueInQuoteCurrencyPerLot = 10; 
+                const quoteCurrency = pair.substring(3); 
+                if (quoteCurrency === 'JPY') { pipValueInQuoteCurrencyPerLot = 1000; } 
                 let pipValueInAccountCurrency = (pipValueInQuoteCurrencyPerLot * lots);
 
-                // Basic Conversion (VERY simplified - NEEDS REAL RATES)
-                // This assumes 1:1 or requires manual adjustment
+                // Basic Conversion (needs real rates)
                 if (quoteCurrency !== accountCurrency) {
-                     // *** PLACEHOLDER: Ideally fetch conversion rate here ***
-                     // Example: if quote is JPY and account is USD, divide by USDJPY rate
-                     // For now, we'll just show it in the quote currency if different
-                     if (accountCurrency === 'USD' && quoteCurrency === 'JPY') pipValueInAccountCurrency /= 150; // Example static rate
-                     else if (accountCurrency === 'EUR' && quoteCurrency === 'USD') pipValueInAccountCurrency /= 1.1; // Example static rate
-                     // ... add more static rates or keep as quote currency
+                     if (accountCurrency === 'USD' && quoteCurrency === 'JPY') pipValueInAccountCurrency /= 150; 
+                     else if (accountCurrency === 'EUR' && quoteCurrency === 'USD') pipValueInAccountCurrency /= 1.1; 
                 }
 
-                // Format based on Account Currency
-                let currencySymbol = '$'; // Default USD
+                let currencySymbol = '$'; 
                 if (accountCurrency === 'EUR') currencySymbol = '€';
                 else if (accountCurrency === 'GBP') currencySymbol = '£';
                 else if (accountCurrency === 'JPY') currencySymbol = '¥';
@@ -249,7 +256,9 @@
                 pvResult.textContent = `${currencySymbol}${pipValueInAccountCurrency.toFixed(2)}`;
                 pvResult.className = 'calc-result-value text-green-600 dark:text-green-400';
             }
-            if (pvForm) { calculatePipValue(); pvForm.addEventListener('input', calculatePipValue); }
+            // Recalculate when lots input changes (dropdown changes handled by setupCustomDropdowns)
+            if (pvLotsInput) pvLotsInput.addEventListener('input', calculatePipValue); 
+
 
              // --- Compounding Calculator ---
              const cpForm = document.getElementById('compounding-form');
@@ -258,54 +267,77 @@
              const cpContribInput = document.getElementById('cp-contrib');
              const cpRateInput = document.getElementById('cp-rate');
              const cpYearsInput = document.getElementById('cp-years');
-             const cpFrequencyInput = document.getElementById('cp-frequency'); // Hidden, assumed monthly (12)
+             const cpFrequencyInput = document.getElementById('cp-frequency'); 
              const cpDetails = document.getElementById('compounding-details');
              const cpTotalPrincipal = document.getElementById('cp-total-principal');
              const cpTotalInterest = document.getElementById('cp-total-interest');
 
-             function calculateCompounding() {
+             function calculateCompounding() { /* ... unchanged ... */
                  if (!cpResult || !cpInitialInput || !cpContribInput || !cpRateInput || !cpYearsInput || !cpFrequencyInput || !cpDetails || !cpTotalPrincipal || !cpTotalInterest) return;
-
-                 const P = parseFloat(cpInitialInput.value); // Principal
-                 const PMT = parseFloat(cpContribInput.value); // Periodic Payment (Monthly)
-                 const r = parseFloat(cpRateInput.value) / 100; // Annual rate
-                 const t = parseFloat(cpYearsInput.value); // Years
-                 const n = parseFloat(cpFrequencyInput.value); // Compounding frequency (per year) - monthly = 12
-
+                 const P = parseFloat(cpInitialInput.value); const PMT = parseFloat(cpContribInput.value);
+                 const r = parseFloat(cpRateInput.value) / 100; const t = parseFloat(cpYearsInput.value); const n = parseFloat(cpFrequencyInput.value); 
                  if (isNaN(P) || isNaN(PMT) || isNaN(r) || isNaN(t) || isNaN(n) || P < 0 || PMT < 0 || r < 0 || t <= 0 || n <= 0) {
-                     cpResult.textContent = '$--.--';
-                     cpResult.className = 'calc-result-value text-color-muted';
-                     cpDetails.style.display = 'none';
-                     return;
+                     cpResult.textContent = '$--.--'; cpResult.className = 'calc-result-value text-color-muted'; cpDetails.style.display = 'none'; return;
                  }
-
-                 const nt = n * t; // Total number of compounds
-                 const ratePerPeriod = r / n;
-
-                 // Compound interest formula for principal
+                 const nt = n * t; const ratePerPeriod = r / n;
                  const principalFutureValue = P * Math.pow(1 + ratePerPeriod, nt);
-
-                 // Future value of a series formula for contributions
                  const contributionFutureValue = PMT * ( (Math.pow(1 + ratePerPeriod, nt) - 1) / ratePerPeriod );
-
                  const totalFutureValue = principalFutureValue + contributionFutureValue;
-                 
-                 // Calculate total principal and interest
-                 const totalPrincipal = P + (PMT * 12 * t);
-                 const totalInterest = totalFutureValue - totalPrincipal;
-
-                 cpResult.textContent = totalFutureValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-                 cpResult.className = 'calc-result-value text-green-600 dark:text-green-400';
-                 
-                 cpTotalPrincipal.textContent = totalPrincipal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-                 cpTotalInterest.textContent = totalInterest.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                 const totalPrincipal = P + (PMT * 12 * t); const totalInterest = totalFutureValue - totalPrincipal;
+                 cpResult.textContent = totalFutureValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); cpResult.className = 'calc-result-value text-green-600 dark:text-green-400';
+                 cpTotalPrincipal.textContent = totalPrincipal.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); cpTotalInterest.textContent = totalInterest.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
                  cpDetails.style.display = 'block';
-
              }
              if (cpForm) { calculateCompounding(); cpForm.addEventListener('input', calculateCompounding); }
 
+             // --- Custom Dropdown JS ---
+             function setupCustomDropdowns() {
+                document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+                    const trigger = wrapper.querySelector('.custom-select-trigger');
+                    const optionsContainer = wrapper.querySelector('.custom-select-options');
+                    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                    const triggerText = trigger.querySelector('span');
+
+                    trigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        document.querySelectorAll('.custom-select-wrapper.open').forEach(openWrapper => {
+                            if (openWrapper !== wrapper) openWrapper.classList.remove('open');
+                        });
+                        wrapper.classList.toggle('open');
+                    });
+
+                    optionsContainer.addEventListener('click', (e) => {
+                        const option = e.target.closest('.custom-option');
+                        if (!option) return;
+                        const selectedValue = option.dataset.value;
+                        const selectedText = option.textContent;
+                        hiddenInput.value = selectedValue;
+                        triggerText.textContent = selectedText;
+                        optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        // No color update needed here
+                        wrapper.classList.remove('open');
+
+                        // --- Trigger Pip Value Calc on Change ---
+                        if (hiddenInput.id === 'pv-pair' || hiddenInput.id === 'pv-account-currency') {
+                            calculatePipValue();
+                        }
+                    });
+                });
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => wrapper.classList.remove('open'));
+                });
+            }
+            
+             // --- Initial Setup ---
+             setupCustomDropdowns(); // Initialize the custom dropdowns
+             calculatePipValue(); // Initial calculation after setup
+             // Other calculators already have initial calls
+
         } // End initToolsPage
         initializeAppCore(initToolsPage);
+
+        // === END OF JAVASCRIPT UPDATE ===
     </script>
 </body>
 </html>
