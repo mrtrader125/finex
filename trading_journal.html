@@ -20,78 +20,77 @@
         summary { list-style: none; }
         summary::-webkit-details-marker { display: none; }
         
-        .glass-card-inset { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
-        .stat-card { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+        .glass-card-inset { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); padding: 0.75rem; border-radius: 0.5rem; }
+        html.dark .glass-card-inset { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .stat-card { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); padding: 0.75rem; border-radius: 0.5rem; }
+        html.dark .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
         .stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
         .stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
 
-        /* === CUSTOM DROPDOWN STYLES (Specificity Fix) === */
+        /* === CUSTOM DROPDOWN STYLES (Box Fix) === */
         .custom-select-wrapper { 
             position: relative; 
         }
+        /* Base styles for the trigger box (mimics .form-input) */
         .custom-select-trigger {
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
             cursor: pointer;
+            padding: 0.75rem; /* Match .form-input padding */
+            border-radius: 0.5rem; /* Match .form-input radius */
+            background: rgba(0, 0, 0, 0.03); /* Light mode background */
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Light mode border */
+            color: #1f2937; /* Light mode text */
             transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        /* Dark mode base styles for the trigger box */
+        html.dark .custom-select-trigger {
+            background: rgba(255, 255, 255, 0.05); /* Dark mode background */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Dark mode border */
+            color: #f4f6f9; /* Dark mode text */
+        }
+        /* Chevron icon styling */
+        .custom-select-trigger .fa-chevron-down {
+            color: #4b5563; /* Light mode chevron */
+            font-size: 0.75rem; /* text-xs */
+            transition: transform 0.2s ease-in-out;
+        }
+        html.dark .custom-select-trigger .fa-chevron-down {
+             color: #a9a9b3; /* Dark mode chevron */
         }
         .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down {
             transform: rotate(180deg);
         }
+        /* Dropdown list styles (unchanged from previous) */
         .custom-select-options {
-            position: absolute;
-            z-index: 20;
-            width: 100%;
-            background-color: #f4f6f9; /* Light mode background */
-            border: 1px solid rgba(0, 0, 0, 0.1); /* Light mode border */
-            border-radius: 0.5rem;
-            margin-top: 0.25rem;
-            max-height: 12rem;
-            overflow-y: auto;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            position: absolute; z-index: 20; width: 100%;
+            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
+            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             display: none;
         }
-        /* UPDATED: Added 'html.dark' for more specificity */
         html.dark .custom-select-options {
-            background-color: #1f2937; /* Dark mode background (gray-800) */
-            border-color: rgba(255, 255, 255, 0.1); /* Dark mode border */
+            background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1);
         }
-        .custom-select-wrapper.open .custom-select-options { 
-            display: block; 
-        }
+        .custom-select-wrapper.open .custom-select-options { display: block; }
         .custom-option {
-            padding: 0.75rem;
-            font-size: 0.875rem;
-            cursor: pointer;
-            color: #1f2937; /* Light mode text */
+            padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937;
         }
-        /* UPDATED: Added 'html.dark' for more specificity */
-        html.dark .custom-option {
-            color: #f4f6f9; /* Dark mode text */
-        }
-        .custom-option:hover {
-            background-color: #dbeafe; /* Light mode hover (blue-100) */
-        }
-        /* UPDATED: Added 'html.dark' for more specificity */
-        html.dark .custom-option:hover {
-            background-color: rgba(59, 130, 246, 0.2); /* Dark mode hover (blue-500/20) */
-        }
-        .custom-option.selected {
-            background-color: #dbeafe; /* Light mode selected (blue-100) */
-            font-weight: 600;
-        }
-        /* UPDATED: Added 'html.dark' for more specificity */
-        html.dark .custom-option.selected {
-            background-color: rgba(59, 130, 246, 0.2); /* Dark mode selected (blue-500/20) */
-        }
+        html.dark .custom-option { color: #f4f6f9; }
+        .custom-option:hover { background-color: #dbeafe; }
+        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
+        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
+        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
 
-        /* Color styles for triggers (unchanged) */
-        .source-impulse { @apply !border-yellow-500/50 !bg-yellow-500/5; }
-        .source-watchlist { @apply !border-blue-500/50 !bg-blue-500/5; }
-        .source-focus { @apply !border-green-500/50 !bg-green-500/5; }
-        .dir-long { @apply !border-green-500/50 !bg-green-500/5; }
-        .dir-short { @apply !border-red-500/50 !bg-red-500/5; }
+        /* Color styles for triggers (Modify ONLY background/border) */
+        .source-impulse { border-color: rgba(234, 179, 8, 0.5) !important; background-color: rgba(234, 179, 8, 0.05) !important; }
+        .source-watchlist { border-color: rgba(59, 130, 246, 0.5) !important; background-color: rgba(59, 130, 246, 0.05) !important; }
+        .source-focus { border-color: rgba(16, 185, 129, 0.5) !important; background-color: rgba(16, 185, 129, 0.05) !important; }
+        .dir-long { border-color: rgba(16, 185, 129, 0.5) !important; background-color: rgba(16, 185, 129, 0.05) !important; }
+        .dir-short { border-color: rgba(239, 68, 68, 0.5) !important; background-color: rgba(239, 68, 68, 0.05) !important; }
         /* === END OF NEW STYLES === */
     </style>
 </head>
@@ -147,8 +146,7 @@
                                             <input type="hidden" id="trade-direction" name="trade-direction" value="long">
                                             <div class="custom-select-trigger dir-long" data-dropdown-trigger="trade-direction">
                                                 <span>Long</span>
-                                                <i class="fas fa-chevron-down text-color-muted text-xs transition-transform duration-200"></i>
-                                            </div>
+                                                <i class="fas fa-chevron-down"></i> </div>
                                             <div class="custom-select-options">
                                                 <div class="custom-option selected" data-value="long">Long</div>
                                                 <div class="custom-option" data-value="short">Short</div>
@@ -160,8 +158,7 @@
                                             <input type="hidden" id="trade-setup-source" name="trade-setup-source" value="impulse">
                                             <div class="custom-select-trigger source-impulse" data-dropdown-trigger="trade-setup-source">
                                                 <span>Unplanned / Impulse</span>
-                                                <i class="fas fa-chevron-down text-color-muted text-xs transition-transform duration-200"></i>
-                                            </div>
+                                                <i class="fas fa-chevron-down"></i> </div>
                                             <div class="custom-select-options">
                                                 <div class="custom-option selected" data-value="impulse">Unplanned / Impulse</div>
                                                 <div class="custom-option" data-value="watchlist">From Watchlist</div>
@@ -223,6 +220,8 @@
         function initJournalPage(user, db) {
             console.log("Setting up Trading Journal specific logic...");
             
+            // --- JAVASCRIPT IS UNCHANGED FROM PREVIOUS CORRECT VERSION ---
+            
             const elements = { 
                 totalPl: document.getElementById('total-pl'), totalTrades: document.getElementById('total-trades'),
                 winRate: document.getElementById('win-rate'), profitFactor: document.getElementById('profit-factor'),
@@ -247,7 +246,6 @@
             for (const key in elements) { if (!elements[key]) { console.error(`Error: Element ID '${key}' not found!`); missingElement = true; } }
             if(missingElement) { const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error initializing page.</p>"; return; }
 
-            // --- P/L Calc, Analytics, Chart, Rendering, Filters, Modals, Event Listeners (Minified) ---
             const calculatePL=()=>{const e=parseFloat(elements.tradeForm["trade-entry"]?.value)||0,t=parseFloat(elements.tradeForm["trade-exit"]?.value)||0,l=parseFloat(elements.tradeForm["trade-size"]?.value)||0,a=elements.tradeForm["trade-direction"]?.value;let d=("long"===a?t-e:e-t)*l;elements.plDisplay.value=isNaN(d)?"":d.toLocaleString("en-US",{style:"currency",currency:"USD"})};
             
             function updateAnalytics(e){const t=e.length,l=e.reduce((e,t)=>e+(t.pl||0),0),a=e.filter(e=>e.pl>0),d=e.filter(e=>e.pl<0),n=t>0?a.length/t*100:0,o=a.reduce((e,t)=>e+t.pl,0),s=Math.abs(d.reduce((e,t)=>e+t.pl,0)),r=s>0?o/s:o>0?1/0:0,i=a.length>0?o/a.length:0,c=d.length>0?s/d.length:0;const p=e.filter(e=>"focus"===e.setupSource||"watchlist"===e.setupSource),u=e.filter(e=>"impulse"===e.setupSource||!e.setupSource),m=p.reduce((e,t)=>e+(t.pl||0),0),g=u.reduce((e,t)=>e+(t.pl||0),0);elements.plannedPl&&(elements.plannedPl.textContent=m.toLocaleString("en-US",{style:"currency",currency:"USD"}),elements.plannedPl.className=`stat-value ${m>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`),elements.impulsePl&&(elements.impulsePl.textContent=g.toLocaleString("en-US",{style:"currency",currency:"USD"}),elements.impulsePl.className=`stat-value ${g>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`),elements.totalPl.textContent=l.toLocaleString("en-US",{style:"currency",currency:"USD"}),elements.totalPl.className=`stat-value ${l>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`,elements.totalTrades.textContent=t,elements.winRate.textContent=`${n.toFixed(1)}%`,elements.profitFactor.textContent=isFinite(r)?r.toFixed(2):"∞",elements.avgWinLoss.innerHTML=`<span class="text-green-500 dark:text-green-400">${i.toLocaleString("en-US",{style:"currency",currency:"USD"})}</span> / <span class="text-red-500 dark:text-red-400">${c.toLocaleString("en-US",{style:"currency",currency:"USD"})}</span>`,updateEquityCurve(e)}
@@ -339,7 +337,6 @@
                 
                 elements.tradeHistory.addEventListener("click",e=>{const t=e.target.closest(".delete-trade-btn"),l=e.target.closest(".view-chart-btn");t?(tradeToDeleteId=t.dataset.id,openModal(elements.deleteModal)):l&&(elements.modalImageSrc.src=l.dataset.imgSrc,openModal(elements.imageModal))}),elements.tagsContainer.addEventListener("click",e=>{if(e.target.matches(".tag")){const t=e.target.dataset.tag;activeTag="all"===t?null:t,applyFilters()}}),
                 
-                // This is the corrected line:
                 [elements.cancelDelete, elements.closeImageModal].forEach(e=>{e&&e.addEventListener("click",()=>{closeModal(elements.deleteModal),closeModal(elements.imageModal)})}),
 
                 [elements.deleteModal,elements.imageModal].forEach(e=>{e&&e.addEventListener("click",t=>{t.target===e&&closeModal(e)})}),elements.confirmDelete&&elements.confirmDelete.addEventListener("click",async()=>{if(tradeToDeleteId){try{elements.confirmDelete.textContent="Deleting...",elements.confirmDelete.disabled=!0,await deleteDoc(doc(db,"trades",tradeToDeleteId)),console.log("Trade deleted:",tradeToDeleteId)}catch(e){console.error("Error deleting trade:",e),alert("Error deleting trade.")}finally{elements.confirmDelete.textContent="Delete",elements.confirmDelete.disabled=!1,closeModal(elements.deleteModal)}}}),document.addEventListener("keydown",e=>{if("Escape"===e.key){elements.deleteModal&&!elements.deleteModal.classList.contains("opacity-0")&&closeModal(elements.deleteModal),elements.imageModal&&!elements.imageModal.classList.contains("opacity-0")&&closeModal(elements.imageModal)}})
