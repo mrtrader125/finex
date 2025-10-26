@@ -1,386 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Analysis | Finex Admin</title>
+    <title>Analysis | Finex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="main.css">
     <style>
-        :root { --sidebar-width: 18rem; }
-        html { scroll-behavior: smooth; }
-        body { background-color: #111827; color: #f9fafb; font-family: 'Source Sans Pro', sans-serif; }
-        h1, h2, h3 { font-family: 'Montserrat', sans-serif; }
-        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
-        
-        /* Form Styles */
-        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #9ca3af; }
-        .form-input, .form-textarea, .form-select {
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f9fafb;
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: rgba(0, 82, 204, 0.5);
-            box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.3);
-        }
-        .form-textarea { min-height: 120px; }
+        /* Modal Transitions */
+        #analysis-modal { transition: opacity 0.3s ease-in-out; }
+        #modal-content { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+        #analysis-modal:not(.opacity-100) #modal-content { transform: scale(0.95); opacity: 0; }
+        #analysis-modal.opacity-100 #modal-content { transform: scale(1); opacity: 1; }
 
-        /* Button Styles */
-        .main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.5rem; }
-        .main-button:hover { background-color: #0065ff; }
-        .secondary-button { background-color: #4a5568; color: white; transition: background-color 0.3s ease; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.5rem; }
-        .secondary-button:hover { background-color: #2d3748; }
-        .delete-button { background-color: #e53e3e; color: white; transition: background-color 0.3s ease; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; }
-        .delete-button:hover { background-color: #c53030; }
-        .edit-button { background-color: #4a5568; color: white; transition: background-color 0.3s ease; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; }
-        .edit-button:hover { background-color: #2d3748; }
+        /* Filter Tabs (Analysis Type and Category) */
+        .filter-tab {
+            @apply px-4 py-2 text-sm font-semibold rounded-full cursor-pointer transition-colors;
+            @apply text-color-muted hover:text-color-base bg-white/5 hover:bg-white/10;
+        }
+        .filter-tab.active {
+            @apply text-white bg-blue-600 hover:bg-blue-700;
+        }
 
-        /* Sidebar */
-        .sidebar-link.active { background-color: rgba(0, 82, 204, 0.5); color: white; }
-        #sidebar, .main-content { transition: all 0.3s ease-in-out; }
-        #sidebar { transform: translateX(-100%); }
-        .main-content { margin-left: 0; }
-        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
-        #app-container.sidebar-is-open #sidebar { transform: translateX(0); }
-        @media (min-width: 1024px) { #app-container.sidebar-is-open .main-content { margin-left: var(--sidebar-width); } }
-        @media (max-width: 1023px) { #app-container.sidebar-is-open #sidebar-overlay { display: block; opacity: 1; pointer-events: auto; } }
+        /* Minor styling for details summary */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chevron-icon { transform: rotate(180deg); }
+        summary .chevron-icon { transition: transform 0.2s ease-in-out; }
+
     </style>
 </head>
-<body class="antialiased">
-    
-    <div id="app-container" style="display: none;">
-        
-        <div id="sidebar-placeholder"></div> 
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden"></div>
+<body class="antialiased textured-background">
+    <div id="app-wrapper" style="display: none;">
 
-        <main class="main-content p-4 lg:p-8">
-            <header class="flex items-center gap-4 mb-8">
-                <button id="toggle-sidebar-btn" class="text-white p-2 rounded-md hover:bg-white/10"><i class="fas fa-bars fa-lg"></i></button>
-                <div>
-                    <h1 class="text-4xl font-bold">Manage Analysis</h1>
-                    <p class="text-gray-400">Upload and manage your market analysis.</p>
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
+
+        <div>
+            <main class="container mx-auto p-4 md:p-8">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl md:text-5xl font-bold text-color-base">Analysis Gallery</h1>
+                    <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse market analysis charts and ideas.</p>
                 </div>
-            </header>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                <div class="glass-card p-6 md:p-8 self-start">
-                    <h2 id="form-title" class="text-2xl font-bold mb-6">Add New Analysis</h2>
-                    <form id="analysis-form" class="space-y-6">
-                        <input type="hidden" id="analysis-id">
-                        
-                        <div>
-                            <label for="analysis-title" class="form-label">Title</label>
-                            <input type="text" id="analysis-title" required class="form-input" placeholder="e.g., EUR/USD Breakout Setup">
+                <div class="glass-card mb-8 max-w-4xl mx-auto">
+                    <details id="create-analysis-details">
+                        <summary class="p-4 md:p-6 cursor-pointer flex justify-between items-center list-none">
+                            <h2 class="text-xl font-bold text-color-base">Create Your Analysis Post</h2>
+                            <i class="fas fa-chevron-down chevron-icon text-color-muted"></i>
+                        </summary>
+                        <form id="create-analysis-form" class="space-y-4 p-4 md:p-6 border-t border-color-base">
+                             <div><label class="text-sm text-color-muted block mb-1">Title</label><input type="text" id="analysis-title" required class="form-input w-full"></div>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-sm text-color-muted block mb-1">Category (Optional)</label><input type="text" id="analysis-category" class="form-input w-full" placeholder="e.g., Forex, Crypto, Stocks"></div>
+                                <div><label class="text-sm text-color-muted block mb-1">Tags (Optional, comma-separated)</label><input type="text" id="analysis-tags" class="form-input w-full" placeholder="#breakout, #swingtrade..."></div>
+                             </div>
+                             <div><label class="text-sm text-color-muted block mb-1">Image URL (Optional)</label><input type="url" id="analysis-image-url" class="form-input w-full" placeholder="Paste link to chart image..."></div>
+                             <div><label class="text-sm text-color-muted block mb-1">Description / Notes</label><textarea id="analysis-description" rows="4" required class="form-textarea w-full"></textarea></div>
+                             <button type="submit" id="save-analysis-btn" class="main-button w-full font-bold py-3">Save Analysis Post</button>
+                             <p id="create-form-message" class="text-center text-sm mt-3 h-4"></p>
+                        </form>
+                    </details>
+                </div>
+
+                <div class="flex flex-col items-center mb-8 max-w-6xl mx-auto space-y-6">
+                    <div class="bg-gray-100 dark:bg-white/5 p-3 rounded-xl max-w-fit">
+                        <div id="analysis-type-tabs" class="flex flex-wrap gap-2 justify-center">
+                            <button class="filter-tab active" data-type="all">All Analysis</button>
+                            <button class="filter-tab" data-type="finex">Finex Analysis</button>
+                            <button class="filter-tab" data-type="my">My Analysis</button>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="analysis-analyst" class="form-label">Analyst</label>
-                                <input type="text" id="analysis-analyst" class="form-input" placeholder="e.g., Finex Team"> </div>
-                            <div>
-                                <label for="analysis-category" class="form-label">Category</label>
-                                <input type="text" id="analysis-category" class="form-input" placeholder="e.g., Forex, Stocks, Crypto">
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-4 justify-between items-center w-full">
+                        <div id="category-tabs" class="flex flex-wrap gap-2 justify-center">
                             </div>
+                        <div class="relative w-full md:w-64">
+                            <input type="text" id="search-input" placeholder="Search by title, tag..." class="form-input w-full !pl-10" autocomplete="off">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-color-muted"></i>
                         </div>
-
-                        <div>
-                            <label for="analysis-image-url" class="form-label">TradingView Image URL</label>
-                            <input type="url" id="analysis-image-url" placeholder="https://s3.tradingview.com/..." required class="form-input">
-                        </div>
-
-                        <div>
-                            <label for="analysis-tags" class="form-label">Tags (comma-separated)</label>
-                            <input type="text" id="analysis-tags" class="form-input" placeholder="e.g., EURUSD, H4, Breakout, Buy">
-                        </div>
-
-                        <div>
-                            <label for="analysis-description" class="form-label">Description</label>
-                            <textarea id="analysis-description" required rows="6" class="form-textarea" placeholder="Explain the trade idea, setup, and thesis..."></textarea>
-                        </div>
-                        
-                        <div class="flex gap-4 pt-4 border-t border-white/10">
-                            <button type="submit" id="submit-btn" class="main-button w-full">Publish Analysis</button>
-                            <button type="button" id="cancel-edit-btn" class="secondary-button w-full" style="display: none;">Cancel</button>
-                        </div>
-                    </form>
-                    <p id="success-message" class="text-center text-green-400 mt-4 font-semibold" style="display: none;"></p>
-                </div>
-                
-                <div class="glass-card p-6 md:p-8">
-                    <h2 class="text-2xl font-bold mb-6">Existing Analyses</h2>
-                    <div id="analysis-list" class="space-y-6 max-h-[80vh] overflow-y-auto pr-2">
-                        <p class="text-center text-gray-400">Loading...</p>
                     </div>
                 </div>
+                 <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
+                    <p id="no-results-message" class="text-center text-color-muted col-span-full" style="display: none;">No analysis found matching your criteria.</p>
+                    </div>
+            </main>
+        </div>
+
+        <div id="analysis-modal" class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-white text-4xl leading-none hover:opacity-75 transition-opacity z-10">&times;</button>
+            <div id="modal-content" class="glass-card w-full max-w-6xl max-h-[90vh] flex flex-col lg:flex-row rounded-lg overflow-hidden">
+                <div class="w-full lg:w-2/3 bg-black/20"><img id="modal-image" src="" alt="Full-size analysis image" class="w-full h-full object-contain max-h-[50vh] lg:max-h-[90vh]"></div>
+                <div class="w-full lg:w-1/3 p-6 md:p-8 overflow-y-auto">
+                    <h2 id="modal-title" class="text-2xl font-bold text-color-base mb-2"></h2>
+                    <div id="modal-meta" class="text-sm text-color-muted mb-4"></div>
+                    <div id="modal-tags" class="flex flex-wrap gap-2 mb-6"></div>
+                    <div class="prose prose-sm dark:prose-invert"><p id="modal-description" class="text-color-muted leading-relaxed"></p></div>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
+    <script type="module" src="app.js"></script>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-        import { 
-            getFirestore, collection, addDoc, serverTimestamp, onSnapshot, 
-            query, orderBy, doc, getDoc, updateDoc, deleteDoc 
-        } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // === JAVASCRIPT IS UNCHANGED FROM PREVIOUS VERSION ===
+        import { initializeAppCore, db, auth } from './app.js'; 
+        import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"; 
 
-        // --- 1. SET CURRENT PAGE ID ---
-        const currentPageId = 'analysis'; // Matches the data-pageid in _admin_sidebar.html if you use that pattern
-
-        // --- Firebase Config ---
-        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // --- Elements ---
-        const appContainer = document.getElementById('app-container');
-        const analysisForm = document.getElementById('analysis-form');
-        const successMessage = document.getElementById('success-message');
-        const analysisListContainer = document.getElementById('analysis-list');
-        const formTitle = document.getElementById('form-title');
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const analysisIdInput = document.getElementById('analysis-id');
-        let currentAdminUserId = null; // Variable to store admin user ID
-
-        // --- Auth & Sidebar ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentAdminUserId = user.uid; // Store the logged-in admin's user ID
-                console.log("Admin User ID:", currentAdminUserId); // Log for verification
-                
-                // --- 2. LOAD SIDEBAR ---
-                await loadAdminSidebar(currentPageId); // Assuming you have this function and _admin_sidebar.html
-                appContainer.style.display = 'block';
-                setInitialSidebarState();
-                
-                // --- 3. RUN PAGE-SPECIFIC CODE ---
-                loadAnalysisList(); // Load data after auth
-            } else {
-                // Redirect non-admins to login or main site
-                window.location.href = new URL('index.html', window.location.href).href; 
-            }
-        });
-
-        // --- Form State ---
-        function setFormState(state, docId = null) {
-            if (state === 'edit') {
-                formTitle.textContent = 'Edit Analysis';
-                submitBtn.textContent = 'Update Analysis';
-                cancelEditBtn.style.display = 'block';
-                analysisIdInput.value = docId;
-            } else {
-                formTitle.textContent = 'Add New Analysis';
-                submitBtn.textContent = 'Publish Analysis';
-                cancelEditBtn.style.display = 'none';
-                analysisIdInput.value = '';
-                analysisForm.reset();
-            }
-        }
-
-        // --- CRUD Functions ---
-        function loadAnalysisList() {
-            // Only load posts created by admins (isUserPost === false or missing)
-             const analysisQuery = query(
-                 collection(db, "analysis"), 
-                 where("isUserPost", "==", false), // Filter for admin posts
-                 orderBy("createdAt", "desc")
-             );
-            // Alternative if some old posts might miss the flag:
-            // const analysisQuery = query(collection(db, "analysis"), orderBy("createdAt", "desc"));
-            // Then filter client-side: snapshot.docs.filter(doc => !doc.data().isUserPost).forEach(...)
-
-            onSnapshot(analysisQuery, (snapshot) => {
-                if (snapshot.empty) {
-                    analysisListContainer.innerHTML = '<p class="text-center text-gray-400">No admin analyses found.</p>';
-                    return;
-                }
-                analysisListContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const analysis = { id: doc.id, ...doc.data() };
-                    const tagsHTML = (Array.isArray(analysis.tags) && analysis.tags.length > 0)
-                        ? analysis.tags.map(tag => `<span class="text-xs bg-white/10 px-2 py-0.5 rounded-full">#${tag}</span>`).join(' ')
-                        : '<span class="text-xs text-gray-500">No tags</span>';
-
-                    const analysisEl = document.createElement('div');
-                    analysisEl.className = 'bg-white/5 p-4 rounded-lg';
-                    analysisEl.innerHTML = `
-                        <div class="flex justify-between items-start gap-4">
-                            <div>
-                                <p class="font-bold text-lg">${analysis.title}</p>
-                                <p class="text-sm text-blue-400 mt-1">${analysis.category || 'N/A'}</p>
-                                <p class="text-sm text-gray-300 mt-1">By: ${analysis.analyst || 'N/A'}</p>
-                                <p class="text-xs text-gray-500 mt-2">${analysis.createdAt ? analysis.createdAt.toDate().toLocaleString() : 'No date'}</p>
-                                <div class="flex flex-wrap gap-2 mt-3">${tagsHTML}</div>
-                            </div>
-                            <div class="flex flex-col gap-2 flex-shrink-0 ml-4">
-                                <button data-id="${analysis.id}" class="edit-btn edit-button text-xs font-bold">Edit</button>
-                                <button data-id="${analysis.id}" class="delete-btn delete-button text-xs font-bold">Delete</button>
-                            </div>
-                        </div>
-                        <img src="${analysis.imageUrl}" alt="${analysis.title}" class="w-full h-auto rounded-md mt-4 border border-white/10">
-                    `;
-                    analysisListContainer.appendChild(analysisEl);
-                });
-            }, (error) => {
-                console.error("Error loading analysis list: ", error);
-                analysisListContainer.innerHTML = '<p class="text-center text-red-400">Error loading data.</p>';
-                if (error.code === 'failed-precondition' && analysisListContainer) {
-                     analysisListContainer.innerHTML += `<p class="text-center text-red-400 text-xs mt-2"><b>Action Required:</b> Create Firestore index: analysis | isUserPost (Asc), createdAt (Desc)</p>`;
-                }
-            });
-        }
-        
-        analysisForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const analysisId = analysisIdInput.value;
-            
-            const tagsString = document.getElementById('analysis-tags').value;
-            const tagsArray = tagsString.split(',')
-                                      .map(tag => tag.trim().toLowerCase()) // Standardize tags
-                                      .filter(tag => tag.length > 0);
-            
-            // --- UPDATED: Add admin fields ---
-            const analysisData = {
-                title: document.getElementById('analysis-title').value.trim(),
-                imageUrl: document.getElementById('analysis-image-url').value.trim(),
-                description: document.getElementById('analysis-description').value.trim(),
-                analyst: document.getElementById('analysis-analyst').value.trim() || "Finex Team", // Default analyst
-                category: document.getElementById('analysis-category').value.trim() || null, // Use null if empty
-                tags: tagsArray,
-                userId: currentAdminUserId || "FINEX_ADMIN", // Use logged-in admin ID or fallback
-                isUserPost: false // Mark as admin post
-            };
-            // --- END OF UPDATE ---
-            
-            // Basic validation
-            if (!analysisData.title || !analysisData.description || !analysisData.imageUrl) {
-                 alert("Title, Description, and Image URL are required.");
+        function initAnalysisPage(user, db) { 
+            console.log("Setting up Analysis page specific logic...");
+            if (!user) { 
+                 console.error("User not authenticated!");
+                 document.body.innerHTML = "<p class='text-red-500 text-center p-8'>Authentication error. Please log in again.</p>";
                  return;
             }
+            const currentUserId = user.uid; 
 
-            submitBtn.disabled = true;
+            const elements = {
+                container: document.getElementById('analysis-container'),
+                modal: document.getElementById('analysis-modal'),
+                modalContent: document.getElementById('modal-content'),
+                modalImage: document.getElementById('modal-image'),
+                modalTitle: document.getElementById('modal-title'),
+                modalMeta: document.getElementById('modal-meta'),
+                modalTags: document.getElementById('modal-tags'),
+                modalDescription: document.getElementById('modal-description'),
+                closeModalBtn: document.getElementById('close-modal-btn'),
+                loadingMsg: document.getElementById('loading-message'),
+                noResultsMsg: document.getElementById('no-results-message'),
+                analysisTypeTabs: document.getElementById('analysis-type-tabs'),
+                categoryTabs: document.getElementById('category-tabs'),
+                searchInput: document.getElementById('search-input'),
+                createAnalysisDetails: document.getElementById('create-analysis-details'),
+                createAnalysisForm: document.getElementById('create-analysis-form'),
+                saveAnalysisBtn: document.getElementById('save-analysis-btn'),
+                createFormMessage: document.getElementById('create-form-message')
+            };
 
-            try {
-                if (analysisId) { // Editing existing post
-                    analysisData.lastUpdated = serverTimestamp();
-                    await updateDoc(doc(db, "analysis", analysisId), analysisData);
-                    showSuccess('Analysis updated successfully!');
-                } else { // Creating new post
-                    analysisData.createdAt = serverTimestamp();
-                    await addDoc(collection(db, "analysis"), analysisData);
-                    showSuccess('Analysis published successfully!');
-                }
-                setFormState('create'); // Reset form after success
-            } catch (error) {
-                console.error("Error writing document: ", error);
-                alert("An error occurred. Please check the console.");
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
+            for (let key in elements) { if (!elements[key]) { console.error(`Error: Element ID '${key}' not found!`); return; } }
 
-        analysisListContainer.addEventListener('click', async (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-            
-            const analysisId = button.dataset.id;
-            if (!analysisId) return;
+            let allAnalysis = []; 
+            let currentAnalysisType = 'all'; 
+            let currentCategory = 'All';
+            let currentSearch = '';
+            let searchDebounceTimer;
+            const placeholderImage = (width, height, text) => `https://placehold.co/${width}x${height}/334155/9ca3af?text=${text}`;
 
-            if (button.classList.contains('delete-btn')) {
-                if (confirm('Are you sure you want to delete this analysis?')) {
-                    try {
-                        await deleteDoc(doc(db, "analysis", analysisId));
-                        showSuccess('Analysis deleted!');
-                        if (analysisIdInput.value === analysisId) {
-                            setFormState('create'); // Reset form if editing deleted item
-                        }
-                    } catch (error) {
-                        console.error("Error deleting document: ", error);
-                    }
-                }
-            } else if (button.classList.contains('edit-btn')) {
-                try {
-                    const docSnap = await getDoc(doc(db, "analysis", analysisId));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        document.getElementById('analysis-title').value = data.title || '';
-                        document.getElementById('analysis-image-url').value = data.imageUrl || '';
-                        document.getElementById('analysis-description').value = data.description || '';
-                        document.getElementById('analysis-analyst').value = data.analyst || '';
-                        document.getElementById('analysis-category').value = data.category || '';
-                        document.getElementById('analysis-tags').value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
-                        
-                        setFormState('edit', analysisId);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                } catch (error) {
-                    console.error("Error fetching document for edit: ", error);
-                }
-            }
-        });
 
-        // --- UI Feedback ---
-        cancelEditBtn.addEventListener('click', () => setFormState('create'));
-
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
-        }
-
-        // --- 4. Sidebar Loader & Helper Functions (Assume existence or copy from previous) ---
-        async function loadAdminSidebar(pageId) {
-            const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
-            if (!sidebarPlaceholder) { console.warn("Sidebar placeholder not found"); return; }
-            try {
-                // Adjust fetch path if necessary
-                const response = await fetch('_admin_sidebar.html'); 
-                if (!response.ok) throw new Error('Failed to load sidebar HTML');
-                sidebarPlaceholder.innerHTML = await response.text();
+            function fetchAnalysis() {
+                let q = query(collection(db, "analysis"), orderBy("createdAt", "desc"));
                 
-                const nav = document.getElementById('admin-sidebar-nav');
-                if (nav) {
-                    const activeLink = nav.querySelector(`a[data-pageid="${pageId}"]`);
-                    if (activeLink) activeLink.classList.add('active');
-                }
-                attachSidebarEventListeners(); // Attach listeners AFTER sidebar is loaded
-            } catch (error) {
-                console.error("Error loading sidebar:", error);
-                sidebarPlaceholder.innerHTML = "<p class='p-4 text-red-400'>Error loading sidebar.</p>";
+                onSnapshot(q, (snapshot) => {
+                    elements.loadingMsg.style.display = 'none';
+                    allAnalysis = []; 
+                    
+                    snapshot.forEach(doc => {
+                        allAnalysis.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    if (allAnalysis.length === 0 && snapshot.empty) {
+                        elements.container.innerHTML = '<p class="text-center text-color-muted col-span-full">No analysis has been posted yet.</p>';
+                        renderCategories(); 
+                        return;
+                    }
+                    
+                    renderCategories(); 
+                    renderAnalysisGrid(); 
+
+                }, (error) => {
+                    console.error("Error fetching analysis data:", error);
+                    elements.loadingMsg.style.display = 'none';
+                    elements.container.innerHTML = '<p class="text-center text-red-500 col-span-full">Could not load analysis data.</p>';
+                    if (error.code === 'failed-precondition' && elements.container) {
+                        elements.container.innerHTML += `<p class="text-center text-red-500 text-xs mt-2"><b>Action Required:</b> Create required index in Firestore.</p>`;
+                    }
+                });
             }
+
+            function renderCategories() {
+                const currentlyVisibleAnalysis = filterAnalysisData();
+                const categories = ['All', ...new Set(currentlyVisibleAnalysis.map(a => a.category).filter(Boolean))].sort();
+                
+                if (!categories.includes(currentCategory)) {
+                    currentCategory = 'All';
+                }
+
+                elements.categoryTabs.innerHTML = categories.map(cat => `
+                    <button class="filter-tab ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">
+                        ${cat}
+                    </button>
+                `).join('');
+                if (categories.length <= 1) { 
+                    elements.categoryTabs.style.display = 'none';
+                } else {
+                     elements.categoryTabs.style.display = '';
+                }
+            }
+            
+            function filterAnalysisData() {
+                 const searchLower = currentSearch.toLowerCase();
+
+                 return allAnalysis.filter(item => {
+                     let typeMatch = false;
+                     if (currentAnalysisType === 'all') {
+                         typeMatch = true;
+                     } else if (currentAnalysisType === 'finex') {
+                         typeMatch = !item.isUserPost; 
+                     } else if (currentAnalysisType === 'my') {
+                         typeMatch = item.isUserPost === true && item.userId === currentUserId;
+                     }
+                     if (!typeMatch) return false;
+
+                     const inCategory = currentCategory === 'All' || item.category === currentCategory;
+                     if (!inCategory) return false;
+                     
+                     const inSearch = searchLower === '' ||
+                         (item.title && item.title.toLowerCase().includes(searchLower)) ||
+                         (item.analyst && item.analyst.toLowerCase().includes(searchLower)) || 
+                         (item.category && item.category.toLowerCase().includes(searchLower)) ||
+                         (item.tags && Array.isArray(item.tags) && item.tags.some(tag => tag.toLowerCase().includes(searchLower)));
+                     if (!inSearch) return false;
+
+                     return true; 
+                 });
+            }
+
+            function renderAnalysisGrid() {
+                elements.loadingMsg.style.display = 'none';
+                
+                const filteredAnalysis = filterAnalysisData(); 
+
+                if (filteredAnalysis.length === 0) {
+                    elements.container.innerHTML = ''; 
+                    elements.noResultsMsg.style.display = 'block';
+                    renderCategories(); 
+                    return;
+                }
+                
+                elements.noResultsMsg.style.display = 'none';
+                elements.container.innerHTML = filteredAnalysis.map(item => {
+                    const coverImg = item.imageUrl || placeholderImage(600, 400, 'Analysis');
+                    const tagsHTML = Array.isArray(item.tags) 
+                        ? item.tags.slice(0, 3).map(tag => `<span class="tag text-xs">#${tag}</span>`).join('') 
+                        : '';
+                    const analystDisplay = item.isUserPost && item.userId === currentUserId ? 'You' : (item.analyst || 'Finex Team'); 
+                    
+                    const deleteButtonHTML = item.isUserPost && item.userId === currentUserId
+                        ? `<button data-delete-id="${item.id}" class="delete-analysis-btn text-xs text-red-500 hover:text-red-400 ml-auto"><i class="fas fa-trash-alt"></i></button>`
+                        : '';
+
+                    return `
+                    <div class="glass-card group flex flex-col overflow-hidden">
+                        <div class="overflow-hidden relative">
+                             <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer analysis-card-image" loading="lazy" data-id="${item.id}">
+                         </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <span class="text-xs font-bold uppercase text-blue-400 mb-1">${item.category || 'General'}</span>
+                             <h3 class="font-semibold text-color-base truncate mb-2 cursor-pointer analysis-card-title" title="${item.title || ''}" data-id="${item.id}">${item.title || 'Untitled Analysis'}</h3>
+                             <p class="text-sm text-color-muted mb-4 h-10 overflow-hidden">${item.description ? (item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '')) : 'Click to see more...'}</p>
+                            <div class="mt-auto pt-2 border-t border-color-base flex justify-between items-center">
+                                <span class="text-xs text-color-muted">${analystDisplay}</span>
+                                <div class="flex gap-1 items-center">
+                                     <div class="flex gap-1">${tagsHTML}</div>
+                                     ${deleteButtonHTML} 
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                renderCategories(); 
+            }
+
+             function openModal(item) {
+                 if (!item) return;
+                 
+                 elements.modalImage.src = item.imageUrl || placeholderImage(1200, 800, 'Analysis');
+                 elements.modalImage.alt = item.title || 'Analysis Image';
+                 elements.modalTitle.textContent = item.title || 'Untitled Analysis';
+                 elements.modalDescription.innerHTML = item.description ? item.description.replace(/\n/g, '<br>') : 'No description provided.';
+                 
+                 const formattedDate = item.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || '';
+                 const analystDisplay = item.isUserPost && item.userId === currentUserId ? 'You' : (item.analyst || 'Finex Team'); 
+                 
+                 elements.modalMeta.innerHTML = `
+                     <span>By ${analystDisplay}</span>
+                     ${formattedDate ? `<span class="mx-2">&bull;</span><span>${formattedDate}</span>` : ''}
+                 `;
+                 
+                 if (Array.isArray(item.tags) && item.tags.length > 0) {
+                     elements.modalTags.innerHTML = item.tags.map(tag => `<span class="tag text-xs">#${tag}</span>`).join('');
+                 } else {
+                     elements.modalTags.innerHTML = '';
+                 }
+
+                 elements.modal.classList.add('opacity-100');
+                 elements.modal.classList.remove('pointer-events-none');
+             }
+
+             function closeModal() {
+                 elements.modal.classList.remove('opacity-100');
+                 elements.modal.classList.add('pointer-events-none');
+                 setTimeout(() => { 
+                     elements.modalImage.src = ""; 
+                     elements.modalTitle.textContent = "";
+                     elements.modalMeta.innerHTML = "";
+                     elements.modalTags.innerHTML = "";
+                     elements.modalDescription.textContent = "";
+                 }, 300);
+             }
+
+            async function saveAnalysisPost(e) {
+                e.preventDefault();
+                elements.saveAnalysisBtn.disabled = true;
+                elements.saveAnalysisBtn.textContent = 'Saving...';
+                showFormMessage('Saving analysis...', false, elements.createFormMessage);
+
+                const postData = {
+                    userId: currentUserId,
+                    isUserPost: true, 
+                    title: elements.createAnalysisForm['analysis-title'].value.trim(),
+                    category: elements.createAnalysisForm['analysis-category'].value.trim() || null, 
+                    tags: elements.createAnalysisForm['analysis-tags'].value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean),
+                    imageUrl: elements.createAnalysisForm['analysis-image-url'].value.trim() || null, 
+                    description: elements.createAnalysisForm['analysis-description'].value.trim(),
+                    createdAt: serverTimestamp(),
+                };
+
+                if (!postData.title || !postData.description) {
+                    showFormMessage('Title and Description are required.', true, elements.createFormMessage);
+                    elements.saveAnalysisBtn.disabled = false;
+                    elements.saveAnalysisBtn.textContent = 'Save Analysis Post';
+                    return;
+                }
+
+                try {
+                    await addDoc(collection(db, "analysis"), postData);
+                    elements.createAnalysisForm.reset();
+                    showFormMessage('Analysis Saved!', false, elements.createFormMessage);
+                    elements.createAnalysisDetails.removeAttribute('open'); 
+                } catch (error) {
+                    console.error("Error adding analysis post:", error);
+                    showFormMessage('Error saving analysis.', true, elements.createFormMessage);
+                } finally {
+                    elements.saveAnalysisBtn.disabled = false;
+                    elements.saveAnalysisBtn.textContent = 'Save Analysis Post';
+                }
+            }
+            
+             async function deleteAnalysisPost(postId) {
+                 if (!postId || !confirm('Are you sure you want to delete this analysis post?')) {
+                     return;
+                 }
+                 const docRef = doc(db, "analysis", postId);
+                 try {
+                     await deleteDoc(docRef);
+                     console.log("Analysis deleted:", postId);
+                 } catch (error) {
+                     console.error("Error deleting analysis post:", error);
+                     alert("Error deleting post. Please try again.");
+                 }
+             }
+
+            function showFormMessage(message, isError = false, element) {
+                 if (!element) return;
+                 element.textContent = message;
+                 element.className = `text-center text-sm mt-3 h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
+                 setTimeout(() => { if (element) element.textContent = ''; }, 3000);
+            }
+
+            function setupEventListeners() {
+                elements.container.addEventListener('click', (e) => {
+                    const cardImage = e.target.closest('.analysis-card-image');
+                    const cardTitle = e.target.closest('.analysis-card-title');
+                    const deleteBtn = e.target.closest('.delete-analysis-btn'); 
+
+                    if (deleteBtn) {
+                         deleteAnalysisPost(deleteBtn.dataset.deleteId);
+                    } else if (cardImage || cardTitle) {
+                         const cardId = cardImage?.dataset.id || cardTitle?.dataset.id;
+                         const item = allAnalysis.find(a => a.id === cardId);
+                         openModal(item);
+                    } 
+                });
+                
+                elements.analysisTypeTabs.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.filter-tab');
+                    if (tab) {
+                        currentAnalysisType = tab.dataset.type;
+                        elements.analysisTypeTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        currentCategory = 'All'; 
+                        renderAnalysisGrid(); 
+                    }
+                });
+
+                elements.categoryTabs.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.filter-tab');
+                    if (tab) {
+                        currentCategory = tab.dataset.category;
+                        elements.categoryTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        renderAnalysisGrid(); 
+                    }
+                });
+
+                elements.searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(() => {
+                        currentSearch = e.target.value;
+                        renderAnalysisGrid(); 
+                    }, 300); 
+                });
+
+                elements.closeModalBtn.addEventListener('click', closeModal);
+                elements.modal.addEventListener('click', (e) => {
+                    if (e.target === elements.modal && !elements.modalContent.contains(e.target)) {
+                        closeModal();
+                    }
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && elements.modal.classList.contains('opacity-100')) {
+                        closeModal();
+                    }
+                });
+
+                 elements.createAnalysisForm.addEventListener('submit', saveAnalysisPost);
+            }
+
+
+            // --- Initial Load ---
+            setupEventListeners();
+            fetchAnalysis(); 
         }
 
-        function attachSidebarEventListeners() {
-            const logoutBtn = document.getElementById('logout-btn');
-            const toggleBtn = document.getElementById('toggle-sidebar-btn');
-            const closeBtn = document.getElementById('close-sidebar-btn');
-            const overlay = document.getElementById('sidebar-overlay');
-
-            if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
-            if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-            if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
-            if (overlay) overlay.addEventListener('click', toggleSidebar);
-        }
-
-        function toggleSidebar() { appContainer.classList.toggle('sidebar-is-open'); }
-        
-        function setInitialSidebarState() {
-            if (window.innerWidth >= 1024) appContainer.classList.add('sidebar-is-open');
-             else appContainer.classList.remove('sidebar-is-open'); // Ensure closed on mobile initially
-        }
-        // --- End Sidebar Functions ---
+        initializeAppCore(initAnalysisPage);
     </script>
-
 </body>
 </html>
