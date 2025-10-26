@@ -20,26 +20,40 @@
         summary { list-style: none; }
         summary::-webkit-details-marker { display: none; }
         
-        /* Card-in-card styles */
         .glass-card-inset { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
         .stat-card { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
         .stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
         .stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
 
-        /* === NEW STYLES FOR THE DROPDOWN === */
-        #trade-setup-source {
+        /* === NEW CUSTOM DROPDOWN STYLES === */
+        .custom-select-wrapper { @apply relative; }
+        .custom-select-trigger {
+            @apply form-input w-full flex items-center justify-between cursor-pointer;
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
-        /* Style for the select element itself based on value */
-        .source-impulse { 
-            @apply !border-yellow-500/50 !bg-yellow-500/5;
+        .custom-select-trigger .fa-chevron-down {
+            @apply text-color-muted text-xs transition-transform duration-200;
         }
-        .source-watchlist { 
-            @apply !border-blue-500/50 !bg-blue-500/5;
+        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down {
+            transform: rotate(180deg);
         }
-        .source-focus { 
-            @apply !border-green-500/50 !bg-green-500/5;
+        .custom-select-options {
+            @apply absolute z-20 w-full bg-gray-100 dark:bg-gray-800 border border-color-base rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg hidden;
         }
+        .custom-select-wrapper.open .custom-select-options { @apply block; }
+        .custom-option {
+            @apply p-3 text-sm cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-500/20 text-color-base;
+        }
+        .custom-option.selected {
+            @apply bg-blue-100 dark:bg-blue-500/20 font-semibold;
+        }
+
+        /* Color styles for triggers */
+        .source-impulse { @apply !border-yellow-500/50 !bg-yellow-500/5; }
+        .source-watchlist { @apply !border-blue-500/50 !bg-blue-500/5; }
+        .source-focus { @apply !border-green-500/50 !bg-green-500/5; }
+        .dir-long { @apply !border-green-500/50 !bg-green-500/5; }
+        .dir-short { @apply !border-red-500/50 !bg-red-500/5; }
         /* === END OF NEW STYLES === */
     </style>
 </head>
@@ -85,15 +99,36 @@
                                 
                                 <form id="trade-form" class="space-y-4 p-6">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div><label class="text-sm text-color-muted block mb-1">Symbol</label><input type="text" id="trade-symbol" required class="form-input w-full" placeholder="e.g., EUR/USD"></div>
-                                        <div><label class="text-sm text-color-muted block mb-1">Direction</label><select id="trade-direction" class="form-select w-full"><option value="long">Long</option><option value="short">Short</option></select></div>
                                         <div>
+                                            <label class="text-sm text-color-muted block mb-1">Symbol</label>
+                                            <input type="text" id="trade-symbol" required class="form-input w-full" placeholder="e.g., EUR/USD">
+                                        </div>
+                                        
+                                        <div class="custom-select-wrapper">
+                                            <label class="text-sm text-color-muted block mb-1">Direction</label>
+                                            <input type="hidden" id="trade-direction" name="trade-direction" value="long">
+                                            <div class="custom-select-trigger dir-long" data-dropdown-trigger="trade-direction">
+                                                <span>Long</span>
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                            <div class="custom-select-options">
+                                                <div class="custom-option selected" data-value="long">Long</div>
+                                                <div class="custom-option" data-value="short">Short</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="custom-select-wrapper">
                                             <label class="text-sm text-color-muted block mb-1">Setup Source</label>
-                                            <select id="trade-setup-source" class="form-select w-full source-impulse">
-                                                <option value="impulse">Unplanned / Impulse</option>
-                                                <option value="watchlist">From Watchlist</option>
-                                                <option value="focus">From Top Pairs Focus</option>
-                                            </select>
+                                            <input type="hidden" id="trade-setup-source" name="trade-setup-source" value="impulse">
+                                            <div class="custom-select-trigger source-impulse" data-dropdown-trigger="trade-setup-source">
+                                                <span>Unplanned / Impulse</span>
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                            <div class="custom-select-options">
+                                                <div class="custom-option selected" data-value="impulse">Unplanned / Impulse</div>
+                                                <div class="custom-option" data-value="watchlist">From Watchlist</div>
+                                                <div class="custom-option" data-value="focus">From Top Pairs Focus</div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -108,8 +143,7 @@
                                     <button type="submit" id="save-trade-btn" class="main-button w-full font-bold py-3">Save Trade</button>
                                     <p id="form-message" class="text-center text-sm mt-3 h-4"></p>
                                 </form>
-
-                            </details>
+                                </details>
                         </div>
 
                         <div id="weekly-plan-card" class="glass-card p-6">
@@ -151,6 +185,8 @@
         function initJournalPage(user, db) {
             console.log("Setting up Trading Journal specific logic...");
             
+            // === THIS JAVASCRIPT IS UPDATED ===
+            
             const elements = { 
                 totalPl: document.getElementById('total-pl'), totalTrades: document.getElementById('total-trades'),
                 winRate: document.getElementById('win-rate'), profitFactor: document.getElementById('profit-factor'),
@@ -165,8 +201,6 @@
                 weeklyPlanLoading: document.getElementById('weekly-plan-loading'), weeklyPlanContent: document.getElementById('weekly-plan-content'),
                 weeklyPlanEmpty: document.getElementById('weekly-plan-empty'), weeklyPlanFocus: document.getElementById('weekly-plan-focus'), 
                 weeklyPlanWatchlist: document.getElementById('weekly-plan-watchlist'),
-                // === NEW ELEMENT ADDED ===
-                setupSourceSelect: document.getElementById('trade-setup-source')
             };
 
             let allTrades = []; let filteredTrades = []; let activeTag = null;
@@ -193,27 +227,100 @@
             function openModal(e){if(!e)return;e.classList.remove("opacity-0","pointer-events-none"),e.querySelector(".modal-content")?.classList.remove("scale-95")}
             function closeModal(e){if(!e)return;e.classList.add("opacity-0","pointer-events-none"),e.querySelector(".modal-content")?.classList.add("scale-95"),e===elements.deleteModal&&(tradeToDeleteId=null),e===elements.imageModal&&setTimeout(()=>{elements.modalImageSrc.src=""},300)}
             
-            // === NEW FUNCTION ADDED ===
-            function updateSetupSourceColor(selectElement) {
-                if (!selectElement) return;
-                selectElement.classList.remove('source-impulse', 'source-watchlist', 'source-focus');
-                const value = selectElement.value;
-                if (value === 'impulse') {
-                    selectElement.classList.add('source-impulse');
-                } else if (value === 'watchlist') {
-                    selectElement.classList.add('source-watchlist');
-                } else if (value === 'focus') {
-                    selectElement.classList.add('source-focus');
-                }
+            // === NEW FUNCTION FOR CUSTOM DROPDOWNS ===
+            function setupCustomDropdowns() {
+                document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+                    const trigger = wrapper.querySelector('.custom-select-trigger');
+                    const optionsContainer = wrapper.querySelector('.custom-select-options');
+                    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                    const triggerText = trigger.querySelector('span');
+
+                    // 1. Toggle dropdown
+                    trigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Close all other dropdowns
+                        document.querySelectorAll('.custom-select-wrapper.open').forEach(openWrapper => {
+                            if (openWrapper !== wrapper) {
+                                openWrapper.classList.remove('open');
+                            }
+                        });
+                        wrapper.classList.toggle('open');
+                    });
+
+                    // 2. Handle option selection
+                    optionsContainer.addEventListener('click', (e) => {
+                        const option = e.target.closest('.custom-option');
+                        if (!option) return;
+
+                        const selectedValue = option.dataset.value;
+                        const selectedText = option.textContent;
+
+                        // Update hidden input
+                        hiddenInput.value = selectedValue;
+                        // Update trigger text
+                        triggerText.textContent = selectedText;
+
+                        // Update selected state in options
+                        optionsContainer.querySelectorAll('.custom-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        option.classList.add('selected');
+
+                        // Update trigger colors
+                        updateDropdownColor(trigger, selectedValue);
+                        
+                        wrapper.classList.remove('open');
+                    });
+                });
+
+                // 3. Close when clicking outside
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => {
+                        wrapper.classList.remove('open');
+                    });
+                });
+            }
+
+            // === NEW FUNCTION TO STYLE DROPDOWNS ===
+            function updateDropdownColor(triggerElement, value) {
+                if (!triggerElement) return;
+                
+                // Clear all color classes
+                triggerElement.classList.remove('source-impulse', 'source-watchlist', 'source-focus', 'dir-long', 'dir-short');
+                
+                if (value === 'impulse') triggerElement.classList.add('source-impulse');
+                else if (value === 'watchlist') triggerElement.classList.add('source-watchlist');
+                else if (value === 'focus') triggerElement.classList.add('source-focus');
+                else if (value === 'long') triggerElement.classList.add('dir-long');
+                else if (value === 'short') triggerElement.classList.add('dir-short');
             }
 
             // === THIS FUNCTION IS UPDATED ===
-            function setupEventListeners(){elements.tradeForm.addEventListener("submit",async e=>{e.preventDefault(),elements.saveBtn.disabled=!0,elements.saveBtn.textContent="Saving...";const t={userId:userId,symbol:elements.tradeForm["trade-symbol"].value,direction:elements.tradeForm["trade-direction"].value,setupSource:elements.tradeForm["trade-setup-source"].value,entryPrice:parseFloat(elements.tradeForm["trade-entry"].value),exitPrice:parseFloat(elements.tradeForm["trade-exit"].value),positionSize:parseFloat(elements.tradeForm["trade-size"].value),image:elements.tradeForm["trade-image"].value,tags:elements.tradeForm["trade-tags"].value.split(",").map(e=>e.trim().toLowerCase()).filter(Boolean),notes:elements.tradeForm["trade-notes"].value,createdAt:serverTimestamp()};try{await addDoc(tradesCollectionRef,t),elements.tradeForm.reset(),elements.plDisplay.value="",updateSetupSourceColor(elements.setupSourceSelect)}catch(e){console.error("Error adding trade:",e),showFormMessage("Error: Could not save trade.",!0)}finally{elements.saveBtn.disabled=!1,elements.saveBtn.textContent="Save Trade"}}),["trade-entry","trade-exit","trade-size","trade-direction"].forEach(e=>{const t=elements.tradeForm[e];t&&t.addEventListener("input",calculatePL)}),elements.tradeHistory.addEventListener("click",e=>{const t=e.target.closest(".delete-trade-btn"),l=e.target.closest(".view-chart-btn");t?(tradeToDeleteId=t.dataset.id,openModal(elements.deleteModal)):l&&(elements.modalImageSrc.src=l.dataset.imgSrc,openModal(elements.imageModal))}),elements.tagsContainer.addEventListener("click",e=>{if(e.target.matches(".tag")){const t=e.target.dataset.tag;activeTag="all"===t?null:t,applyFilters()}}),[elements.cancelDelete,elements.closeImageModal].forEach(e=>{e&&e.addEventListener("click",()=>{closeModal(elements.deleteModal),closeModal(elements.imageModal)})}),[elements.deleteModal,elements.imageModal].forEach(e=>{e&&e.addEventListener("click",t=>{t.target===e&&closeModal(e)})}),elements.confirmDelete&&elements.confirmDelete.addEventListener("click",async()=>{if(tradeToDeleteId){try{elements.confirmDelete.textContent="Deleting...",elements.confirmDelete.disabled=!0,await deleteDoc(doc(db,"trades",tradeToDeleteId)),console.log("Trade deleted:",tradeToDeleteId)}catch(e){console.error("Error deleting trade:",e),alert("Error deleting trade.")}finally{elements.confirmDelete.textContent="Delete",elements.confirmDelete.disabled=!1,closeModal(elements.deleteModal)}}}),document.addEventListener("keydown",e=>{if("Escape"===e.key){elements.deleteModal&&!elements.deleteModal.classList.contains("opacity-0")&&closeModal(elements.deleteModal),elements.imageModal&&!elements.imageModal.classList.contains("opacity-0")&&closeModal(elements.imageModal)}}),
+            function setupEventListeners(){
+                // Note: The form submit now reads from the hidden inputs, which have the correct IDs.
+                // The 't' (tradeData) object is UNCHANGED and works correctly.
+                elements.tradeForm.addEventListener("submit",async e=>{e.preventDefault(),elements.saveBtn.disabled=!0,elements.saveBtn.textContent="Saving...";const t={userId:userId,symbol:elements.tradeForm["trade-symbol"].value,direction:elements.tradeForm["trade-direction"].value,setupSource:elements.tradeForm["trade-setup-source"].value,entryPrice:parseFloat(elements.tradeForm["trade-entry"].value),exitPrice:parseFloat(elements.tradeForm["trade-exit"].value),positionSize:parseFloat(elements.tradeForm["trade-size"].value),image:elements.tradeForm["trade-image"].value,tags:elements.tradeForm["trade-tags"].value.split(",").map(e=>e.trim().toLowerCase()).filter(Boolean),notes:elements.tradeForm["trade-notes"].value,createdAt:serverTimestamp()};try{await addDoc(tradesCollectionRef,t),elements.tradeForm.reset(),elements.plDisplay.value="",
+                
+                // Manually reset custom dropdowns
+                document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+                    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                    const optionsContainer = wrapper.querySelector('.custom-select-options');
+                    const firstOption = optionsContainer.querySelector('.custom-option');
+                    if (firstOption) {
+                        const defaultValue = firstOption.dataset.value;
+                        const defaultText = firstOption.textContent;
+                        hiddenInput.value = defaultValue;
+                        wrapper.querySelector('.custom-select-trigger span').textContent = defaultText;
+                        optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                        firstOption.classList.add('selected');
+                        updateDropdownColor(wrapper.querySelector('.custom-select-trigger'), defaultValue);
+                    }
+                });
+                
+                showFormMessage("Trade Saved!")}catch(e){console.error("Error adding trade:",e),showFormMessage("Error: Could not save trade.",!0)}finally{elements.saveBtn.disabled=!1,elements.saveBtn.textContent="Save Trade"}}),["trade-entry","trade-exit","trade-size"].forEach(e=>{const t=elements.tradeForm[e];t&&t.addEventListener("input",calculatePL)}),elements.tradeHistory.addEventListener("click",e=>{const t=e.target.closest(".delete-trade-btn"),l=e.target.closest(".view-chart-btn");t?(tradeToDeleteId=t.dataset.id,openModal(elements.deleteModal)):l&&(elements.modalImageSrc.src=l.dataset.imgSrc,openModal(elements.imageModal))}),elements.tagsContainer.addEventListener("click",e=>{if(e.target.matches(".tag")){const t=e.target.dataset.tag;activeTag="all"===t?null:t,applyFilters()}}),[elements.cancelDelete,elements.closeImageModal].forEach(e=>{e&&e.addEventListener("click",()=>{closeModal(elements.deleteModal),closeModal(elements.imageModal)})}),[elements.deleteModal,elements.imageModal].forEach(e=>{e&&e.addEventListener("click",t=>{t.target===e&&closeModal(e)})}),elements.confirmDelete&&elements.confirmDelete.addEventListener("click",async()=>{if(tradeToDeleteId){try{elements.confirmDelete.textContent="Deleting...",elements.confirmDelete.disabled=!0,await deleteDoc(doc(db,"trades",tradeToDeleteId)),console.log("Trade deleted:",tradeToDeleteId)}catch(e){console.error("Error deleting trade:",e),alert("Error deleting trade.")}finally{elements.confirmDelete.textContent="Delete",elements.confirmDelete.disabled=!1,closeModal(elements.deleteModal)}}}),document.addEventListener("keydown",e=>{if("Escape"===e.key){elements.deleteModal&&!elements.deleteModal.classList.contains("opacity-0")&&closeModal(elements.deleteModal),elements.imageModal&&!elements.imageModal.classList.contains("opacity-0")&&closeModal(elements.imageModal)}})
             
-            // --- NEW LISTENER ADDED ---
-            elements.setupSourceSelect?.addEventListener('change', (e) => { updateSetupSourceColor(e.target); });
-            // Set initial color
-            updateSetupSourceColor(elements.setupSourceSelect);
+                // Call the new dropdown setup function
+                setupCustomDropdowns();
             }
             // === END OF UPDATE ===
 
