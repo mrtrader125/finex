@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Review | Finex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        /* Reusing styles for consistency */
+        .glass-card-inset { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); padding: 0.75rem; border-radius: 0.5rem; }
+        html.dark .glass-card-inset { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .stat-card { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); padding: 0.75rem; border-radius: 0.5rem; }
+        html.dark .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
+        .stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
+        .week-reflection { @apply mb-4 border-b border-color-base pb-4; }
+        .week-reflection:last-child { @apply border-b-0 pb-0 mb-0; }
+        .week-title { @apply font-semibold text-color-base mb-1 text-sm; }
+        .week-notes { @apply text-color-muted text-sm whitespace-pre-wrap; }
+        .loader { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #0052cc; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        html.dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased textured-background">
+    <div id="app-wrapper" style="display: none;">
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
+
+        <div class="min-h-screen flex flex-col">
+            <main class="container mx-auto p-4 md:p-8 flex-grow">
+                
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-color-base">Monthly Review</h1>
+                </div>
+
+                <div class="glass-card p-4 md:p-6 mb-8 max-w-2xl mx-auto">
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <label for="month-select" class="text-color-muted font-semibold">Select Month:</label>
+                        <select id="month-select" class="form-select w-full sm:w-auto">
+                            </select>
+                        <select id="year-select" class="form-select w-full sm:w-auto">
+                            </select>
+                         <div id="loading-indicator" class="loader hidden"></div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 md:p-8 mb-8">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Monthly Performance Summary</h2>
+                     <div id="analytics-content">
+                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
+                            <div class="stat-card"><h4 class="stat-title">Total P/L</h4><p id="monthly-total-pl" class="stat-value">-$--.--</p></div>
+                            <div class="stat-card"><h4 class="stat-title">Planned P/L</h4><p id="monthly-planned-pl" class="stat-value">-$--.--</p></div>
+                            <div class="stat-card"><h4 class="stat-title">Impulse P/L</h4><p id="monthly-impulse-pl" class="stat-value">-$--.--</p></div>
+                            <div class="stat-card"><h4 class="stat-title">Total Trades</h4><p id="monthly-total-trades" class="stat-value">0</p></div>
+                            <div class="stat-card"><h4 class="stat-title">Win Rate</h4><p id="monthly-win-rate" class="stat-value">--%</p></div>
+                            <div class="stat-card"><h4 class="stat-title">Profit Factor</h4><p id="monthly-profit-factor" class="stat-value">--</p></div>
+                        </div>
+                     </div>
+                     <div id="analytics-loading" class="text-center text-color-muted hidden">Loading analytics...</div>
+                     <div id="analytics-nodata" class="text-center text-color-muted hidden">No trade data found for this month.</div>
+                </div>
+
+                <div class="glass-card p-6 md:p-8">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Weekly Reflections & Lessons Learned</h2>
+                    <div id="reflections-content" class="space-y-4">
+                        </div>
+                     <div id="reflections-loading" class="text-center text-color-muted hidden">Loading reflections...</div>
+                     <div id="reflections-nodata" class="text-center text-color-muted hidden">No weekly reflections found for this month.</div>
+                </div>
+
+            </main>
+        </div>
+    </div> <script type="module" src="app.js"></script>
+    <script type="module">
+        import { initializeAppCore, db, auth, getWeekId } from './app.js';
+        import { collection, query, where, orderBy, getDocs, Timestamp, doc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
+        // Helper function to get week number (ISO 8601) - Simplified from app.js
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // Helper function to get all Week IDs (YYYY-WW format) for a given month
+        function getWeekIdsForMonth(year, month) {
+            const weekIds = new Set();
+            const date = new Date(Date.UTC(year, month, 1)); // Start of the month
+            const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate(); // Last day number
+
+            for (let day = 1; day <= lastDay; day++) {
+                date.setUTCDate(day);
+                const weekYear = date.getUTCFullYear(); // Year might change for weeks overlapping year end/start
+                 let weekNo = getWeekNumber(date);
+                 
+                 // Handle ISO week year edge case (e.g., Jan 1st might be in week 52/53 of previous year)
+                 // Or Dec 31st might be in week 1 of next year. We only want weeks primarily in THIS month's year.
+                 if (weekYear === year) {
+                     weekIds.add(`${weekYear}-${String(weekNo).padStart(2, '0')}`);
+                 } else if (weekYear < year && month === 0) { // Jan week belonging to previous year
+                      weekIds.add(`${weekYear}-${String(weekNo).padStart(2, '0')}`);
+                 } else if (weekYear > year && month === 11) { // Dec week belonging to next year
+                      weekIds.add(`${weekYear}-${String(weekNo).padStart(2, '0')}`);
+                 }
+            }
+            return Array.from(weekIds).sort();
+        }
+
+
+        function initMonthlyReviewPage(user, db) {
+            console.log("Setting up Monthly Review page specific logic...");
+            
+            // --- DOM Elements ---
+            const elements = {
+                monthSelect: document.getElementById('month-select'),
+                yearSelect: document.getElementById('year-select'),
+                loadingIndicator: document.getElementById('loading-indicator'),
+                // Analytics
+                analyticsContent: document.getElementById('analytics-content'),
+                analyticsLoading: document.getElementById('analytics-loading'),
+                analyticsNodata: document.getElementById('analytics-nodata'),
+                monthlyTotalPl: document.getElementById('monthly-total-pl'),
+                monthlyPlannedPl: document.getElementById('monthly-planned-pl'),
+                monthlyImpulsePl: document.getElementById('monthly-impulse-pl'),
+                monthlyTotalTrades: document.getElementById('monthly-total-trades'),
+                monthlyWinRate: document.getElementById('monthly-win-rate'),
+                monthlyProfitFactor: document.getElementById('monthly-profit-factor'),
+                // Reflections
+                reflectionsContent: document.getElementById('reflections-content'),
+                reflectionsLoading: document.getElementById('reflections-loading'),
+                reflectionsNodata: document.getElementById('reflections-nodata'),
+            };
+
+            // --- State ---
+            let currentUserId = user.uid;
+            let tradesCollectionRef = collection(db, "trades");
+            let checklistsCollectionRef = collection(db, `users/${currentUserId}/weeklyChecklists`);
+
+            // --- Populate Selectors ---
+            function populateSelectors() {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                // Months
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                elements.monthSelect.innerHTML = months.map((month, index) => 
+                    `<option value="${index}" ${index === currentMonth ? 'selected' : ''}>${month}</option>`
+                ).join('');
+
+                // Years (e.g., current year +/- 2 years)
+                const years = [];
+                for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+                    years.push(y);
+                }
+                elements.yearSelect.innerHTML = years.map(year => 
+                    `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`
+                ).join('');
+            }
+
+            // --- Data Fetching & Processing ---
+            async function fetchAndDisplayData() {
+                const selectedMonth = parseInt(elements.monthSelect.value);
+                const selectedYear = parseInt(elements.yearSelect.value);
+
+                if (isNaN(selectedMonth) || isNaN(selectedYear)) return;
+
+                elements.loadingIndicator.classList.remove('hidden');
+                elements.analyticsLoading.classList.remove('hidden');
+                elements.reflectionsLoading.classList.remove('hidden');
+                elements.analyticsContent.classList.add('hidden');
+                elements.reflectionsContent.classList.add('hidden');
+                elements.analyticsNodata.classList.add('hidden');
+                elements.reflectionsNodata.classList.add('hidden');
+
+
+                try {
+                    // --- Fetch Trades ---
+                    const monthStart = Timestamp.fromDate(new Date(Date.UTC(selectedYear, selectedMonth, 1, 0, 0, 0)));
+                    const monthEnd = Timestamp.fromDate(new Date(Date.UTC(selectedYear, selectedMonth + 1, 0, 23, 59, 59))); // Last moment of the month
+
+                    const tradesQuery = query(tradesCollectionRef, 
+                        where("userId", "==", currentUserId),
+                        where("createdAt", ">=", monthStart),
+                        where("createdAt", "<=", monthEnd),
+                        orderBy("createdAt", "asc") // Order needed for calculation later
+                    );
+                    const tradeSnapshot = await getDocs(tradesQuery);
+                    const trades = tradeSnapshot.docs.map(doc => {
+                        const data = doc.data();
+                        const entry = Number(data.entryPrice) || 0;
+                        const exit = Number(data.exitPrice) || 0;
+                        const size = Number(data.positionSize) || 0;
+                        const pl = (data.direction === 'long' ? (exit - entry) : (entry - exit)) * size;
+                        return { id: doc.id, ...data, pl: isNaN(pl) ? 0 : pl };
+                    });
+
+                    // --- Fetch Checklists ---
+                    const weekIds = getWeekIdsForMonth(selectedYear, selectedMonth);
+                    let checklists = [];
+                    if (weekIds.length > 0) {
+                         // Firestore 'in' query supports max 30 items, usually okay for weeks in a month
+                        const checklistsQuery = query(checklistsCollectionRef, where("__name__", "in", weekIds));
+                        const checklistSnapshot = await getDocs(checklistsQuery);
+                        checklists = checklistSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                                                     .sort((a, b) => a.id.localeCompare(b.id)); // Sort by week ID string
+                    }
+
+
+                    // --- Process & Display ---
+                    calculateMonthlyAnalytics(trades);
+                    displayReflections(checklists);
+
+                } catch (error) {
+                    console.error("Error fetching monthly data:", error);
+                     elements.analyticsNodata.textContent = 'Error loading data.';
+                     elements.reflectionsNodata.textContent = 'Error loading data.';
+                     elements.analyticsNodata.classList.remove('hidden');
+                     elements.reflectionsNodata.classList.remove('hidden');
+                     if (error.code === 'failed-precondition' && elements.analyticsNodata) {
+                         elements.analyticsNodata.innerHTML += `<p class="text-red-500 text-xs mt-2"><b>Action Required:</b> Create a composite index in Firestore:<br><b>Collection:</b> trades, <b>Fields:</b> userId (Asc), createdAt (Asc or Desc)</p>`;
+                     }
+                } finally {
+                    elements.loadingIndicator.classList.add('hidden');
+                    elements.analyticsLoading.classList.add('hidden');
+                    elements.reflectionsLoading.classList.add('hidden');
+                }
+            }
+
+            function calculateMonthlyAnalytics(trades) {
+                 if (trades.length === 0) {
+                     elements.analyticsNodata.classList.remove('hidden');
+                     elements.analyticsContent.classList.add('hidden');
+                     // Reset stats
+                     elements.monthlyTotalPl.textContent = '$0.00'; elements.monthlyTotalPl.className = 'stat-value';
+                     elements.monthlyPlannedPl.textContent = '$0.00'; elements.monthlyPlannedPl.className = 'stat-value';
+                     elements.monthlyImpulsePl.textContent = '$0.00'; elements.monthlyImpulsePl.className = 'stat-value';
+                     elements.monthlyTotalTrades.textContent = '0';
+                     elements.monthlyWinRate.textContent = '0.0%';
+                     elements.monthlyProfitFactor.textContent = '0.00';
+                     return;
+                 }
+                 
+                elements.analyticsNodata.classList.add('hidden');
+                elements.analyticsContent.classList.remove('hidden');
+
+                const t=trades.length,l=trades.reduce((e,t)=>e+(t.pl||0),0),a=trades.filter(e=>e.pl>0),d=trades.filter(e=>e.pl<0),n=t>0?a.length/t*100:0,o=a.reduce((e,t)=>e+t.pl,0),s=Math.abs(d.reduce((e,t)=>e+t.pl,0)),r=s>0?o/s:o>0?Infinity:0;const p=trades.filter(e=>"focus"===e.setupSource||"watchlist"===e.setupSource),u=trades.filter(e=>"impulse"===e.setupSource||!e.setupSource),m=p.reduce((e,t)=>e+(t.pl||0),0),g=u.reduce((e,t)=>e+(t.pl||0),0);
+                
+                elements.monthlyPlannedPl.textContent=m.toLocaleString("en-US",{style:"currency",currency:"USD"});elements.monthlyPlannedPl.className=`stat-value ${m>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`;
+                elements.monthlyImpulsePl.textContent=g.toLocaleString("en-US",{style:"currency",currency:"USD"});elements.monthlyImpulsePl.className=`stat-value ${g>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`;
+                elements.monthlyTotalPl.textContent=l.toLocaleString("en-US",{style:"currency",currency:"USD"});elements.monthlyTotalPl.className=`stat-value ${l>=0?"text-green-500 dark:text-green-400":"text-red-500 dark:text-red-400"}`;
+                elements.monthlyTotalTrades.textContent=t;
+                elements.monthlyWinRate.textContent=`${n.toFixed(1)}%`;
+                elements.monthlyProfitFactor.textContent=isFinite(r)?r.toFixed(2):"∞";
+            }
+
+            function displayReflections(checklists) {
+                 if (checklists.length === 0) {
+                     elements.reflectionsNodata.classList.remove('hidden');
+                     elements.reflectionsContent.classList.add('hidden');
+                     elements.reflectionsContent.innerHTML = ''; // Clear previous
+                     return;
+                 }
+
+                 elements.reflectionsNodata.classList.add('hidden');
+                 elements.reflectionsContent.classList.remove('hidden');
+                 
+                 elements.reflectionsContent.innerHTML = checklists.map(cl => {
+                     const weekNum = cl.id.split('-')[1]; // Extract WW from YYYY-WW
+                     const notes = cl.lessonsLearned || '<i class="text-color-muted">No reflections logged for this week.</i>';
+                     return `
+                         <div class="week-reflection">
+                             <h3 class="week-title">Week ${weekNum}</h3>
+                             <p class="week-notes">${notes}</p> 
+                         </div>
+                     `;
+                 }).join('');
+            }
+
+            // --- Event Listeners ---
+            function setupEventListeners() {
+                elements.monthSelect.addEventListener('change', fetchAndDisplayData);
+                elements.yearSelect.addEventListener('change', fetchAndDisplayData);
+            }
+
+            // --- Initial Load ---
+            populateSelectors();
+            setupEventListeners();
+            fetchAndDisplayData(); // Fetch data for the initially selected month/year
+
+        }
+
+        initializeAppCore(initMonthlyReviewPage);
+    </script>
+</body>
+</html>
