@@ -25,19 +25,17 @@
         .stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
         .stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
 
-        /* === NEW CUSTOM DROPDOWN STYLES (EXPANDED) === */
+        /* === CUSTOM DROPDOWN STYLES (Specificity Fix) === */
         .custom-select-wrapper { 
             position: relative; 
         }
         .custom-select-trigger {
-            /* Inherits from .form-input in main.css */
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
             cursor: pointer;
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
-        /* Chevron icon styling is now in the HTML classes */
         .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down {
             transform: rotate(180deg);
         }
@@ -54,7 +52,8 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             display: none;
         }
-        .dark .custom-select-options {
+        /* UPDATED: Added 'html.dark' for more specificity */
+        html.dark .custom-select-options {
             background-color: #1f2937; /* Dark mode background (gray-800) */
             border-color: rgba(255, 255, 255, 0.1); /* Dark mode border */
         }
@@ -67,24 +66,27 @@
             cursor: pointer;
             color: #1f2937; /* Light mode text */
         }
-        .dark .custom-option {
+        /* UPDATED: Added 'html.dark' for more specificity */
+        html.dark .custom-option {
             color: #f4f6f9; /* Dark mode text */
         }
         .custom-option:hover {
             background-color: #dbeafe; /* Light mode hover (blue-100) */
         }
-        .dark .custom-option:hover {
+        /* UPDATED: Added 'html.dark' for more specificity */
+        html.dark .custom-option:hover {
             background-color: rgba(59, 130, 246, 0.2); /* Dark mode hover (blue-500/20) */
         }
         .custom-option.selected {
             background-color: #dbeafe; /* Light mode selected (blue-100) */
             font-weight: 600;
         }
-        .dark .custom-option.selected {
+        /* UPDATED: Added 'html.dark' for more specificity */
+        html.dark .custom-option.selected {
             background-color: rgba(59, 130, 246, 0.2); /* Dark mode selected (blue-500/20) */
         }
 
-        /* Color styles for triggers */
+        /* Color styles for triggers (unchanged) */
         .source-impulse { @apply !border-yellow-500/50 !bg-yellow-500/5; }
         .source-watchlist { @apply !border-blue-500/50 !bg-blue-500/5; }
         .source-focus { @apply !border-green-500/50 !bg-green-500/5; }
@@ -313,7 +315,6 @@
                 else if (value === 'short') triggerElement.classList.add('dir-short');
             }
 
-            // === THIS FUNCTION IS UPDATED (Bug Fix) ===
             function setupEventListeners(){
                 elements.tradeForm.addEventListener("submit",async e=>{e.preventDefault(),elements.saveBtn.disabled=!0,elements.saveBtn.textContent="Saving...";const t={userId:userId,symbol:elements.tradeForm["trade-symbol"].value,direction:elements.tradeForm["trade-direction"].value,setupSource:elements.tradeForm["trade-setup-source"].value,entryPrice:parseFloat(elements.tradeForm["trade-entry"].value),exitPrice:parseFloat(elements.tradeForm["trade-exit"].value),positionSize:parseFloat(elements.tradeForm["trade-size"].value),image:elements.tradeForm["trade-image"].value,tags:elements.tradeForm["trade-tags"].value.split(",").map(e=>e.trim().toLowerCase()).filter(Boolean),notes:elements.tradeForm["trade-notes"].value,createdAt:serverTimestamp()};try{await addDoc(tradesCollectionRef,t),elements.tradeForm.reset(),elements.plDisplay.value="",
                 
@@ -338,15 +339,13 @@
                 
                 elements.tradeHistory.addEventListener("click",e=>{const t=e.target.closest(".delete-trade-btn"),l=e.target.closest(".view-chart-btn");t?(tradeToDeleteId=t.dataset.id,openModal(elements.deleteModal)):l&&(elements.modalImageSrc.src=l.dataset.imgSrc,openModal(elements.imageModal))}),elements.tagsContainer.addEventListener("click",e=>{if(e.target.matches(".tag")){const t=e.target.dataset.tag;activeTag="all"===t?null:t,applyFilters()}}),
                 
-                // === THIS LINE IS FIXED ===
+                // This is the corrected line:
                 [elements.cancelDelete, elements.closeImageModal].forEach(e=>{e&&e.addEventListener("click",()=>{closeModal(elements.deleteModal),closeModal(elements.imageModal)})}),
-                // === END OF FIX ===
 
                 [elements.deleteModal,elements.imageModal].forEach(e=>{e&&e.addEventListener("click",t=>{t.target===e&&closeModal(e)})}),elements.confirmDelete&&elements.confirmDelete.addEventListener("click",async()=>{if(tradeToDeleteId){try{elements.confirmDelete.textContent="Deleting...",elements.confirmDelete.disabled=!0,await deleteDoc(doc(db,"trades",tradeToDeleteId)),console.log("Trade deleted:",tradeToDeleteId)}catch(e){console.error("Error deleting trade:",e),alert("Error deleting trade.")}finally{elements.confirmDelete.textContent="Delete",elements.confirmDelete.disabled=!1,closeModal(elements.deleteModal)}}}),document.addEventListener("keydown",e=>{if("Escape"===e.key){elements.deleteModal&&!elements.deleteModal.classList.contains("opacity-0")&&closeModal(elements.deleteModal),elements.imageModal&&!elements.imageModal.classList.contains("opacity-0")&&closeModal(elements.imageModal)}})
             
                 setupCustomDropdowns();
             }
-            // === END OF UPDATE ===
 
 
             // --- Firestore Listeners ---
