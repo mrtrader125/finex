@@ -1,251 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finex | Precision Trading Tools & Analysis</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* --- SCROLLBAR HIDE --- */
-        html {
-            scroll-behavior: smooth;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
-        }
-        html::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finex | Precision Trading Tools & Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- SCROLLBAR HIDE --- */
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        html::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        /* --- LIGHT THEME STYLES --- */
+        body {
+            background-color: #f0f4f8; /* Slightly softer light background */
+            color: #1a202c; /* Slightly softer dark text */
+            font-family: 'Source Sans Pro', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+
+        /* --- Animated Mesh Gradient Background --- */
+        #mesh-gradient-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden; /* Prevent scrollbars from gradient */
+        }
+        #mesh-gradient {
+            width: 150%; /* Larger to allow movement */
+            height: 150%;
+            position: absolute;
+            top: -25%; /* Center the larger gradient */
+            left: -25%;
+            background: radial-gradient(at 20% 20%, hsla(210, 80%, 95%, 0.8) 0px, transparent 50%),
+                        radial-gradient(at 80% 20%, hsla(190, 70%, 90%, 0.7) 0px, transparent 50%),
+                        radial-gradient(at 50% 80%, hsla(230, 75%, 92%, 0.8) 0px, transparent 50%),
+                        radial-gradient(at 80% 80%, hsla(30, 60%, 94%, 0.7) 0px, transparent 50%);
+            animation: moveGradient 25s ease infinite alternate; /* Slow, smooth animation */
+        }
+
+        @keyframes moveGradient {
+            0% { transform: translate(0%, 0%) rotate(0deg); }
+            100% { transform: translate(-10%, -10%) rotate(10deg); } /* Slight movement and rotation */
+        }
+        /* --- End Mesh Gradient --- */
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8); /* Slightly more opaque glass */
+            -webkit-backdrop-filter: blur(18px); /* Increased blur */
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(0, 0, 0, 0.06); /* Even subtler border */
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06); /* Refined shadow */
+        }
+        .glass-card-hover:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 82, 204, 0.25);
+            transform: translateY(-7px); /* Increased lift */
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12); /* Stronger hover shadow */
+        }
+        .main-button {
+            background-color: #0052cc; color: white;
+            transition: all 0.3s ease;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0, 82, 204, 0.2);
+            border-radius: 9999px; /* Pill shape */
+        }
+        .main-button:hover {
+            background-color: #0065ff; transform: scale(1.04); /* Slightly more pop */
+            box-shadow: 0 7px 22px rgba(0, 101, 255, 0.35);
+        }
+        .secondary-button {
+            background-color: rgba(0, 0, 0, 0.04);
+            color: #343a40;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease; display: inline-block;
+            border-radius: 9999px; /* Pill shape */
+        }
+        .secondary-button:hover {
+            background-color: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.2);
+            transform: scale(1.04);
+            color: #1a202c;
+        }
+        .feature-icon-wrapper {
+            width: 70px; height: 70px; /* Slightly smaller icon wrapper */
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease; /* Transition all */
+        }
+         /* Icon colors adjusted */
+        .feature-icon-wrapper.blue { background-color: #e7f0ff; color: #0052cc; }
+        .feature-icon-wrapper.green { background-color: #e6f9f0; color: #198754; }
+        .feature-icon-wrapper.purple { background-color: #f3eafa; color: #6f42c1; }
+
+        .glass-card-hover:hover .feature-icon-wrapper {
+             background-color: rgba(0, 82, 204, 0.1);
+             color: #0052cc;
+             transform: scale(1.1); /* Pop effect on icon */
+        }
+        .feature-icon { width: 35px; height: 35px; /* Adjusted icon size */ }
+        header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+        header a { color: #1a202c; } /* Header text dark by default */
+        header.scrolled {
+            background-color: rgba(255, 255, 255, 0.9); /* White background when scrolled */
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+        }
+        header.scrolled a { color: #1a202c; }
+        header.scrolled .main-button { color: white; }
+        header.scrolled .secondary-button { color: #343a40; }
+
+        /* Gradient for hero */
+        .hero-gradient-text {
+             background: linear-gradient(90deg, #1a202c, #0052cc); /* Darker, bluer gradient */
+             -webkit-background-clip: text;
+             -webkit-text-fill-color: transparent;
+             background-clip: text;
+             text-fill-color: transparent;
+        }
+        /* Text color overrides */
+        .text-gray-600 { color: #4a5568; } /* Adjusted gray for subtext */
+        .text-gray-500 { color: #718096; } /* Adjusted gray for footer */
+        .text-gray-400 { color: #a0aec0; } /* Adjusted chevron color */
+
+        /* --- START: NEW SCROLL REVEAL ANIMATION STYLES --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        /* --- LIGHT THEME STYLES --- */
-        body {
-            background-color: #f0f4f8; /* Slightly softer light background */
-            color: #1a202c; /* Slightly softer dark text */
-            font-family: 'Source Sans Pro', sans-serif;
-            overflow-x: hidden;
-            position: relative;
-        }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-
-        /* --- Animated Mesh Gradient Background --- */
-        #mesh-gradient-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden; /* Prevent scrollbars from gradient */
-        }
-        #mesh-gradient {
-            width: 150%; /* Larger to allow movement */
-            height: 150%;
-            position: absolute;
-            top: -25%; /* Center the larger gradient */
-            left: -25%;
-            background: radial-gradient(at 20% 20%, hsla(210, 80%, 95%, 0.8) 0px, transparent 50%),
-                        radial-gradient(at 80% 20%, hsla(190, 70%, 90%, 0.7) 0px, transparent 50%),
-                        radial-gradient(at 50% 80%, hsla(230, 75%, 92%, 0.8) 0px, transparent 50%),
-                        radial-gradient(at 80% 80%, hsla(30, 60%, 94%, 0.7) 0px, transparent 50%);
-            animation: moveGradient 25s ease infinite alternate; /* Slow, smooth animation */
+        .animate-on-scroll {
+            /* Initially hidden and slightly moved down */
+            opacity: 0;
+            transform: translateY(30px);
+            /* Use transition for smooth, non-staggered elements (or a fallback) */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out; 
         }
 
-        @keyframes moveGradient {
-            0% { transform: translate(0%, 0%) rotate(0deg); }
-            100% { transform: translate(-10%, -10%) rotate(10deg); } /* Slight movement and rotation */
+        /* Staggered elements will override 'transition' with 'style="transition-delay: X.Xs;"' */
+        .animate-on-scroll.is-visible {
+            /* This is the final state for all animated elements */
+            opacity: 1;
+            transform: translateY(0);
         }
-        /* --- End Mesh Gradient --- */
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8); /* Slightly more opaque glass */
-            -webkit-backdrop-filter: blur(18px); /* Increased blur */
-            backdrop-filter: blur(18px);
-            border: 1px solid rgba(0, 0, 0, 0.06); /* Even subtler border */
-            border-radius: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06); /* Refined shadow */
-        }
-        .glass-card-hover:hover {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(0, 82, 204, 0.25);
-            transform: translateY(-7px); /* Increased lift */
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12); /* Stronger hover shadow */
-        }
-        .main-button {
-            background-color: #0052cc; color: white;
-            transition: all 0.3s ease;
-            display: inline-block;
-            box-shadow: 0 4px 15px rgba(0, 82, 204, 0.2);
-            border-radius: 9999px; /* Pill shape */
-        }
-        .main-button:hover {
-            background-color: #0065ff; transform: scale(1.04); /* Slightly more pop */
-            box-shadow: 0 7px 22px rgba(0, 101, 255, 0.35);
-        }
-        .secondary-button {
-            background-color: rgba(0, 0, 0, 0.04);
-            color: #343a40;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease; display: inline-block;
-            border-radius: 9999px; /* Pill shape */
-        }
-        .secondary-button:hover {
-            background-color: rgba(0, 0, 0, 0.08);
-            border-color: rgba(0, 0, 0, 0.2);
-            transform: scale(1.04);
-            color: #1a202c;
-        }
-        .feature-icon-wrapper {
-            width: 70px; height: 70px; /* Slightly smaller icon wrapper */
-            margin-bottom: 1.5rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s ease; /* Transition all */
-        }
-         /* Icon colors adjusted */
-        .feature-icon-wrapper.blue { background-color: #e7f0ff; color: #0052cc; }
-        .feature-icon-wrapper.green { background-color: #e6f9f0; color: #198754; }
-        .feature-icon-wrapper.purple { background-color: #f3eafa; color: #6f42c1; }
-
-        .glass-card-hover:hover .feature-icon-wrapper {
-             background-color: rgba(0, 82, 204, 0.1);
-             color: #0052cc;
-             transform: scale(1.1); /* Pop effect on icon */
-        }
-        .feature-icon { width: 35px; height: 35px; /* Adjusted icon size */ }
-        header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
-        header a { color: #1a202c; } /* Header text dark by default */
-        header.scrolled {
-            background-color: rgba(255, 255, 255, 0.9); /* White background when scrolled */
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-        }
-        header.scrolled a { color: #1a202c; }
-        header.scrolled .main-button { color: white; }
-        header.scrolled .secondary-button { color: #343a40; }
-
-        /* Gradient for hero */
-        .hero-gradient-text {
-             background: linear-gradient(90deg, #1a202c, #0052cc); /* Darker, bluer gradient */
-             -webkit-background-clip: text;
-             -webkit-text-fill-color: transparent;
-             background-clip: text;
-             text-fill-color: transparent;
-        }
-        /* Text color overrides */
-        .text-gray-600 { color: #4a5568; } /* Adjusted gray for subtext */
-        .text-gray-500 { color: #718096; } /* Adjusted gray for footer */
-        .text-gray-400 { color: #a0aec0; } /* Adjusted chevron color */
-    </style>
+        /* --- END: NEW SCROLL REVEAL ANIMATION STYLES --- */
+    </style>
 </head>
 <body class="antialiased">
-    <!-- Animated Mesh Gradient Background -->
-    <div id="mesh-gradient-container">
-        <div id="mesh-gradient"></div>
-    </div>
+        <div id="mesh-gradient-container">
+        <div id="mesh-gradient"></div>
+    </div>
 
-    <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold tracking-wider" id="logo">
-                <a href="#hero">Finex</a>
-            </div>
-            <nav class="flex items-center space-x-3 sm:space-x-4">
-                 <!-- CORRECTED: Swapped styles AND ensured href points to guest_dashboard.html -->
-                 <a href="guest_dashboard.html" class="secondary-button font-semibold py-2 px-4 sm:px-5 rounded-full text-sm sm:text-base">Explore as Guest</a>
-                 <a href="login.html" class="main-button font-semibold py-2 px-4 sm:px-5 rounded-full text-sm sm:text-base">Member Login</a>
-            </nav>
-        </div>
-    </header>
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-2xl font-bold tracking-wider" id="logo">
+                <a href="#hero">Finex</a>
+            </div>
+            <nav class="flex items-center space-x-3 sm:space-x-4">
+                 <a href="guest_dashboard.html" class="secondary-button font-semibold py-2 px-4 sm:px-5 rounded-full text-sm sm:text-base">Explore as Guest</a>
+                 <a href="login.html" class="main-button font-semibold py-2 px-4 sm:px-5 rounded-full text-sm sm:text-base">Member Login</a>
+            </nav>
+        </div>
+    </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
-            <div class="relative z-10 max-w-4xl">
-                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-6 hero-gradient-text">Trade with Precision & Insight</h1>
-                <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-                    Finex integrates powerful analysis tools with structured planning frameworks, helping disciplined traders achieve consistent performance.
-                </p>
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <a href="login.html" class="main-button font-bold text-lg py-3 px-8 rounded-full shadow-lg w-full sm:w-auto">Access Member Platform</a>
-                    <a href="#features" class="secondary-button font-bold text-lg py-3 px-8 rounded-full w-full sm:w-auto">Discover Features</a>
-                </div>
-            </div>
-             <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
-                <a href="#features" class="text-gray-400 hover:text-gray-600 transition-colors animate-bounce">
-                    <i class="fas fa-chevron-down fa-2x"></i>
-                </a>
-            </div>
-        </section>
+    <main>
+                <section id="hero" class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
+            <div class="relative z-10 max-w-4xl">
+                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-6 hero-gradient-text">Trade with Precision & Insight</h1>
+                <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+                    Finex integrates powerful analysis tools with structured planning frameworks, helping disciplined traders achieve consistent performance.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <a href="login.html" class="main-button font-bold text-lg py-3 px-8 rounded-full shadow-lg w-full sm:w-auto">Access Member Platform</a>
+                    <a href="#features" class="secondary-button font-bold text-lg py-3 px-8 rounded-full w-full sm:w-auto">Discover Features</a>
+                </div>
+            </div>
+             <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
+                <a href="#features" class="text-gray-400 hover:text-gray-600 transition-colors animate-bounce">
+                    <i class="fas fa-chevron-down fa-2x"></i>
+                </a>
+            </div>
+        </section>
 
-        <!-- Features Section -->
-        <section id="features" class="py-20 md:py-32 px-4 relative z-10">
-            <div class="container mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-4">Engineered for Performance</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
-                    Leverage tools designed to enhance your decision-making process and streamline your trading workflow.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    <!-- Feature 1 -->
-                    <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper blue">
-                             <i class="fas fa-clipboard-check fa-2x feature-icon"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Systematic Planning</h3>
-                        <p class="text-gray-600">Implement a disciplined weekly workflow: analyze potential setups, define your high-probability watchlist, and log trades with our integrated journal.</p>
-                    </div>
-                    <!-- Feature 2 -->
-                    <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper green">
-                             <i class="fas fa-image fa-2x feature-icon"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Curated Market Analysis</h3>
-                        <p class="text-gray-600">Access timely chart breakdowns and strategic insights provided by the Finex team, delivered directly to your Analysis Gallery.</p>
-                    </div>
-                     <!-- Feature 3 -->
-                     <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center">
-                        <div class="feature-icon-wrapper purple">
-                            <i class="fas fa-book-open fa-2x feature-icon"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Exclusive Knowledge Base</h3>
-                        <p class="text-gray-600">Deepen your expertise with our library covering advanced strategies, risk management protocols, and performance psychology.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+                <section id="features" class="py-20 md:py-32 px-4 relative z-10">
+            <div class="container mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-4 animate-on-scroll">Engineered for Performance</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-16 animate-on-scroll" style="transition-delay: 0.15s;">
+                    Leverage tools designed to enhance your decision-making process and streamline your trading workflow.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                                        <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center animate-on-scroll" style="transition-delay: 0.3s;">
+                        <div class="feature-icon-wrapper blue">
+                             <i class="fas fa-clipboard-check fa-2x feature-icon"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Systematic Planning</h3>
+                        <p class="text-gray-600">Implement a disciplined weekly workflow: analyze potential setups, define your high-probability watchlist, and log trades with our integrated journal.</p>
+                    </div>
+                                        <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center animate-on-scroll" style="transition-delay: 0.45s;">
+                        <div class="feature-icon-wrapper green">
+                             <i class="fas fa-image fa-2x feature-icon"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Curated Market Analysis</h3>
+                        <p class="text-gray-600">Access timely chart breakdowns and strategic insights provided by the Finex team, delivered directly to your Analysis Gallery.</p>
+                    </div>
+                                          <div class="glass-card glass-card-hover p-8 text-center flex flex-col items-center animate-on-scroll" style="transition-delay: 0.6s;">
+                        <div class="feature-icon-wrapper purple">
+                            <i class="fas fa-book-open fa-2x feature-icon"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Exclusive Knowledge Base</h3>
+                        <p class="text-gray-600">Deepen your expertise with our library covering advanced strategies, risk management protocols, and performance psychology.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <!-- Call to Action Section -->
-        <section id="cta" class="py-20 md:py-32 px-4 relative z-10">
-             <div class="container mx-auto text-center max-w-3xl">
-                 <h2 class="text-4xl font-bold mb-6">Refine Your Edge. Achieve Consistency.</h2>
-                 <p class="text-lg text-gray-600 mb-10">
-                     Join a community of focused traders. Access the tools and insights needed to elevate your performance and navigate the markets with discipline.
-                 </p>
-                 <a href="login.html" class="main-button font-bold text-xl py-4 px-10 rounded-full shadow-lg">Unlock Your Member Access</a>
-             </div>
-        </section>
-    </main>
+                <section id="cta" class="py-20 md:py-32 px-4 relative z-10">
+             <div class="container mx-auto text-center max-w-3xl">
+                 <h2 class="text-4xl font-bold mb-6 animate-on-scroll">Refine Your Edge. Achieve Consistency.</h2>
+                 <p class="text-lg text-gray-600 mb-10 animate-on-scroll" style="transition-delay: 0.15s;">
+                     Join a community of focused traders. Access the tools and insights needed to elevate your performance and navigate the markets with discipline.
+                 </p>
+                 <a href="login.html" class="main-button font-bold text-xl py-4 px-10 rounded-full shadow-lg animate-on-scroll" style="transition-delay: 0.3s;">Unlock Your Member Access</a>
+             </div>
+        </section>
+    </main>
 
-    <!-- Footer -->
-    <footer class="py-8 px-4 relative z-10 border-t border-gray-200 mt-16">
-        <div class="container mx-auto text-center text-gray-500 text-sm">
-            &copy; 2025 Finex. All Rights Reserved. Empowering Disciplined Traders.
-        </div>
-    </footer>
+        <footer class="py-8 px-4 relative z-10 border-t border-gray-200 mt-16">
+        <div class="container mx-auto text-center text-gray-500 text-sm">
+            &copy; 2025 Finex. All Rights Reserved. Empowering Disciplined Traders.
+        </div>
+    </footer>
 
-    <script>
-        // Sticky header
-        document.addEventListener('DOMContentLoaded', function() {
-            const header = document.getElementById('header');
-            window.addEventListener('scroll', () => {
-                header.classList.toggle('scrolled', window.scrollY > 50);
+    <script>
+        // Sticky header
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            });
+            
+            // --- START: SCROLL REVEAL ANIMATION LOGIC ---
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Add the 'is-visible' class to trigger the CSS transition/animation
+                        entry.target.classList.add('is-visible');
+                        // Stop observing once the element has appeared
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                root: null, // Use the viewport as the container
+                rootMargin: '0px',
+                // Trigger when 5% of the element is visible
+                threshold: 0.05 
             });
-        });
-    </script>
+
+            // Target all elements that have the 'animate-on-scroll' class
+            const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
+            
+            elementsToAnimate.forEach(element => {
+                observer.observe(element);
+            });
+            // --- END: SCROLL REVEAL ANIMATION LOGIC ---
+        });
+    </script>
 </body>
 </html>
-
