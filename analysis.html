@@ -20,14 +20,22 @@
         #analysis-modal:not(.opacity-100) #modal-content { transform: scale(0.95); opacity: 0; }
         #analysis-modal.opacity-100 #modal-content { transform: scale(1); opacity: 1; }
 
-        /* Category filter tabs */
-        .category-tab {
+        /* === UPDATED: Filter Tabs (Analysis Type and Category) === */
+        .filter-tab {
             @apply px-4 py-2 text-sm font-semibold rounded-full cursor-pointer transition-colors;
             @apply text-color-muted hover:text-color-base bg-white/5 hover:bg-white/10;
         }
-        .category-tab.active {
+        .filter-tab.active {
             @apply text-white bg-blue-600 hover:bg-blue-700;
         }
+        /* === END OF UPDATE === */
+
+        /* Minor styling for details summary */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chevron-icon { transform: rotate(180deg); }
+        summary .chevron-icon { transition: transform 0.2s ease-in-out; }
+
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -40,60 +48,76 @@
             <main class="container mx-auto p-4 md:p-8">
                 <div class="text-center mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Analysis Gallery</h1>
-                    <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse the latest market analysis charts and ideas from the Finex team.</p>
+                    <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse market analysis charts and ideas.</p>
                 </div>
 
-                <!-- NEW: Filter Bar -->
-                <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 max-w-6xl mx-auto">
-                    <!-- Category Filters -->
-                    <div id="category-tabs" class="flex flex-wrap gap-2 justify-center">
-                        <!-- Tabs injected here -->
+                <div class="glass-card mb-8 max-w-4xl mx-auto">
+                    <details id="create-analysis-details">
+                        <summary class="p-4 md:p-6 cursor-pointer flex justify-between items-center list-none">
+                            <h2 class="text-xl font-bold text-color-base">Create Your Analysis Post</h2>
+                            <i class="fas fa-chevron-down chevron-icon text-color-muted"></i>
+                        </summary>
+                        <form id="create-analysis-form" class="space-y-4 p-4 md:p-6 border-t border-color-base">
+                             <div><label class="text-sm text-color-muted block mb-1">Title</label><input type="text" id="analysis-title" required class="form-input w-full"></div>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-sm text-color-muted block mb-1">Category (Optional)</label><input type="text" id="analysis-category" class="form-input w-full" placeholder="e.g., Forex, Crypto, Stocks"></div>
+                                <div><label class="text-sm text-color-muted block mb-1">Tags (Optional, comma-separated)</label><input type="text" id="analysis-tags" class="form-input w-full" placeholder="#breakout, #swingtrade..."></div>
+                             </div>
+                             <div><label class="text-sm text-color-muted block mb-1">Image URL (Optional)</label><input type="url" id="analysis-image-url" class="form-input w-full" placeholder="Paste link to chart image..."></div>
+                             <div><label class="text-sm text-color-muted block mb-1">Description / Notes</label><textarea id="analysis-description" rows="4" required class="form-textarea w-full"></textarea></div>
+                             <button type="submit" id="save-analysis-btn" class="main-button w-full font-bold py-3">Save Analysis Post</button>
+                             <p id="create-form-message" class="text-center text-sm mt-3 h-4"></p>
+                        </form>
+                    </details>
+                </div>
+                 <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 max-w-6xl mx-auto">
+                    <div id="analysis-type-tabs" class="flex flex-wrap gap-2 justify-center">
+                         <button class="filter-tab active" data-type="all">All Analysis</button>
+                         <button class="filter-tab" data-type="finex">Finex Analysis</button>
+                         <button class="filter-tab" data-type="my">My Analysis</button>
                     </div>
-                    <!-- Search Input -->
+                    <div id="category-tabs" class="flex flex-wrap gap-2 justify-center">
+                        </div>
                     <div class="relative w-full md:w-64">
                         <input type="text" id="search-input" placeholder="Search by title, tag..." class="form-input w-full !pl-10" autocomplete="off">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-color-muted"></i>
                     </div>
                 </div>
-
-                <!-- Upgraded: Analysis Grid -->
-                <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                 <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
                     <p id="no-results-message" class="text-center text-color-muted col-span-full" style="display: none;">No analysis found matching your criteria.</p>
-                </div>
+                    </div>
             </main>
         </div>
 
-        <!-- Upgraded: Analysis Modal (Focus View) -->
         <div id="analysis-modal" class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 opacity-0 pointer-events-none modal">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-white text-4xl leading-none hover:opacity-75 transition-opacity z-10">&times;</button>
-            
             <div id="modal-content" class="glass-card w-full max-w-6xl max-h-[90vh] flex flex-col lg:flex-row rounded-lg overflow-hidden">
-                <!-- Image -->
-                <div class="w-full lg:w-2/3 bg-black/20">
-                    <img id="modal-image" src="" alt="Full-size analysis image" class="w-full h-full object-contain max-h-[50vh] lg:max-h-[90vh]">
-                </div>
-                <!-- Details -->
+                <div class="w-full lg:w-2/3 bg-black/20"><img id="modal-image" src="" alt="Full-size analysis image" class="w-full h-full object-contain max-h-[50vh] lg:max-h-[90vh]"></div>
                 <div class="w-full lg:w-1/3 p-6 md:p-8 overflow-y-auto">
                     <h2 id="modal-title" class="text-2xl font-bold text-color-base mb-2"></h2>
                     <div id="modal-meta" class="text-sm text-color-muted mb-4"></div>
                     <div id="modal-tags" class="flex flex-wrap gap-2 mb-6"></div>
-                    <div classs="prose prose-sm dark:prose-invert">
-                        <p id="modal-description" class="text-color-muted leading-relaxed"></p>
-                    </div>
+                    <div class="prose prose-sm dark:prose-invert"><p id="modal-description" class="text-color-muted leading-relaxed"></p></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script type="module" src="app.js"></script>
-
     <script type="module">
-        import { initializeAppCore, db } from './app.js';
-        import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // === JAVASCRIPT IS UPDATED ===
+        import { initializeAppCore, db, auth } from './app.js'; // Import auth
+        import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"; // Added addDoc, serverTimestamp, where, deleteDoc, updateDoc
 
-        function initAnalysisPage(user, db) {
+        function initAnalysisPage(user, db) { // User object is now passed
             console.log("Setting up Analysis page specific logic...");
+            if (!user) { // Guard clause if user is somehow null
+                 console.error("User not authenticated!");
+                 document.body.innerHTML = "<p class='text-red-500 text-center p-8'>Authentication error. Please log in again.</p>";
+                 return;
+            }
+            const currentUserId = user.uid; // Get current user's ID
 
             const elements = {
                 container: document.getElementById('analysis-container'),
@@ -107,18 +131,22 @@
                 closeModalBtn: document.getElementById('close-modal-btn'),
                 loadingMsg: document.getElementById('loading-message'),
                 noResultsMsg: document.getElementById('no-results-message'),
+                // Filters
+                analysisTypeTabs: document.getElementById('analysis-type-tabs'),
                 categoryTabs: document.getElementById('category-tabs'),
-                searchInput: document.getElementById('search-input')
+                searchInput: document.getElementById('search-input'),
+                // Create Form
+                createAnalysisDetails: document.getElementById('create-analysis-details'),
+                createAnalysisForm: document.getElementById('create-analysis-form'),
+                saveAnalysisBtn: document.getElementById('save-analysis-btn'),
+                createFormMessage: document.getElementById('create-form-message')
             };
 
-            for (let key in elements) {
-                if (!elements[key]) {
-                    console.error(`Error: Element ID '${key}' not found!`);
-                    return;
-                }
-            }
+            // Basic element check
+            for (let key in elements) { if (!elements[key]) { console.error(`Error: Element ID '${key}' not found!`); return; } }
 
-            let allAnalysis = [];
+            let allAnalysis = []; // Stores all fetched posts
+            let currentAnalysisType = 'all'; // 'all', 'finex', 'my'
             let currentCategory = 'All';
             let currentSearch = '';
             let searchDebounceTimer;
@@ -126,59 +154,107 @@
 
 
             function fetchAnalysis() {
-                const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"));
+                // Base query ordered by creation date
+                let q = query(collection(db, "analysis"), orderBy("createdAt", "desc"));
+
+                // Apply analysis type filter if needed (My requires user ID)
+                // Note: Firestore doesn't allow inequality filters on different fields easily with ordering.
+                // We'll filter isUserPost client-side for simplicity, but for large datasets,
+                // you might need separate queries or backend filtering.
+                
                 onSnapshot(q, (snapshot) => {
                     elements.loadingMsg.style.display = 'none';
-                    allAnalysis = [];
+                    allAnalysis = []; // Clear previous data
                     
-                    if (snapshot.empty) {
-                        elements.container.innerHTML = '<p class="text-center text-color-muted col-span-full">No analysis has been posted yet.</p>';
-                        return;
-                    }
-
                     snapshot.forEach(doc => {
                         allAnalysis.push({ id: doc.id, ...doc.data() });
                     });
                     
-                    renderCategories();
-                    renderAnalysisGrid();
+                    if (allAnalysis.length === 0 && snapshot.empty) {
+                        elements.container.innerHTML = '<p class="text-center text-color-muted col-span-full">No analysis has been posted yet.</p>';
+                        renderCategories(); // Render 'All' category even if empty
+                        return;
+                    }
+                    
+                    renderCategories(); // Update categories based on fetched data
+                    renderAnalysisGrid(); // Render the grid with current filters applied
 
                 }, (error) => {
                     console.error("Error fetching analysis data:", error);
                     elements.loadingMsg.style.display = 'none';
                     elements.container.innerHTML = '<p class="text-center text-red-500 col-span-full">Could not load analysis data.</p>';
+                    // Handle potential index requirement error
+                    if (error.code === 'failed-precondition' && elements.container) {
+                        elements.container.innerHTML += `<p class="text-center text-red-500 text-xs mt-2"><b>Action Required:</b> Create required index in Firestore.</p>`;
+                    }
                 });
             }
 
             function renderCategories() {
-                const categories = ['All', ...new Set(allAnalysis.map(a => a.category).filter(Boolean))];
+                // Filter categories based on the currently displayed items AFTER type/search filters
+                const currentlyVisibleAnalysis = filterAnalysisData();
+                const categories = ['All', ...new Set(currentlyVisibleAnalysis.map(a => a.category).filter(Boolean))].sort();
+                
+                // Keep the current category active if it still exists, otherwise default to 'All'
+                if (!categories.includes(currentCategory)) {
+                    currentCategory = 'All';
+                }
+
                 elements.categoryTabs.innerHTML = categories.map(cat => `
-                    <button class="category-tab ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">
+                    <button class="filter-tab ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">
                         ${cat}
                     </button>
                 `).join('');
+                if (categories.length <= 1) { // Hide category bar if only 'All' exists
+                    elements.categoryTabs.style.display = 'none';
+                } else {
+                     elements.categoryTabs.style.display = '';
+                }
             }
             
+            // New function to handle filtering logic separately
+            function filterAnalysisData() {
+                 const searchLower = currentSearch.toLowerCase();
+
+                 return allAnalysis.filter(item => {
+                     // Filter by Analysis Type
+                     let typeMatch = false;
+                     if (currentAnalysisType === 'all') {
+                         typeMatch = true;
+                     } else if (currentAnalysisType === 'finex') {
+                         // Admin posts: isUserPost is false or missing
+                         typeMatch = !item.isUserPost; 
+                     } else if (currentAnalysisType === 'my') {
+                         // User posts: isUserPost is true AND userId matches
+                         typeMatch = item.isUserPost === true && item.userId === currentUserId;
+                     }
+                     if (!typeMatch) return false;
+
+                     // Filter by Category
+                     const inCategory = currentCategory === 'All' || item.category === currentCategory;
+                     if (!inCategory) return false;
+                     
+                     // Filter by Search Term
+                     const inSearch = searchLower === '' ||
+                         (item.title && item.title.toLowerCase().includes(searchLower)) ||
+                         (item.analyst && item.analyst.toLowerCase().includes(searchLower)) || // Analyst name might be useful
+                         (item.category && item.category.toLowerCase().includes(searchLower)) ||
+                         (item.tags && Array.isArray(item.tags) && item.tags.some(tag => tag.toLowerCase().includes(searchLower)));
+                     if (!inSearch) return false;
+
+                     return true; // Passed all filters
+                 });
+            }
+
             function renderAnalysisGrid() {
                 elements.loadingMsg.style.display = 'none';
                 
-                const searchLower = currentSearch.toLowerCase();
-
-                const filteredAnalysis = allAnalysis.filter(item => {
-                    const inCategory = currentCategory === 'All' || item.category === currentCategory;
-                    
-                    const inSearch = searchLower === '' ||
-                        (item.title && item.title.toLowerCase().includes(searchLower)) ||
-                        (item.analyst && item.analyst.toLowerCase().includes(searchLower)) ||
-                        (item.category && item.category.toLowerCase().includes(searchLower)) ||
-                        (item.tags && Array.isArray(item.tags) && item.tags.some(tag => tag.toLowerCase().includes(searchLower)));
-
-                    return inCategory && inSearch;
-                });
+                const filteredAnalysis = filterAnalysisData(); // Use the helper function
 
                 if (filteredAnalysis.length === 0) {
-                    elements.container.innerHTML = '';
+                    elements.container.innerHTML = ''; // Clear previous cards
                     elements.noResultsMsg.style.display = 'block';
+                    renderCategories(); // Update categories even if no results
                     return;
                 }
                 
@@ -188,114 +264,221 @@
                     const tagsHTML = Array.isArray(item.tags) 
                         ? item.tags.slice(0, 3).map(tag => `<span class="tag text-xs">#${tag}</span>`).join('') 
                         : '';
+                    // Determine display name (User's display name or 'Finex Team')
+                    // For now, let's show 'You' for user posts, 'Finex Team' otherwise.
+                    // A better approach would be to store user's displayName during post creation.
+                    const analystDisplay = item.isUserPost && item.userId === currentUserId ? 'You' : (item.analyst || 'Finex Team'); 
                     
+                    // Add Delete button for user's own posts
+                    const deleteButtonHTML = item.isUserPost && item.userId === currentUserId
+                        ? `<button data-delete-id="${item.id}" class="delete-analysis-btn text-xs text-red-500 hover:text-red-400 ml-auto"><i class="fas fa-trash-alt"></i></button>`
+                        : '';
+
                     return `
-                    <div class="glass-card group flex flex-col overflow-hidden cursor-pointer" data-id="${item.id}">
-                        <div class="overflow-hidden">
-                            <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
-                        </div>
+                    <div class="glass-card group flex flex-col overflow-hidden">
+                        <div class="overflow-hidden relative">
+                             <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer analysis-card-image" loading="lazy" data-id="${item.id}">
+                             </div>
                         <div class="p-4 flex flex-col flex-grow">
                             <span class="text-xs font-bold uppercase text-blue-400 mb-1">${item.category || 'General'}</span>
-                            <h3 class="font-semibold text-color-base truncate mb-2" title="${item.title || ''}">${item.title || 'Untitled Analysis'}</h3>
-                            <p class="text-sm text-color-muted mb-4 h-10 overflow-hidden">${item.description || 'Click to see more...'}</p>
+                             <h3 class="font-semibold text-color-base truncate mb-2 cursor-pointer analysis-card-title" title="${item.title || ''}" data-id="${item.id}">${item.title || 'Untitled Analysis'}</h3>
+                             <p class="text-sm text-color-muted mb-4 h-10 overflow-hidden">${item.description ? (item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '')) : 'Click to see more...'}</p>
                             <div class="mt-auto pt-2 border-t border-color-base flex justify-between items-center">
-                                <span class="text-xs text-color-muted">${item.analyst || 'Finex Team'}</span>
-                                <div class="flex gap-1">${tagsHTML}</div>
+                                <span class="text-xs text-color-muted">${analystDisplay}</span>
+                                <div class="flex gap-1 items-center">
+                                     <div class="flex gap-1">${tagsHTML}</div>
+                                     ${deleteButtonHTML} 
+                                </div>
                             </div>
                         </div>
                     </div>`;
                 }).join('');
+
+                renderCategories(); // Update categories based on the filtered results
             }
 
-            function openModal(item) {
-                if (!item) return;
-                
-                elements.modalImage.src = item.imageUrl || placeholderImage(1200, 800, 'Analysis');
-                elements.modalImage.alt = item.title || 'Analysis Image';
-                elements.modalTitle.textContent = item.title || 'Untitled Analysis';
-                elements.modalDescription.innerHTML = item.description ? item.description.replace(/\n/g, '<br>') : 'No description provided.';
-                
-                const formattedDate = item.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || '';
-                elements.modalMeta.innerHTML = `
-                    <span>By ${item.analyst || 'Finex Team'}</span>
-                    <span class="mx-2">&bull;</span>
-                    <span>${formattedDate}</span>
-                `;
-                
-                if (Array.isArray(item.tags) && item.tags.length > 0) {
-                    elements.modalTags.innerHTML = item.tags.map(tag => `<span class="tag text-xs">#${tag}</span>`).join('');
-                } else {
-                    elements.modalTags.innerHTML = '';
+            // --- Modal Functions (Unchanged, except for analyst display) ---
+             function openModal(item) {
+                 if (!item) return;
+                 
+                 elements.modalImage.src = item.imageUrl || placeholderImage(1200, 800, 'Analysis');
+                 elements.modalImage.alt = item.title || 'Analysis Image';
+                 elements.modalTitle.textContent = item.title || 'Untitled Analysis';
+                 elements.modalDescription.innerHTML = item.description ? item.description.replace(/\n/g, '<br>') : 'No description provided.';
+                 
+                 const formattedDate = item.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || '';
+                 const analystDisplay = item.isUserPost && item.userId === currentUserId ? 'You' : (item.analyst || 'Finex Team'); 
+                 
+                 elements.modalMeta.innerHTML = `
+                     <span>By ${analystDisplay}</span>
+                     ${formattedDate ? `<span class="mx-2">&bull;</span><span>${formattedDate}</span>` : ''}
+                 `;
+                 
+                 if (Array.isArray(item.tags) && item.tags.length > 0) {
+                     elements.modalTags.innerHTML = item.tags.map(tag => `<span class="tag text-xs">#${tag}</span>`).join('');
+                 } else {
+                     elements.modalTags.innerHTML = '';
+                 }
+
+                 elements.modal.classList.add('opacity-100');
+                 elements.modal.classList.remove('pointer-events-none');
+             }
+
+             function closeModal() {
+                 elements.modal.classList.remove('opacity-100');
+                 elements.modal.classList.add('pointer-events-none');
+                 setTimeout(() => { 
+                     elements.modalImage.src = ""; 
+                     elements.modalTitle.textContent = "";
+                     elements.modalMeta.innerHTML = "";
+                     elements.modalTags.innerHTML = "";
+                     elements.modalDescription.textContent = "";
+                 }, 300);
+             }
+
+            // --- NEW: Save User Analysis Post ---
+            async function saveAnalysisPost(e) {
+                e.preventDefault();
+                elements.saveAnalysisBtn.disabled = true;
+                elements.saveAnalysisBtn.textContent = 'Saving...';
+                showFormMessage('Saving analysis...', false, elements.createFormMessage);
+
+                const postData = {
+                    userId: currentUserId,
+                    isUserPost: true, // Mark as user post
+                    title: elements.createAnalysisForm['analysis-title'].value.trim(),
+                    category: elements.createAnalysisForm['analysis-category'].value.trim() || null, // Store null if empty
+                    tags: elements.createAnalysisForm['analysis-tags'].value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean),
+                    imageUrl: elements.createAnalysisForm['analysis-image-url'].value.trim() || null, // Store null if empty
+                    description: elements.createAnalysisForm['analysis-description'].value.trim(),
+                    createdAt: serverTimestamp(),
+                    // Optional: Store user's displayName if available
+                    // analyst: user.displayName || user.email.split('@')[0] // Example
+                };
+
+                if (!postData.title || !postData.description) {
+                    showFormMessage('Title and Description are required.', true, elements.createFormMessage);
+                    elements.saveAnalysisBtn.disabled = false;
+                    elements.saveAnalysisBtn.textContent = 'Save Analysis Post';
+                    return;
                 }
 
-                elements.modal.classList.add('opacity-100');
-                elements.modal.classList.remove('pointer-events-none');
+                try {
+                    await addDoc(collection(db, "analysis"), postData);
+                    elements.createAnalysisForm.reset();
+                    showFormMessage('Analysis Saved!', false, elements.createFormMessage);
+                    elements.createAnalysisDetails.removeAttribute('open'); // Close details section
+                    // Optionally switch to 'My Analysis' tab after saving
+                    // currentAnalysisType = 'my'; 
+                    // updateActiveTabs(); // Need a function to update tab visuals
+                    // renderAnalysisGrid(); // Re-render
+                } catch (error) {
+                    console.error("Error adding analysis post:", error);
+                    showFormMessage('Error saving analysis.', true, elements.createFormMessage);
+                } finally {
+                    elements.saveAnalysisBtn.disabled = false;
+                    elements.saveAnalysisBtn.textContent = 'Save Analysis Post';
+                }
             }
+            
+            // --- NEW: Delete User Analysis Post ---
+             async function deleteAnalysisPost(postId) {
+                 if (!postId || !confirm('Are you sure you want to delete this analysis post?')) {
+                     return;
+                 }
+                 const docRef = doc(db, "analysis", postId);
+                 try {
+                     await deleteDoc(docRef);
+                     console.log("Analysis deleted:", postId);
+                     // No need for success message, UI will update via onSnapshot
+                 } catch (error) {
+                     console.error("Error deleting analysis post:", error);
+                     alert("Error deleting post. Please try again.");
+                 }
+             }
 
-            function closeModal() {
-                elements.modal.classList.remove('opacity-100');
-                elements.modal.classList.add('pointer-events-none');
-                // Clear content after transition to prevent flash
-                setTimeout(() => { 
-                    elements.modalImage.src = ""; 
-                    elements.modalTitle.textContent = "";
-                    elements.modalMeta.innerHTML = "";
-                    elements.modalTags.innerHTML = "";
-                    elements.modalDescription.textContent = "";
-                }, 300);
+            // --- Helper for Form Messages ---
+            function showFormMessage(message, isError = false, element) {
+                 if (!element) return;
+                 element.textContent = message;
+                 element.className = `text-center text-sm mt-3 h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
+                 setTimeout(() => { if (element) element.textContent = ''; }, 3000);
             }
 
             // --- Event Listeners ---
+            function setupEventListeners() {
+                // Open Modal (delegated)
+                elements.container.addEventListener('click', (e) => {
+                    const cardImage = e.target.closest('.analysis-card-image');
+                    const cardTitle = e.target.closest('.analysis-card-title');
+                    const deleteBtn = e.target.closest('.delete-analysis-btn'); // Listener for delete
 
-            // Click on analysis card
-            elements.container.addEventListener('click', (e) => {
-                const card = e.target.closest('[data-id]');
-                if (card) {
-                    const item = allAnalysis.find(a => a.id === card.dataset.id);
-                    openModal(item);
-                }
-            });
-            
-            // Click on category tab
-            elements.categoryTabs.addEventListener('click', (e) => {
-                const tab = e.target.closest('.category-tab');
-                if (tab) {
-                    currentCategory = tab.dataset.category;
-                    elements.categoryTabs.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    renderAnalysisGrid();
-                }
-            });
+                    if (deleteBtn) {
+                         deleteAnalysisPost(deleteBtn.dataset.deleteId);
+                    } else if (cardImage || cardTitle) {
+                         const cardId = cardImage?.dataset.id || cardTitle?.dataset.id;
+                         const item = allAnalysis.find(a => a.id === cardId);
+                         openModal(item);
+                    } 
+                });
+                
+                // Analysis Type Tabs
+                elements.analysisTypeTabs.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.filter-tab');
+                    if (tab) {
+                        currentAnalysisType = tab.dataset.type;
+                        elements.analysisTypeTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        currentCategory = 'All'; // Reset category when changing type
+                        renderAnalysisGrid(); // Re-render grid which includes category update
+                    }
+                });
 
-            // Search input
-            elements.searchInput.addEventListener('input', (e) => {
-                clearTimeout(searchDebounceTimer);
-                searchDebounceTimer = setTimeout(() => {
-                    currentSearch = e.target.value;
-                    renderAnalysisGrid();
-                }, 300); // 300ms debounce
-            });
+                // Category Tabs
+                elements.categoryTabs.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.filter-tab');
+                    if (tab) {
+                        currentCategory = tab.dataset.category;
+                        elements.categoryTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        renderAnalysisGrid(); // Just re-filter and render
+                    }
+                });
 
-            // Modal close buttons
-            elements.closeModalBtn.addEventListener('click', closeModal);
-            elements.modal.addEventListener('click', (e) => {
-                // Check if the click is on the backdrop, not the content
-                if (e.target === elements.modal && !elements.modalContent.contains(e.target)) {
-                    closeModal();
-                }
-            });
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && elements.modal.classList.contains('opacity-100')) {
-                    closeModal();
-                }
-            });
+                // Search input
+                elements.searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(() => {
+                        currentSearch = e.target.value;
+                        renderAnalysisGrid(); // Re-render grid which includes category update
+                    }, 300); // 300ms debounce
+                });
+
+                // Modal close buttons
+                elements.closeModalBtn.addEventListener('click', closeModal);
+                elements.modal.addEventListener('click', (e) => {
+                    if (e.target === elements.modal && !elements.modalContent.contains(e.target)) {
+                        closeModal();
+                    }
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && elements.modal.classList.contains('opacity-100')) {
+                        closeModal();
+                    }
+                });
+
+                // Save analysis form submission
+                 elements.createAnalysisForm.addEventListener('submit', saveAnalysisPost);
+            }
+
 
             // --- Initial Load ---
-            fetchAnalysis();
+            setupEventListeners();
+            fetchAnalysis(); // Start fetching data
         }
 
         initializeAppCore(initAnalysisPage);
+         // === END OF JAVASCRIPT UPDATE ===
     </script>
 </body>
 </html>
