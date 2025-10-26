@@ -55,6 +55,19 @@ body {
 .form-checkbox { padding: 0.5rem; } /* Specific padding for checkboxes */
 .form-input, .form-textarea, .form-select { padding: 0.75rem; } /* Consistent padding */
 
+/* === THIS SECTION IS UPDATED (for .form-select) === */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Dark arrow for light mode */
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+/* === END OF UPDATE === */
+
 .text-color-base { color: #1f2937; }
 .text-color-muted { color: #4b5563; }
 .border-color-base { border-color: rgba(0, 0, 0, 0.1); }
@@ -91,17 +104,18 @@ body {
 }
 .dark .form-checkbox { padding: 0.5rem; }
 .dark .form-input, .dark .form-textarea, .dark .form-select { padding: 0.75rem; }
+
+/* === THIS SECTION IS UPDATED (for .form-select) === */
 /* Style for select dropdown arrow in dark mode */
 .dark .form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a9a9b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a9a9b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Light arrow for dark mode */
+    /* All other .form-select styles are inherited from the light mode rule */
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
 }
+/* === END OF UPDATE === */
+
 
 .dark .text-color-base { color: #f4f6f9; }
 .dark .text-color-muted { color: #a9a9b3; }
