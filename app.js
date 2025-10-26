@@ -35,24 +35,26 @@ export const allSidebarItems = [
     { id: 'portfolio', href: 'portfolio.html', icon: 'fa-wallet', text: 'Portfolio' },
     { id: 'articles', href: 'articles.html', icon: 'fa-book-reader', text: 'Articles' },
     { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
+    // === THIS SECTION IS UPDATED ===
     { id: 'planning', icon: 'fa-clipboard-list', text: 'Plan & Journal', subItems: [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
-            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' } ] },
+            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
+            // --- NEW ITEM ADDED BELOW ---
+            { id: 'monthlyReview', href: 'monthly_review.html', icon: 'fa-calendar-check', text: 'Monthly Review' }
+            // --- END OF NEW ITEM ---
+        ] },
+    // === END OF UPDATE ===
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
-    // *** UPDATED Market Data Dropdown ***
     {
         id: 'marketData',
         icon: 'fa-chart-bar',
         text: 'Market Data',
         subItems: [
-            // *** MOVED Screener Here ***
             { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
             { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
             { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' }
         ]
     },
-    // *** REMOVED original 'screener' item ***
-    // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
     { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
