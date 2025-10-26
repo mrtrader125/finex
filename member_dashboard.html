@@ -1,224 +1,234 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png">
+    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png">
 
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com"><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Member Dashboard | Finex - Financial Clarity</title>
-    <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
-    <meta name="author" content="Finex Team">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Member Dashboard | Finex - Financial Clarity</title>
+    <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
+    <meta name="author" content="Finex Team">
 
-    <link rel="canonical" href="https://www.yourdomain.com/member_dashboard.html"> <link rel="icon" href="/favicon.ico" type="image/x-icon"> <meta property="og:title" content="Member Dashboard | Finex">
-    <meta property="og:description" content="Your personal hub for financial tools and clarity.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.yourdomain.com/member_dashboard.html"> <meta property="og:image" content="https://www.yourdomain.com/images/og-dashboard.png"> <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Member Dashboard | Finex">
-    <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
-    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script src="https://cdn.tailwindcss.com" defer></script>  
-    
-    <link rel="stylesheet" href="main.css"> <script>
-        // Inline config is necessary when using the CDN
-        tailwind.config = { darkMode: 'class' }
-    </script>
+    <link rel="canonical" href="https://www.yourdomain.com/member_dashboard.html"> <link rel="icon" href="/favicon.ico" type="image/x-icon"> <meta property="og:title" content="Member Dashboard | Finex">
+    <meta property="og:description" content="Your personal hub for financial tools and clarity.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.yourdomain.com/member_dashboard.html"> <meta property="og:image" content="https://www.yourdomain.com/images/og-dashboard.png"> <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Member Dashboard | Finex">
+    <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
+    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com" defer></script>  
+    
+    <link rel="stylesheet" href="main.css"> <script>
+        // Inline config is necessary when using the CDN
+        tailwind.config = { darkMode: 'class' }
+    </script>
 </head>
 
 <body class="antialiased textured-background">
 
-    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
+    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
 
-    <div id="app-wrapper" style="display: none;">
-    
-        <header id="header-placeholder"></header>
-        
-        <!-- --- START: Integrated Sidebar Code --- -->
-        <!-- This replaces the <aside id="sidebar-placeholder"></aside> -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
-                
-        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
-            <div class="p-6 flex flex-col h-full">
-                <div class="flex justify-between items-center mb-8">
-                    <div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINEX</a></div>
-                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
-                </div>
-                
-                <!-- Navigation starts here -->
-                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg overflow-y-auto">
-                    
-                    <!-- 
-                        Add your other sidebar links here, for example:
-                        <a href="dashboard.html" class="flex items-center gap-4 text-gray-300 hover:text-white hover:bg-white/10 p-3 rounded-lg transition-colors">
-                            <i class="fas fa-home fa-fw w-6"></i>
-                            <span>Dashboard</span>
-                        </a> 
-                    -->
+    <div id="app-wrapper" style="display: none;">
+    
+        <header id="header-placeholder"></header>
+        
+                        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
+                
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full">
+            <div class="p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="text-xl font-bold tracking-wider text-white"><a href="member_dashboard.html">FINEX</a></div>
+                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+                </div>
+                
+                                <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg overflow-y-auto">
+                    
+                                        
+                                <div class="mt-auto">
+                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors">
+                        <i class="fas fa-sign-out-alt fa-fw w-6"></i>
+                        <span>Log Out</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+                <main class="pt-[68px]">
+            
+            <section class="container mx-auto min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
+                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
+                </div>
 
-                    
-                <!-- Log out button at the bottom -->
-                <div class="mt-auto">
-                    <a href="#" id="logout-btn" class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors">
-                        <i class="fas fa-sign-out-alt fa-fw w-6"></i>
-                        <span>Log Out</span>
-                    </a>
-                </div>
-            </div>
-        </aside>
-        <!-- --- END: Integrated Sidebar Code --- -->
+                <div class="absolute bottom-20 left-1/2 -translate-x-1/2">
+                    <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
+                        <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
 
+            <section id="dashboard-content" class="container mx-auto p-4 md:py-16">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-8">
+                    
+                                                <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50 animate-on-scroll">
+                            <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
+                                <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
+                                <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
+                                <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
+                            </div>
+                        </article>
+                        
+                                                <div class="glass-card p-8 animate-on-scroll">
+                            <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
+                            <div id="latest-articles-list" class="space-y-2">
+                                <p class="text-color-muted text-center">Loading latest articles...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-8">
+                                                 <div class="glass-card p-8 animate-on-scroll">
+                            <h3 class="text-2xl font-bold mb-6">Real-World Case Studies</h3>
+                            <div class="space-y-6">
+                                <div class="flex items-start gap-4 group">
+                                    <i class="fas fa-chart-pie text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
+                                    <div>
+                                        <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Case Study: $0 to $1,500/mo</a>
+                                        <p class="text-sm text-color-muted">See the 12-month strategy.</p>
+                                    </div>
+                                </div>
+                                 <div class="flex items-start gap-4 group">
+                                    <i class="fas fa-wallet text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
+                                    <div>
+                                         <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Member Spotlight: Tripling Portfolio</a>
+                                         <p class="text-sm text-color-muted">Explore the dividend strategy.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
-        <main class="pt-[68px]">
-            
-            <section class="container mx-auto min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
-                <div class="max-w-3xl">
-                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
-                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
-                </div>
+    <script type="module" src="app.js"></script>
 
-                <div class="absolute bottom-20 left-1/2 -translate-x-1/2">
-                    <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
-                        <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
-                    </a>
-                </div>
-            </section>
-
-            <section id="dashboard-content" class="container mx-auto p-4 md:py-16">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 space-y-8">
-                    
-                        <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
-                            <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-                            <div>
-                                <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-                                <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
-                                <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
-                                <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
-                            </div>
-                        </article>
-                        
-                        <div class="glass-card p-8">
-                            <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
-                            <div id="latest-articles-list" class="space-y-2">
-                                <p class="text-color-muted text-center">Loading latest articles...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-8">
-                         <div class="glass-card p-8">
-                            <h3 class="text-2xl font-bold mb-6">Real-World Case Studies</h3>
-                            <div class="space-y-6">
-                                <div class="flex items-start gap-4 group">
-                                    <i class="fas fa-chart-pie text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
-                                    <div>
-                                        <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Case Study: $0 to $1,500/mo</a>
-                                        <p class="text-sm text-color-muted">See the 12-month strategy.</p>
-                                    </div>
-                                </div>
-                                 <div class="flex items-start gap-4 group">
-                                    <i class="fas fa-wallet text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
-                                    <div>
-                                         <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Member Spotlight: Tripling Portfolio</a>
-                                         <p class="text-sm text-color-muted">Explore the dividend strategy.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script type="module" src="app.js"></script>
-    <script type="module">
-        import { initializeAppCore, db } from './app.js';
-        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
-
-        function initDashboardPage(user, db) {
-            console.log("Setting up Dashboard specific logic...");
-            
-            const memberNameEl = document.getElementById('member-name');
-            if (memberNameEl && user && user.displayName) {
-                // SECURITY (XSS Safe): Use .textContent
-                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member';
-            }
-
-            const articlesListContainer = document.getElementById('latest-articles-list');
-            if (!articlesListContainer) {
-                console.warn("Element with ID 'latest-articles-list' not found.");
-                return;
-            }
-
-            const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
-
-            onSnapshot(q, (snapshot) => {
-                articlesListContainer.innerHTML = ''; // Clear "Loading..."
-
-                if (snapshot.empty) {
-                    const p = document.createElement('p');
-                    p.className = 'text-color-muted text-center';
-                    p.textContent = 'No articles available yet.';
-                    articlesListContainer.appendChild(p);
-                    return;
-                }
-                
-                snapshot.forEach((doc, index) => {
-                    const article = { id: doc.id, ...doc.data() };
-                    
-                    // --- SECURITY (XSS Safe): Build DOM elements manually ---
-                    const articleDiv = document.createElement('div');
-                    articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
-
-                    const link = document.createElement('a');
-                    link.href = `articles.html?id=${article.id}`; 
-                    link.className = 'text-lg font-semibold text-color-base group-hover:text-blue-500';
-                    link.textContent = article.title; // Secure
-
-                    const meta = document.createElement('p');
-                    meta.className = 'text-color-muted text-sm';
-                    const readTime = article.readTime || '? min read';
-                    const publishedDate = article.createdAt 
-                        ? article.createdAt.toDate().toLocaleDateString() 
-                        : 'N/A';
-                    meta.textContent = `${readTime} • Published on ${publishedDate}`; // Secure
-
-                    articleDiv.appendChild(link);
-                    articleDiv.appendChild(meta);
-                    articlesListContainer.appendChild(articleDiv);
-
-                    if (index < snapshot.docs.length - 1) {
-                        const divider = document.createElement('hr');
-                        divider.className = 'border-color-base mx-4';
-                        articlesListContainer.appendChild(divider);
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    // Check if the element is visible in the viewport
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        // Stop observing once the animation is triggered
+                        observer.unobserve(entry.target);
                     }
                 });
-
-            }, (error) => {
-                console.error("Error fetching latest articles:", error);
-                articlesListContainer.innerHTML = ''; 
-                const p = document.createElement('p');
-                p.className = 'text-red-500 text-center';
-                p.textContent = 'Could not load articles.'; // Secure
-                articlesListContainer.appendChild(p);
+            }, {
+                root: null, // relative to the viewport
+                rootMargin: '0px',
+                threshold: 0.1 // trigger when 10% of the element is visible
             });
-        }
 
-        initializeAppCore(initDashboardPage);
+            // Target all elements that need the scroll animation
+            const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
+            
+            elementsToAnimate.forEach(element => {
+                observer.observe(element);
+            });
+        });
     </script>
+        <script type="module">
+        import { initializeAppCore, db } from './app.js';
+        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
+        function initDashboardPage(user, db) {
+            console.log("Setting up Dashboard specific logic...");
+            
+            const memberNameEl = document.getElementById('member-name');
+            if (memberNameEl && user && user.displayName) {
+                // SECURITY (XSS Safe): Use .textContent
+                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member';
+            }
+
+            const articlesListContainer = document.getElementById('latest-articles-list');
+            if (!articlesListContainer) {
+                console.warn("Element with ID 'latest-articles-list' not found.");
+                return;
+            }
+
+            const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
+
+            onSnapshot(q, (snapshot) => {
+                articlesListContainer.innerHTML = ''; // Clear "Loading..."
+
+                if (snapshot.empty) {
+                    const p = document.createElement('p');
+                    p.className = 'text-color-muted text-center';
+                    p.textContent = 'No articles available yet.';
+                    articlesListContainer.appendChild(p);
+                    return;
+                }
+                
+                snapshot.forEach((doc, index) => {
+                    const article = { id: doc.id, ...doc.data() };
+                    
+                    // --- SECURITY (XSS Safe): Build DOM elements manually ---
+                    const articleDiv = document.createElement('div');
+                    articleDiv.className = 'p-4 rounded-lg group hover-bg-base transition-colors';
+
+                    const link = document.createElement('a');
+                    link.href = `articles.html?id=${article.id}`; 
+                    link.className = 'text-lg font-semibold text-color-base group-hover:text-blue-500';
+                    link.textContent = article.title; // Secure
+
+                    const meta = document.createElement('p');
+                    meta.className = 'text-color-muted text-sm';
+                    const readTime = article.readTime || '? min read';
+                    const publishedDate = article.createdAt 
+                        ? article.createdAt.toDate().toLocaleDateString() 
+                        : 'N/A';
+                    meta.textContent = `${readTime} • Published on ${publishedDate}`; // Secure
+
+                    articleDiv.appendChild(link);
+                    articleDiv.appendChild(meta);
+                    articlesListContainer.appendChild(articleDiv);
+
+                    if (index < snapshot.docs.length - 1) {
+                        const divider = document.createElement('hr');
+                        divider.className = 'border-color-base mx-4';
+                        articlesListContainer.appendChild(divider);
+                    }
+                });
+
+            }, (error) => {
+                console.error("Error fetching latest articles:", error);
+                articlesListContainer.innerHTML = ''; 
+                const p = document.createElement('p');
+                p.className = 'text-red-500 text-center';
+                p.textContent = 'Could not load articles.'; // Secure
+                articlesListContainer.appendChild(p);
+            });
+        }
+
+        initializeAppCore(initDashboardPage);
+    </script>
 </body>
 </html>
-
