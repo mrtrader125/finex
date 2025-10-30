@@ -142,6 +142,7 @@
                             <p class="text-sm text-color-muted">Live 24/7 coverage of global markets, finance, and top business news.</p>
                         </div>
                     </div>
+
                     <div class="glass-card h-[500px] flex flex-col p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-2xl font-bold">Live Market Updates</h3>
@@ -182,27 +183,6 @@
                             <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
                                 View more <i class="fas fa-external-link-alt fa-xs ml-1"></i>
                             </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">LiveSquawk Feed</h3>
-                        <div id="feed-container-squawk" class="flex-grow overflow-y-auto pr-2 space-y-4">
-                            <p class="text-color-muted text-center" id="feed-loading-squawk">Loading feed...</p>
-                        </div>
-                    </div>
-                    <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">PiQ Feed</h3>
-                        <div id="feed-container-piq" class="flex-grow overflow-y-auto pr-2 space-y-4">
-                            <p class="text-color-muted text-center" id="feed-loading-piq">Loading feed...</p>
-                        </div>
-                    </div>
-                    <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">FinancialJuice Feed</h3>
-                        <div id="feed-container-juice" class="flex-grow overflow-y-auto pr-2 space-y-4">
-                            <p class="text-color-muted text-center" id="feed-loading-juice">Loading feed...</p>
                         </div>
                     </div>
                 </div>
@@ -258,7 +238,7 @@
             loadLatestArticles(db);
             loadLatestAnalysis(db);
             loadLiveNewsTabs(); 
-            loadSeparateLiveFeeds();
+            // loadSeparateLiveFeeds(); // <-- This function call is removed
             loadLiveCurrencyRates();
         }
 
@@ -451,23 +431,7 @@
             fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
         }
 
-        function loadSeparateLiveFeeds() {
-            fetchRSSFeed(
-                "https://www.investing.com/rss/news.rss", 
-                "LiveSquawk", 
-                "feed-container-squawk"
-            );
-            fetchRSSFeed(
-                "https://www.investing.com/rss/news_285.rss", 
-                "PiQ", 
-                "feed-container-piq"
-            );
-            fetchRSSFeed(
-                "https://www.dailyfx.com/rss/market_news.xml", 
-                "FinancialJuice", 
-                "feed-container-juice"
-            );
-        }
+        // --- REMOVED: loadSeparateLiveFeeds() function ---
 
         async function loadLiveCurrencyRates() {
             const container = document.getElementById('currency-strength-container');
