@@ -56,7 +56,6 @@
             @apply flex items-start space-x-3 p-3;
         }
         .news-item-icon {
-            /* Placeholder icon with the same dimensions as your screenshot */
             @apply h-10 w-10 rounded-full flex-shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center;
         }
         .news-item-icon i {
@@ -128,18 +127,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Reuters Live News</h3>
+                        <h3 class="text-2xl font-bold mb-4">Bloomberg Television Live</h3>
                         <div class="aspect-video mb-4 rounded-lg overflow-hidden">
-                            <iframe src="https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1&mute=1" 
-                                title="Reuters 24/7 Live News" 
+                            <iframe 
+                                src="https://www.youtube.com/embed/live_stream?channel=UCIALK_v-ze-awc41-MclV-A&autoplay=1&mute=1" 
+                                title="Bloomberg Television 24/7 Live" 
                                 class="w-full h-full" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen>
                             </iframe>
                         </div>
                         <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Reuters Live</h4>
-                            <p class="text-sm text-color-muted">Live 24/7 coverage of global news, finance, and major events.</p>
+                            <h4 class="text-lg font-semibold">Bloomberg Global Financial News</h4>
+                            <p class="text-sm text-color-muted">Live 24/7 coverage of global markets, finance, and top business news.</p>
                         </div>
                     </div>
                     <div class="glass-card h-[500px] flex flex-col p-6">
@@ -151,23 +151,25 @@
                         </div>
                         
                         <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab" 
+                            <button class="news-tab inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium" 
                                 data-tab-name="LiveSquawk" 
                                 data-tab-url="https://www.investing.com/rss/news.rss" 
                                 data-tab-link="https://www.investing.com/news/latest-news"
-                                data-state="active">
+                                data-state="inactive">
                                 LiveSquawk
                             </button>
-                            <button class="news-tab" 
+                            <button class="news-tab inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium" 
                                 data-tab-name="PiQ" 
                                 data-tab-url="https://www.investing.com/rss/news_285.rss"
-                                data-tab-link="https://www.investing.com/news/forex-news">
+                                data-tab-link="https://www.investing.com/news/forex-news"
+                                data-state="inactive">
                                 PiQ
                             </button>
-                            <button class="news-tab" 
+                            <button class="news-tab inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium" 
                                 data-tab-name="FinancialJuice" 
                                 data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
-                                data-tab-link="https://www.dailyfx.com/market-news">
+                                data-tab-link="https://www.dailyfx.com/market-news"
+                                data-state="inactive">
                                 FinancialJuice
                             </button>
                         </div>
@@ -255,7 +257,7 @@
 
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            loadLiveNewsTabs();
+            loadLiveNewsTabs(); 
             loadSeparateLiveFeeds();
             loadLiveCurrencyRates();
         }
@@ -357,7 +359,7 @@
 
         function renderRSSFeed(items, sourceName, container) {
             if (!container) return;
-            container.innerHTML = ''; // Clear
+            container.innerHTML = ''; 
 
             if (!items || items.length === 0) {
                 container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
@@ -404,15 +406,26 @@
             
             if (!tabContainer || !refreshButton || !twitterLink) return;
 
-            let activeTab = tabContainer.querySelector('.news-tab[data-state="active"]');
+            const activeTabClasses = ['bg-white', 'text-zinc-950', 'shadow', 'dark:bg-zinc-950', 'dark:text-zinc-50'];
+            const inactiveTabClasses = ['text-zinc-500', 'hover:text-zinc-900', 'dark:text-zinc-400', 'dark:hover:text-zinc-50'];
+
+            let activeTab = tabContainer.querySelector('.news-tab[data-tab-name="LiveSquawk"]'); // Set default
             
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab');
                 if (!button) return;
 
                 activeTab = button;
-                tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
+                
+                tabContainer.querySelectorAll('.news-tab').forEach(tab => {
+                    tab.setAttribute('data-state', 'inactive');
+                    tab.classList.remove(...activeTabClasses);
+                    tab.classList.add(...inactiveTabClasses);
+                });
+                
                 button.setAttribute('data-state', 'active');
+                button.classList.remove(...inactiveTabClasses);
+                button.classList.add(...activeTabClasses);
                 
                 twitterLink.href = button.dataset.tabLink;
                 
@@ -423,14 +436,18 @@
                 const icon = refreshButton.querySelector('i');
                 icon.classList.add('animate-spin');
                 
-                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); // true = force refresh
+                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); 
 
                 setTimeout(() => {
                     icon.classList.remove('animate-spin');
                 }, 500);
             });
 
-            // Initial render
+            // --- Initial render ---
+            activeTab.setAttribute('data-state', 'active');
+            activeTab.classList.remove(...inactiveTabClasses);
+            activeTab.classList.add(...activeTabClasses);
+            
             fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
         }
 
