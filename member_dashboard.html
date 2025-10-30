@@ -29,8 +29,6 @@
     </script>
 
     <style>
-        /* Styles removed from here and placed directly in the HTML for reliability */
-        
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
         }
@@ -44,7 +42,6 @@
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
 
-        /* Styles to match your screenshot */
         .news-item {
             @apply flex items-start space-x-3 p-3;
         }
@@ -144,22 +141,22 @@
                             </button>
                         </div>
                         
-                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab-btn" 
+                        <div class="flex w-full h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
+                            <button class="news-tab-btn flex-1" 
                                 data-tab-name="LiveSquawk" 
                                 data-tab-url="https://www.investing.com/rss/news.rss" 
                                 data-tab-link="https://www.investing.com/news/latest-news"
                                 data-state="inactive">
                                 LiveSquawk
                             </button>
-                            <button class="news-tab-btn" 
+                            <button class="news-tab-btn flex-1" 
                                 data-tab-name="PiQ" 
                                 data-tab-url="https://www.investing.com/rss/news_285.rss"
                                 data-tab-link="https://www.investing.com/news/forex-news"
                                 data-state="inactive">
                                 PiQ
                             </button>
-                            <button class="news-tab-btn" 
+                            <button class="news-tab-btn flex-1" 
                                 data-tab-name="FinancialJuice" 
                                 data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
                                 data-tab-link="https://www.dailyfx.com/market-news"
@@ -387,7 +384,7 @@
             // Inactive tab matches your muted text style
             const inactiveTabClasses = ['text-zinc-400', 'hover:text-zinc-50'];
             // Base classes for all tabs
-            const baseTabClasses = ['inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all'];
+            const baseTabClasses = ['flex-1', 'inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all', 'cursor-pointer'];
 
             let activeTab = tabContainer.querySelector('.news-tab-btn[data-tab-name="LiveSquawk"]'); // Set default
             
@@ -435,6 +432,8 @@
             styleTabs(); // Style the tabs on load
             fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
         }
+
+        // --- REMOVED: loadSeparateLiveFeeds() function ---
 
         async function loadLiveCurrencyRates() {
             const container = document.getElementById('currency-strength-container');
