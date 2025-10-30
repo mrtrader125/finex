@@ -117,22 +117,21 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Bloomberg Television Live</h3>
+                        <h3 class="text-2xl font-bold mb-4">Yahoo Finance Live</h3>
                         <div class="aspect-video mb-4 rounded-lg overflow-hidden">
                             <iframe 
-                                src="https://www.youtube.com/embed/live_stream?channel=UCIALK_v-ze-awc41-MclV-A&autoplay=1&mute=1" 
-                                title="Bloomberg Television 24/7 Live" 
+                                src="https://www.youtube.com/embed/G0-m-S-l-s8?autoplay=1&mute=1" 
+                                title="Yahoo Finance 24/7 Live" 
                                 class="w-full h-full" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen>
                             </iframe>
                         </div>
                         <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Bloomberg Global Financial News</h4>
-                            <p class="text-sm text-color-muted">Live 24/7 coverage of global markets, finance, and top business news.</p>
+                            <h4 class="text-lg font-semibold">Live Market Coverage</h4>
+                            <p class="text-sm text-color-muted">24/7 live analysis and commentary on market-moving news.</p>
                         </div>
                     </div>
-
                     <div class="glass-card h-[500px] flex flex-col p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-2xl font-bold">Live Market Updates</h3>
@@ -175,7 +174,7 @@
                             </a>
                         </div>
                     </div>
-                    </div>
+                </div>
 
                 <div class="glass-card p-8">
                     <div class="flex justify-between items-center mb-4">
@@ -368,9 +367,6 @@
             container.appendChild(fragment);
         }
 
-        /**
-         * === UPDATED: Adds logic to the news tabs and styles them to match YOUR THEME ===
-         */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const refreshButton = document.getElementById('news-refresh-btn');
@@ -378,21 +374,16 @@
             
             if (!tabContainer || !refreshButton || !twitterLink) return;
 
-            // --- THEME-MATCHING CLASSES ---
-            // Active tab matches your main-button style
             const activeTabClasses = ['bg-blue-500', 'text-white', 'shadow'];
-            // Inactive tab matches your muted text style
             const inactiveTabClasses = ['text-zinc-400', 'hover:text-zinc-50'];
-            // Base classes for all tabs
             const baseTabClasses = ['flex-1', 'inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all', 'cursor-pointer'];
 
             let activeTab = tabContainer.querySelector('.news-tab-btn[data-tab-name="LiveSquawk"]'); // Set default
             
-            // Function to style all tabs
             function styleTabs() {
                 tabContainer.querySelectorAll('.news-tab-btn').forEach(tab => {
                     tab.classList.remove(...activeTabClasses, ...inactiveTabClasses);
-                    tab.classList.add(...baseTabClasses); // Ensure base classes are always present
+                    tab.classList.add(...baseTabClasses); 
 
                     if (tab === activeTab) {
                         tab.setAttribute('data-state', 'active');
@@ -404,19 +395,17 @@
                 });
             }
 
-            // Tab click logic
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab-btn');
                 if (!button) return;
 
                 activeTab = button;
-                styleTabs(); // Re-style all tabs
+                styleTabs(); 
                 
                 twitterLink.href = button.dataset.tabLink;
                 fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName, 'news-content-container');
             });
 
-            // Refresh button logic
             refreshButton.addEventListener('click', () => {
                 const icon = refreshButton.querySelector('i');
                 icon.classList.add('animate-spin');
@@ -428,12 +417,9 @@
                 }, 500);
             });
 
-            // --- Initial render ---
-            styleTabs(); // Style the tabs on load
+            styleTabs(); 
             fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
         }
-
-        // --- REMOVED: loadSeparateLiveFeeds() function ---
 
         async function loadLiveCurrencyRates() {
             const container = document.getElementById('currency-strength-container');
