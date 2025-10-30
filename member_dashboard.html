@@ -1,39 +1,34 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png">
-
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com"><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Member Dashboard | Finex - Financial Clarity</title>
-    <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
-    <meta name="author" content="Finex Team">
-
-    <link rel="canonical" href="https://www.yourdomain.com/member_dashboard.html"> <link rel="icon" href="/favicon.ico" type="image/x-icon"> <meta property="og:title" content="Member Dashboard | Finex">
-    <meta property="og:description" content="Your personal hub for financial tools and clarity.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.yourdomain.com/member_dashboard.html"> <meta property="og:image" content="https://www.yourdomain.com/images/og-dashboard.png"> <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Member Dashboard | Finex">
-    <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
-    <meta name="twitter:image" content="https://www.yourdomain.com/images/twitter-dashboard.png"> <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script src="https://cdn.tailwindcss.com" defer></script>  
-    
-    <link rel="stylesheet" href="main.css"> <script>
-        // Inline config is necessary when using the CDN
-        tailwind.config = { darkMode: 'class' }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Dashboard | Finex - Financial Clarity</title>
+    
+    <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
+    <meta property="og:title" content="Member Dashboard | Finex">
+    <meta property="og:description" content="Your personal hub for financial tools and clarity.">
+    <meta name="twitter:title" content="Member Dashboard | Finex">
+    <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
+    
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com" defer></script>  
+    <link rel="stylesheet" href="main.css">
+    
+    <script>
+        // Inline config is necessary when using the CDN
+        tailwind.config = { darkMode: 'class' }
+    </script>
 
     <style>
-        /* Styles for the News tabs */
         .news-tab {
             @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50;
             @apply text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50;
@@ -42,7 +37,6 @@
         .news-tab[data-state="active"] {
             @apply bg-white text-zinc-950 shadow dark:bg-zinc-950 dark:text-zinc-50;
         }
-        /* Styles for Currency Strength Bar */
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
         }
@@ -62,214 +56,236 @@
 
 <body class="antialiased textured-background">
 
-    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
+    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
 
-    <div id="app-wrapper" style="display: none;">
-    
-        <header id="header-placeholder"></header>
-        
-                <div id="sidebar-placeholder"></div>
-                <main class="pt-[68px]">
-            
-            <section class="container mx-auto min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
-                <div class="max-w-3xl">
-                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
-                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
-                </div>
+    <div id="app-wrapper" style="display: none;">
+    
+        <header id="header-placeholder"></header>
+        
+        <div id="sidebar-placeholder"></div>
+        <main class="pt-[68px]">
+            
+            <section class="container mx-auto min-h-screen flex flex-col items-center justify-center text-center p-4 relative">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
+                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
+                </div>
 
-                <div class="absolute bottom-20 left-1/2 -translate-x-1/2">
-                    <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
-                        <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
-                    </a>
-                </div>
-            </section>
+                <div class="absolute bottom-10 left-1/2 -translate-x-1/2">
+                    <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
+                        <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
 
-            <section id="dashboard-content" class="container mx-auto p-4 md:py-16">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 space-y-8">
-                    
-                        <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
-                            <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-                            <div>
-                                <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-                                <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
-                                <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
-                                <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
-                            </div>
-                        </article>
-                        
-                        <div class="glass-card p-8">
-                            <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
-                            <div id="latest-articles-list" class="space-y-2">
-                                <p class="text-color-muted text-center">Loading latest articles...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-8">
-                         <div class="glass-card p-8">
-                            <h3 class="text-2xl font-bold mb-6">Real-World Case Studies</h3>
-                            <div class="space-y-6">
-                                <div class="flex items-start gap-4 group">
-                                    <i class="fas fa-chart-pie text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
-                                    <div>
-                                        <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Case Study: $0 to $1,500/mo</a>
-                                        <p class="text-sm text-color-muted">See the 12-month strategy.</p>
-                                    </div>
-                                </div>
-                                 <div class="flex items-start gap-4 group">
-                                    <i class="fas fa-wallet text-green-500 dark:text-green-400 mt-1" aria-hidden="true"></i>
-                          S         <div>
-                                         <a href="real_results.html" class="font-semibold text-color-base group-hover:text-blue-500 transition-colors">Member Spotlight: Tripling Portfolio</a>
-                                         <p class="text-sm text-color-muted">Explore the dividend strategy.</p>
-                                    </div>
-                                </div>
-s                     </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <section id="dashboard-content" class="container mx-auto p-4 md:py-16 space-y-8">
+                
+                <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
+                    <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
+                        <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
+                        <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
+                        <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
+                    </div>
+                </article>
 
-                        <section id="dashboard-widgets" class="container mx-auto p-4 md:pb-16">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                        <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Bloomberg News</h3>
-                        <div class="aspect-video mb-4 rounded-lg overflow-hidden">
-                                                        <iframe src="https://www.youtube.com/embed/dp8PhLsUcFE?autoplay=1&mute=1" 
-                                title="Bloomberg News" 
-                                class="w-full h-full" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen>
-                            </iframe>
-                        </div>
-                        <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Bloomberg Global Financial News</h4>
-                            <p class="text-sm text-color-muted">Live 24/7 coverage of global markets, finance, and top business news.</p>
-                        </div>
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <h3 class="text-2xl font-bold mb-4">Bloomberg News</h3>
+                        <div class="aspect-video mb-4 rounded-lg overflow-hidden">
+                            <iframe src="https://www.youtube.com/embed/dp8PhLsUcFE?autoplay=1&mute=1" 
+                                title="Bloomberg News" 
+                                class="w-full h-full" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="mt-auto">
+                            <h4 class="text-lg font-semibold">Bloomberg Global Financial News</h4>
+                            <p class="text-sm text-color-muted">Live 24/7 coverage of global markets, finance, and top business news.</p>
+                        </div>
+                    </div>
 
-                                        <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Live Market Updates</h3>
-                                                <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab" data-tab="LiveSquawk" data-state="active">LiveSquawk</button>
-                            <button class="news-tab" data-tab="PiQ">PiQ</button>
-                            <button class="news-tab" data-tab="FinancialJuice">FinancialJuice</button>
-                        </div>
-                                                <div id="news-content-container" class="flex-grow overflow-y-auto pr-2">
-                            <p class="text-color-muted text-center">Loading news...</p>
-                        </div>
-                    </div>
-                </div>
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <h3 class="text-2xl font-bold mb-4">Live Market Updates</h3>
+                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
+                            <button class="news-tab" data-tab="LiveSquawk" data-state="active">LiveSquawk</button>
+                            <button class="news-tab" data-tab="PiQ">PiQ</button>
+                            <button class="news-tab" data-tab="FinancialJuice">FinancialJuice</button>
+                        </div>
+                        <div id="news-content-container" class="flex-grow overflow-y-auto pr-2">
+                            <p class="text-color-muted text-center">Loading news...</p>
+                        </div>
+                    </div>
+                </div>
 
-                                <div class="mb-6">
-                    <div class="glass-card p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-2xl font-bold">Currency Strength Meter</h3>
-                            <p class="text-sm text-color-muted" id="currency-last-updated">Loading...</p>
-                        </div>
-                        <div id="currency-strength-container" class="space-y-4">
-                            <p class="text-color-muted text-center">Loading currency data...</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <div class="glass-card p-8">
+                        <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
+                        <div id="latest-articles-list" class="space-y-2">
+                            <p class="text-color-muted text-center">Loading latest articles...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-8">
+                        <h3 class="text-2xl font-bold mb-4">Latest Analysis</h3>
+                        <div id="latest-analysis-list" class="space-y-2">
+                            <p class="text-color-muted text-center">Loading latest analysis...</p>
+                        </div>
+                    </div>
 
-    <script type="module" src="app.js"></script>
-    <script type="module">
-        import { initializeAppCore, db } from './app.js';
-        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+                    <div class="glass-card p-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold">Currency Strength</h3>
+                        </div>
+                        <div id="currency-strength-container" class="space-y-4">
+                            <p class="text-color-muted text-center">Loading currency data...</p>
+                        </div>
+                        <p class="text-xs text-color-muted mt-4" id="currency-last-updated">Updating...</p>
+                    </div>
 
-        // === MOCK DATA FOR NEW WIDGETS ===
-        const mockNewsData = {
-            LiveSquawk:[
-                {id:"1", text:"BREAKING: Fed Chair signals potential rate cut in September meeting as inflation continues to moderate", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 25 * 60000).toISOString()},
-                {id:"2", text:"ECB's Lagarde: Eurozone economy showing signs of recovery, but risks remain tilted to the downside", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 55 * 60000).toISOString()}
-            ],
-            PiQ:[
-                {id:"3", text:"US Treasury yields fall across the curve following weaker-than-expected jobs report. 10Y yield down 8bps to 4.12%", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 35 * 60000).toISOString()},
-                {id:"4", text:"CHART: S&P500 breaks through key resistance level, setting new all-time high amid tech sector strength", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 120 * 60000).toISOString()}
-            ],
-            FinancialJuice:[
-                {id:"5", text:"BREAKING: Bank of Japan maintains ultra-loose monetary policy, yen weakens against dollar", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 15 * 60000).toISOString()},
-                {id:"6", text:"Oil prices surge 3% as Middle East tensions escalate, Brent crude tops $85/barrel", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 75 * 60000).toISOString()}
-            ]
-        };
+                </div>
 
-        const mockCurrencyData = [
-            {currency:"US Dollar", code:"USD", strength:85, change:.5},
-            {currency:"Euro", code:"EUR", strength:72, change:-.3},
-            {currency:"Japanese Yen", code:"JPY", strength:68, change:1.2},
-            {currency:"British Pound", code:"GBP", strength:76, change:.1},
-            {currency:"Swiss Franc", code:"CHF", strength:81, change:.7},
-            {currency:"Canadian Dollar", code:"CAD", strength:74, change:-.2},
-            {currency:"Australian Dollar", code:"AUD", strength:69, change:-.8},
-            {currency:"New Zealand Dollar", code:"NZD", strength:65, change:-.5}
-        ];
-        // === END MOCK DATA ===
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script type="module">
+        import { initializeAppCore, db } from './app.js';
+        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
+        // === MOCK DATA FOR NEW WIDGETS ===
+        const mockNewsData = {
+            LiveSquawk:[
+                {id:"1", text:"BREAKING: Fed Chair signals potential rate cut in September meeting as inflation continues to moderate", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 25 * 60000).toISOString()},
+                {id:"2", text:"ECB's Lagarde: Eurozone economy showing signs of recovery, but risks remain tilted to the downside", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 55 * 60000).toISOString()}
+            ],
+            PiQ:[
+                {id:"3", text:"US Treasury yields fall across the curve following weaker-than-expected jobs report. 10Y yield down 8bps to 4.12%", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 35 * 60000).toISOString()},
+                {id:"4", text:"CHART: S&P500 breaks through key resistance level, setting new all-time high amid tech sector strength", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 120 * 60000).toISOString()}
+            ],
+            FinancialJuice:[
+                {id:"5", text:"BREAKING: Bank of Japan maintains ultra-loose monetary policy, yen weakens against dollar", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 15 * 60000).toISOString()},
+                {id:"6", text:"Oil prices surge 3% as Middle East tensions escalate, Brent crude tops $85/barrel", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 75 * 60000).toISOString()}
+            ]
+        };
+
+        const mockCurrencyData = [
+            {currency:"US Dollar", code:"USD", strength:85, change:.5},
+            {currency:"Euro", code:"EUR", strength:72, change:-.3},
+            {currency:"Japanese Yen", code:"JPY", strength:68, change:1.2},
+            {currency:"British Pound", code:"GBP", strength:76, change:.1},
+            {currency:"Swiss Franc", code:"CHF", strength:81, change:.7},
+            {currency:"Canadian Dollar", code:"CAD", strength:74, change:-.2},
+            {currency:"Australian Dollar", code:"AUD", strength:69, change:-.8},
+            {currency:"New Zealand Dollar", code:"NZD", strength:65, change:-.5}
+        ];
+        // === END MOCK DATA ===
 
         /**
          * This function runs when the main app.js has loaded the user.
-         * We load the original content (articles) and the new widgets.
          */
-        function initDashboardPage(user, db) {
-            console.log("Setting up Dashboard specific logic...");
-            
-            const memberNameEl = document.getElementById('member-name');
-            if (memberNameEl && user && user.displayName) {
-                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member';
-            } else if (memberNameEl && user) {
-                memberNameEl.textContent = user.email.split('@')[0] || 'Member';
+        function initDashboardPage(user, db) {
+            console.log("Setting up Dashboard specific logic...");
+            
+            const memberNameEl = document.getElementById('member-name');
+            if (memberNameEl && user && user.displayName) {
+                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member';
+            } else if (memberNameEl && user) {
+                // Fallback for users without a displayName from our signup form
+                memberNameEl.textContent = user.email.split('@')[0] || 'Member';
             }
 
-            loadLatestArticles(db);
+            loadLatestArticles(db);
+            loadLatestAnalysis(db);
             loadDashboardWidgets(); // Load the new widgets
-        }
+        }
 
         /**
          * Loads the "Fresh Insights" (Articles) card
          */
-        function loadLatestArticles(db) {
-            const articlesListContainer = document.getElementById('latest-articles-list');
-            if (!articlesListContainer) {
-                console.warn("Element with ID 'latest-articles-list' not found.");
-                return;
-            }
+        function loadLatestArticles(db) {
+            const container = document.getElementById('latest-articles-list');
+            if (!container) {
+                console.warn("Element with ID 'latest-articles-list' not found.");
+                return;
+            }
 
-            const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
-            onSnapshot(q, (snapshot) => {
-                articlesListContainer.innerHTML = ''; 
-                if (snapshot.empty) {
-                    articlesListContainer.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
-                    return;
-                }
-                
-                snapshot.forEach((doc, index) => {
-                    const article = { id: doc.id, ...doc.data() };
-                    const readTime = article.readTime || '? min read';
-                    const publishedDate = article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A';
-                    
-                    articlesListContainer.innerHTML += `
-                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                            <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
-                            <p class="text-color-muted text-sm">${readTime} • Published on ${publishedDate}</p>
-                        </div>
-                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
-                    `;
-                });
-            }, (error) => {
-                console.error("Error fetching latest articles:", error);
-                articlesListContainer.innerHTML = `<p class="text-red-500 text-center">Could not load articles.</p>`;
-            });
-        }
+            const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = ''; 
+                if (snapshot.empty) {
+                    container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
+                    return;
+                }
+                
+                snapshot.forEach((doc, index) => {
+                    const article = { id: doc.id, ...doc.data() };
+                    const readTime = article.readTime || '? min read';
+                    const publishedDate = article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A';
+                    
+                    container.innerHTML += `
+                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
+                            <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
+                            <p class="text-color-muted text-sm">${readTime} • ${publishedDate}</p>
+                        </div>
+                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
+                    `;
+                });
+            }, (error) => {
+                console.error("Error fetching latest articles:", error);
+                container.innerHTML = `<p class="text-red-500 text-center">Could not load articles.</p>`;
+            });
+        }
 
         /**
-         * === NEW FUNCTION: Loads all new widgets ===
+         * === NEW: Loads the "Latest Analysis" card ===
+         */
+        function loadLatestAnalysis(db) {
+            const container = document.getElementById('latest-analysis-list');
+            if (!container) {
+                console.warn("Element with ID 'latest-analysis-list' not found.");
+                return;
+            }
+            
+            const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = ''; // Clear "Loading..."
+
+                if (snapshot.empty) {
+                    container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
+                    return;
+                }
+                
+                snapshot.forEach((doc, index) => {
+                    const analysis = { id: doc.id, ...doc.data() };
+                    const category = analysis.category || 'General';
+                    const publishedDate = analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A';
+                    
+                    container.innerHTML += `
+                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
+                            <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
+                            <p class="text-color-muted text-sm">Category: ${category} • ${publishedDate}</p>
+                        </div>
+                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
+                    `;
+                });
+            }, (error) => {
+                console.error("Error fetching latest analysis:", error);
+                container.innerHTML = `<p class="text-red-500 text-center">Could not load analysis.</p>`;
+            });
+        }
+
+        /**
+         * === NEW: Loads all new widgets ===
          */
         function loadDashboardWidgets() {
             renderCurrencyStrength();
@@ -277,14 +293,13 @@ s                     </div>
         }
 
         /**
-         * === NEW FUNCTION: Renders the Currency Strength Meter ===
+         * === NEW: Renders the Currency Strength Meter ===
          */
         function renderCurrencyStrength() {
             const container = document.getElementById('currency-strength-container');
             const lastUpdatedEl = document.getElementById('currency-last-updated');
-            if (!container) return;
+            if (!container || !lastUpdatedEl) return;
 
-            // Simulate data update
             const data = mockCurrencyData.map(c => ({
                 ...c,
                 strength: Math.min(100, Math.max(0, c.strength + (Math.random() * 6 - 3))),
@@ -307,7 +322,6 @@ s                     </div>
                         <div class="flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <span class="font-medium text-color-base">${item.code}</span>
-                                <span class="text-xs text-color-muted">${item.currency}</span>
                             </div>
                             <div class="flex items-center">
                                 <span class="text-sm font-medium text-color-base">${item.strength.toFixed(1)}</span>
@@ -325,14 +339,13 @@ s                     </div>
         }
 
         /**
-         * === NEW FUNCTION: Renders the News Tab Widget ===
+         * === NEW: Renders the News Tab Widget ===
          */
         function renderNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const contentContainer = document.getElementById('news-content-container');
             if (!tabContainer || !contentContainer) return;
 
-            // Function to render content for the active tab
             const renderContent = (tabName) => {
                 const data = mockNewsData[tabName];
                 contentContainer.innerHTML = ''; // Clear
@@ -364,27 +377,19 @@ s                     </div>
                 });
             };
 
-            // Add click event listener to tab container
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab');
                 if (!button) return;
-
-                // Update tab visual state
-                tabContainer.querySelectorAll('.news-tab').forEach(tab => {
-                    tab.setAttribute('data-state', 'inactive');
-                });
+                tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
                 button.setAttribute('data-state', 'active');
-
-                // Render new content
-                const tabName = button.dataset.tab;
-                renderContent(tabName);
+                renderContent(button.dataset.tab);
             });
 
-            // Initial render
-            renderContent('LiveSquawk');
+            renderContent('LiveSquawk'); // Initial render
         }
 
-        initializeAppCore(initDashboardPage);
-    </script>
+        // Initialize the page
+        initializeAppCore(initDashboardPage);
+    </script>
 </body>
 </html>
