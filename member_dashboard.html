@@ -50,6 +50,35 @@
         .change-green { @apply text-green-500; }
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
+
+        /* Style for the News Feed items */
+        .news-item {
+            @apply flex items-start space-x-3 p-3;
+        }
+        .news-item-content {
+            @apply flex-1 min-w-0; /* Allows text to truncate */
+        }
+        .news-item-title {
+            @apply text-sm font-semibold text-color-base truncate; /* Truncate long titles */
+        }
+        .news-item-meta {
+            @apply flex items-center justify-between;
+        }
+        .news-item-source {
+            @apply text-sm font-medium text-blue-500;
+        }
+        .news-item-time {
+            @apply text-xs text-color-muted;
+        }
+        .news-item-desc {
+            @apply text-sm text-color-muted mt-1;
+            /* Clamp to 2 lines */
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
@@ -120,19 +149,13 @@
                         </div>
                         
                         <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab" data-tab="FinancialJuice" data-state="active">FinancialJuice</button>
-                            <button class="news-tab" data-tab="LiveSquawk">LiveSquawk</button>
-                            <button class="news-tab" data-tab="PiQ">PiQ</button>
+                            <button class="news-tab" data-tab-name="Investing.com" data-tab-url="https://www.investing.com/rss/news.rss" data-state="active">All News</button>
+                            <button class="news-tab" data-tab-name="Investing.com" data-tab-url="https://www.investing.com/rss/news_285.rss">Forex</button>
+                            <button class="news-tab" data-tab-name="DailyFX" data-tab-url="https://www.dailyfx.com/rss/market_news.xml">Market News</button>
                         </div>
                         
                         <div id="news-content-container" class="flex-grow overflow-y-auto pr-2 space-y-4">
-                            <p class="text-color-muted text-center">Loading news...</p>
-                        </div>
-
-                        <div class="mt-auto pt-4 border-t border-color-base">
-                            <a href="https://twitter.com/FinancialJuice" id="view-on-twitter-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
-                                View more on Twitter <i class="fas fa-external-link-alt fa-xs ml-1"></i>
-                            </a>
+                            <p class="text-color-muted text-center" id="news-loading-text">Loading live feed...</p>
                         </div>
                     </div>
                     </div>
@@ -174,25 +197,8 @@
         import { initializeAppCore, db } from './app.js';
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === MOCK DATA FOR NEWS WIDGET ===
-        const mockNewsData = {
-            LiveSquawk:[
-                {id:"1", text:"BREAKING: Fed Chair signals potential rate cut in September meeting as inflation continues to moderate", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 25 * 60000).toISOString()},
-                {id:"2", text:"ECB's Lagarde: Eurozone economy showing signs of recovery, but risks remain tilted to the downside", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 55 * 60000).toISOString()},
-                {id:"7", text:"German ZEW Economic Sentiment unexpectedly falls, raising new concerns for EU's largest economy.", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 150 * 60000).toISOString()}
-            ],
-            PiQ:[
-                {id:"3", text:"US Treasury yields fall across the curve following weaker-than-expected jobs report. 10Y yield down 8bps to 4.12%", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 35 * 60000).toISOString()},
-                {id:"4", text:"CHART: S&P500 breaks through key resistance level, setting new all-time high amid tech sector strength", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 120 * 60000).toISOString()},
-                {id:"8", text:"Microsoft (MSFT) announces $20B stock buyback program, shares up 2% in pre-market.", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 180 * 60000).toISOString()}
-            ],
-            FinancialJuice:[
-                {id:"5", text:"BREAKING: Bank of Japan maintains ultra-loose monetary policy, yen weakens against dollar", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 15 * 60000).toISOString()},
-                {id:"6", text:"Oil prices surge 3% as Middle East tensions escalate, Brent crude tops $85/barrel", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 75 * 60000).toISOString()},
-                {id:"9", text:"Gold hits 2-week high as traders await key inflation data.", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 210 * 60000).toISOString()}
-            ]
-        };
-        // === END MOCK DATA ===
+        // This is a cache to store the feed data to avoid re-fetching on tab click
+        const rssFeedCache = new Map();
 
         /**
          * This function runs when the main app.js has loaded the user.
@@ -209,7 +215,7 @@
 
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            loadLiveNewsTabs(); // Changed from Twitter embed
+            loadLiveNewsTabs(); // Switched to live RSS
             loadLiveCurrencyRates();
         }
 
@@ -272,21 +278,10 @@
         }
 
         /**
-         * === NEW: Helper function to shuffle an array ===
-         */
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        /**
          * === NEW: Helper function to format time ===
          */
-        function formatTimeAgo(isoString) {
-            const time = new Date(isoString);
+        function formatTimeAgo(dateString) {
+            const time = new Date(dateString);
             const now = new Date();
             const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
             
@@ -300,84 +295,115 @@
             return `${diffInDays}d ago`;
         }
 
+        /**
+         * === NEW: Fetches and parses a live RSS feed ===
+         */
+        async function fetchRSSFeed(feedUrl, sourceName) {
+            const contentContainer = document.getElementById('news-content-container');
+            const loadingText = document.getElementById('news-loading-text');
+            
+            // Check cache first
+            if (rssFeedCache.has(feedUrl)) {
+                renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, contentContainer);
+                return;
+            }
+
+            if (loadingText) loadingText.textContent = `Loading ${sourceName} feed...`;
+            
+            try {
+                // Use the rss2json proxy to bypass CORS issues
+                const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
+                if (!response.ok) throw new Error('Network error');
+                
+                const data = await response.json();
+                
+                if (data.status !== 'ok') throw new Error('RSS feed error');
+
+                // Cache the data
+                rssFeedCache.set(feedUrl, data.items);
+                // Render the data
+                renderRSSFeed(data.items, sourceName, contentContainer);
+
+            } catch (error) {
+                console.error("Error fetching RSS feed:", error);
+                contentContainer.innerHTML = `<p class="text-red-500 text-center">Could not load live feed. Please try refreshing.</p>`;
+            }
+        }
 
         /**
-         * === NEW: Renders the mock news feed ===
+         * === NEW: Renders the RSS items into the container ===
+         */
+        function renderRSSFeed(items, sourceName, container) {
+            if (!container) return;
+            container.innerHTML = ''; // Clear
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
+                return;
+            }
+
+            items.forEach(item => {
+                // Clean up the description (it often contains HTML)
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = item.description;
+                const description = tempDiv.textContent || tempDiv.innerText || "";
+                
+                container.innerHTML += `
+                    <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
+                        <div class="news-item-content">
+                            <div class="news-item-meta">
+                                <span class="news-item-source">${sourceName}</span>
+                                <span class="news-item-time">${formatTimeAgo(item.pubDate)}</span>
+                            </div>
+                            <h4 class="news-item-title">${item.title}</h4>
+                            <p class="news-item-desc">${description}</p>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+
+        /**
+         * === NEW: Adds logic to the news tabs ===
          */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const contentContainer = document.getElementById('news-content-container');
             const refreshButton = document.getElementById('news-refresh-btn');
-            const twitterLink = document.getElementById('view-on-twitter-link');
             
-            if (!tabContainer || !contentContainer || !refreshButton || !twitterLink) return;
+            if (!tabContainer || !contentContainer || !refreshButton) return;
 
-            let activeTab = 'FinancialJuice'; // Default tab
-
-            const renderContent = (tabName, isRefresh = false) => {
-                // On refresh, shuffle the data to simulate update
-                if (isRefresh) {
-                    shuffleArray(mockNewsData[tabName]);
-                }
-
-                const data = mockNewsData[tabName];
-                contentContainer.innerHTML = ''; // Clear
-
-                if (!data || data.length === 0) {
-                    contentContainer.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
-                    return;
-                }
-
-                data.forEach(item => {
-                    contentContainer.innerHTML += `
-                        <div class="flex items-start space-x-3 p-3">
-                            <img src="${item.profileImage}" alt="${item.username}" class="h-10 w-10 rounded-full flex-shrink-0">
-                            <div>
-                                <div class="flex items-center">
-                                    <p class="font-semibold text-color-base">${item.username}</p>
-                                    <span class="text-xs text-color-muted ml-2">${formatTimeAgo(item.createdAt)}</span>
-                                </div>
-                                <p class="text-sm text-color-base mt-1">${item.text}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            };
-
+            let activeTab = tabContainer.querySelector('.news-tab[data-state="active"]');
+            
             // Tab click logic
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab');
                 if (!button) return;
 
-                activeTab = button.dataset.tab;
+                activeTab = button;
                 tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
                 button.setAttribute('data-state', 'active');
                 
-                // Update Twitter link
-                twitterLink.href = `https://twitter.com/${activeTab}`;
-                
-                renderContent(activeTab);
+                fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName);
             });
 
             // Refresh button logic
             refreshButton.addEventListener('click', () => {
-                // Add a simple spin animation
                 const icon = refreshButton.querySelector('i');
                 icon.classList.add('animate-spin');
                 
-                // Re-render the content for the currently active tab with shuffled data
-                renderContent(activeTab, true);
+                // Clear cache for this feed and re-fetch
+                rssFeedCache.delete(activeTab.dataset.tabUrl);
+                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName);
 
-                // Remove animation after it finishes
                 setTimeout(() => {
                     icon.classList.remove('animate-spin');
-                }, 500); // 500ms animation
+                }, 500);
             });
 
             // Initial render
-            renderContent(activeTab);
+            fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName);
         }
-
 
         /**
          * Fetches and Renders Live Currency Rates
