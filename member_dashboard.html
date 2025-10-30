@@ -29,6 +29,7 @@
     </script>
 
     <style>
+        /* This is the style for your active/inactive tabs */
         .news-tab {
             @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50;
             @apply text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50;
@@ -38,6 +39,7 @@
             @apply bg-white text-zinc-950 shadow dark:bg-zinc-950 dark:text-zinc-50;
         }
         
+        /* This is for the Currency Strength card */
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
         }
@@ -51,28 +53,30 @@
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
 
-        /* Style for the News Feed items */
+        /* === NEW STYLES TO MATCH YOUR SCREENSHOT === */
         .news-item {
             @apply flex items-start space-x-3 p-3;
+        }
+        .news-item-icon {
+            @apply h-10 w-10 rounded-full flex-shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center;
+        }
+        .news-item-icon i {
+            @apply text-zinc-500 text-lg;
         }
         .news-item-content {
             @apply flex-1 min-w-0; /* Allows text to truncate */
         }
-        .news-item-title {
-            @apply text-sm font-semibold text-color-base truncate; /* Truncate long titles */
-        }
         .news-item-meta {
-            @apply flex items-center justify-between;
+            @apply flex items-center space-x-2;
         }
         .news-item-source {
-            @apply text-sm font-medium text-blue-500;
+            @apply text-sm font-semibold text-color-base;
         }
         .news-item-time {
             @apply text-xs text-color-muted;
         }
         .news-item-desc {
-            @apply text-sm text-color-muted mt-1;
-            /* Clamp to 2 lines */
+            @apply text-sm text-color-base mt-1;
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 2;
@@ -149,13 +153,35 @@
                         </div>
                         
                         <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab" data-tab-name="Investing.com" data-tab-url="https://www.investing.com/rss/news.rss" data-state="active">All News</button>
-                            <button class="news-tab" data-tab-name="Investing.com" data-tab-url="https://www.investing.com/rss/news_285.rss">Forex</button>
-                            <button class="news-tab" data-tab-name="DailyFX" data-tab-url="https://www.dailyfx.com/rss/market_news.xml">Market News</button>
+                            <button class="news-tab" 
+                                data-tab-name="LiveSquawk" 
+                                data-tab-url="https://www.investing.com/rss/news.rss" 
+                                data-tab-link="https://www.investing.com/news/latest-news"
+                                data-state="active">
+                                LiveSquawk
+                            </button>
+                            <button class="news-tab" 
+                                data-tab-name="PiQ" 
+                                data-tab-url="https://www.investing.com/rss/news_285.rss"
+                                data-tab-link="https://www.investing.com/news/forex-news">
+                                PiQ
+                            </button>
+                            <button class="news-tab" 
+                                data-tab-name="FinancialJuice" 
+                                data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
+                                data-tab-link="https://www.dailyfx.com/market-news">
+                                FinancialJuice
+                            </button>
                         </div>
                         
                         <div id="news-content-container" class="flex-grow overflow-y-auto pr-2 space-y-4">
                             <p class="text-color-muted text-center" id="news-loading-text">Loading live feed...</p>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-color-base">
+                            <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
+                                View more <i class="fas fa-external-link-alt fa-xs ml-1"></i>
+                            </a>
                         </div>
                     </div>
                     </div>
@@ -302,6 +328,10 @@
             const contentContainer = document.getElementById('news-content-container');
             const loadingText = document.getElementById('news-loading-text');
             
+            // Show loading text
+            if (loadingText) loadingText.style.display = 'block';
+            contentContainer.innerHTML = ''; // Clear old content
+            
             // Check cache first
             if (rssFeedCache.has(feedUrl)) {
                 renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, contentContainer);
@@ -327,6 +357,7 @@
             } catch (error) {
                 console.error("Error fetching RSS feed:", error);
                 contentContainer.innerHTML = `<p class="text-red-500 text-center">Could not load live feed. Please try refreshing.</p>`;
+                if (loadingText) loadingText.style.display = 'none';
             }
         }
 
@@ -342,14 +373,20 @@
                 return;
             }
 
+            // Create a document fragment to append all items at once for performance
+            const fragment = document.createDocumentFragment();
+
             items.forEach(item => {
                 // Clean up the description (it often contains HTML)
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = item.description;
-                const description = tempDiv.textContent || tempDiv.innerText || "";
+                const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
                 
-                container.innerHTML += `
+                const itemHTML = `
                     <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
+                        <div class="news-item-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
                         <div class="news-item-content">
                             <div class="news-item-meta">
                                 <span class="news-item-source">${sourceName}</span>
@@ -360,7 +397,14 @@
                         </div>
                     </a>
                 `;
+                // Append to fragment
+                const itemNode = document.createElement('div');
+                itemNode.innerHTML = itemHTML;
+                fragment.appendChild(itemNode);
             });
+
+            // Append all items to the container
+            container.appendChild(fragment);
         }
 
         /**
@@ -370,8 +414,9 @@
             const tabContainer = document.getElementById('news-tab-container');
             const contentContainer = document.getElementById('news-content-container');
             const refreshButton = document.getElementById('news-refresh-btn');
+            const twitterLink = document.getElementById('view-more-link');
             
-            if (!tabContainer || !contentContainer || !refreshButton) return;
+            if (!tabContainer || !contentContainer || !refreshButton || !twitterLink) return;
 
             let activeTab = tabContainer.querySelector('.news-tab[data-state="active"]');
             
@@ -383,6 +428,9 @@
                 activeTab = button;
                 tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
                 button.setAttribute('data-state', 'active');
+                
+                // Update "View more" link
+                twitterLink.href = button.dataset.tabLink;
                 
                 fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName);
             });
