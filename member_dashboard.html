@@ -29,7 +29,6 @@
     </script>
 
     <style>
-        /* This is the style for your active/inactive tabs */
         .news-tab {
             @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50;
             @apply text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50;
@@ -39,7 +38,6 @@
             @apply bg-white text-zinc-950 shadow dark:bg-zinc-950 dark:text-zinc-50;
         }
         
-        /* This is for the Currency Strength card */
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
         }
@@ -53,11 +51,12 @@
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
 
-        /* === NEW STYLES TO MATCH YOUR SCREENSHOT === */
+        /* Styles to match your screenshot */
         .news-item {
             @apply flex items-start space-x-3 p-3;
         }
         .news-item-icon {
+            /* Placeholder icon with the same dimensions as your screenshot */
             @apply h-10 w-10 rounded-full flex-shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center;
         }
         .news-item-icon i {
@@ -79,7 +78,7 @@
             @apply text-sm text-color-base mt-1;
             display: -webkit-box;
             -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 2; /* Clamp to 2 lines */
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -184,10 +183,40 @@
                             </a>
                         </div>
                     </div>
-                    </div>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <h3 class="text-2xl font-bold mb-4">LiveSquawk Feed</h3>
+                        <div id="feed-container-squawk" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                            <p class="text-color-muted text-center" id="feed-loading-squawk">Loading feed...</p>
+                        </div>
+                    </div>
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <h3 class="text-2xl font-bold mb-4">PiQ Feed</h3>
+                        <div id="feed-container-piq" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                            <p class="text-color-muted text-center" id="feed-loading-piq">Loading feed...</p>
+                        </div>
+                    </div>
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <h3 class="text-2xl font-bold mb-4">FinancialJuice Feed</h3>
+                        <div id="feed-container-juice" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                            <p class="text-color-muted text-center" id="feed-loading-juice">Loading feed...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
+                        <p class="text-sm text-color-muted" id="currency-last-updated">Updating...</p>
+                    </div>
+                    <div id="currency-strength-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
+                        <p class="text-color-muted text-center">Loading live rates...</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="glass-card p-8">
                         <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
                         <div id="latest-articles-list" class="space-y-2">
@@ -201,16 +230,6 @@
                             <p class="text-color-muted text-center">Loading latest analysis...</p>
                         </div>
                     </div>
-
-                    <div class="glass-card p-8">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
-                        </div>
-                        <div id="currency-strength-container" class="space-y-4">
-                            <p class="text-color-muted text-center">Loading live rates...</p>
-                        </div>
-                        <p class="text-xs text-color-muted mt-4" id="currency-last-updated">Updating...</p>
-                    </div>
                 </div>
 
             </section>
@@ -223,7 +242,7 @@
         import { initializeAppCore, db } from './app.js';
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // This is a cache to store the feed data to avoid re-fetching on tab click
+        // This is a cache to store the feed data
         const rssFeedCache = new Map();
 
         /**
@@ -239,9 +258,13 @@
                 memberNameEl.textContent = user.email.split('@')[0] || 'Member';
             }
 
+            // Load content from your database
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            loadLiveNewsTabs(); // Switched to live RSS
+            
+            // Load live data from external sources
+            loadLiveNewsTabs();
+            loadSeparateLiveFeeds(); // New function for the separate cards
             loadLiveCurrencyRates();
         }
 
@@ -304,7 +327,7 @@
         }
 
         /**
-         * === NEW: Helper function to format time ===
+         * Helper function to format time
          */
         function formatTimeAgo(dateString) {
             const time = new Date(dateString);
@@ -322,23 +345,20 @@
         }
 
         /**
-         * === NEW: Fetches and parses a live RSS feed ===
+         * Fetches and parses a live RSS feed
          */
-        async function fetchRSSFeed(feedUrl, sourceName) {
-            const contentContainer = document.getElementById('news-content-container');
-            const loadingText = document.getElementById('news-loading-text');
-            
+        async function fetchRSSFeed(feedUrl, sourceName, containerId, forceRefresh = false) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
             // Show loading text
-            if (loadingText) loadingText.style.display = 'block';
-            contentContainer.innerHTML = ''; // Clear old content
+            container.innerHTML = `<p class="text-color-muted text-center">Loading ${sourceName} feed...</p>`;
             
             // Check cache first
-            if (rssFeedCache.has(feedUrl)) {
-                renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, contentContainer);
+            if (rssFeedCache.has(feedUrl) && !forceRefresh) {
+                renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, container);
                 return;
             }
-
-            if (loadingText) loadingText.textContent = `Loading ${sourceName} feed...`;
             
             try {
                 // Use the rss2json proxy to bypass CORS issues
@@ -352,40 +372,42 @@
                 // Cache the data
                 rssFeedCache.set(feedUrl, data.items);
                 // Render the data
-                renderRSSFeed(data.items, sourceName, contentContainer);
+                renderRSSFeed(data.items, sourceName, container);
 
             } catch (error) {
                 console.error("Error fetching RSS feed:", error);
-                contentContainer.innerHTML = `<p class="text-red-500 text-center">Could not load live feed. Please try refreshing.</p>`;
-                if (loadingText) loadingText.style.display = 'none';
+                container.innerHTML = `<p class="text-red-500 text-center">Could not load ${sourceName} feed.</p>`;
             }
         }
 
         /**
-         * === NEW: Renders the RSS items into the container ===
+         * Renders the RSS items into the container (Screenshot Style)
          */
         function renderRSSFeed(items, sourceName, container) {
             if (!container) return;
-            container.innerHTML = ''; // Clear
+            container.innerHTML = ''; // Clear loading
 
             if (!items || items.length === 0) {
                 container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
                 return;
             }
 
-            // Create a document fragment to append all items at once for performance
             const fragment = document.createDocumentFragment();
 
             items.forEach(item => {
-                // Clean up the description (it often contains HTML)
+                // Clean up the description
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = item.description;
                 const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
                 
+                // Use a generic icon as in your screenshot
+                const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish" :
+                                  sourceName === "PiQ" ? "fa-chart-pie" : "fa-newspaper";
+
                 const itemHTML = `
                     <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
                         <div class="news-item-icon">
-                            <i class="fas fa-newspaper"></i>
+                            <i class="fas ${iconClass}"></i>
                         </div>
                         <div class="news-item-content">
                             <div class="news-item-meta">
@@ -397,30 +419,26 @@
                         </div>
                     </a>
                 `;
-                // Append to fragment
                 const itemNode = document.createElement('div');
                 itemNode.innerHTML = itemHTML;
                 fragment.appendChild(itemNode);
             });
 
-            // Append all items to the container
             container.appendChild(fragment);
         }
 
         /**
-         * === NEW: Adds logic to the news tabs ===
+         * Adds logic to the main news tabs
          */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
-            const contentContainer = document.getElementById('news-content-container');
             const refreshButton = document.getElementById('news-refresh-btn');
             const twitterLink = document.getElementById('view-more-link');
             
-            if (!tabContainer || !contentContainer || !refreshButton || !twitterLink) return;
+            if (!tabContainer || !refreshButton || !twitterLink) return;
 
             let activeTab = tabContainer.querySelector('.news-tab[data-state="active"]');
             
-            // Tab click logic
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab');
                 if (!button) return;
@@ -429,20 +447,16 @@
                 tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
                 button.setAttribute('data-state', 'active');
                 
-                // Update "View more" link
                 twitterLink.href = button.dataset.tabLink;
                 
-                fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName);
+                fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName, 'news-content-container');
             });
 
-            // Refresh button logic
             refreshButton.addEventListener('click', () => {
                 const icon = refreshButton.querySelector('i');
                 icon.classList.add('animate-spin');
                 
-                // Clear cache for this feed and re-fetch
-                rssFeedCache.delete(activeTab.dataset.tabUrl);
-                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName);
+                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); // true = force refresh
 
                 setTimeout(() => {
                     icon.classList.remove('animate-spin');
@@ -450,7 +464,28 @@
             });
 
             // Initial render
-            fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName);
+            fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
+        }
+
+        /**
+         * === NEW: Loads the three separate feed cards ===
+         */
+        function loadSeparateLiveFeeds() {
+            fetchRSSFeed(
+                "https://www.investing.com/rss/news.rss", 
+                "LiveSquawk", 
+                "feed-container-squawk"
+            );
+            fetchRSSFeed(
+                "https://www.investing.com/rss/news_285.rss", 
+                "PiQ", 
+                "feed-container-piq"
+            );
+            fetchRSSFeed(
+                "https://www.dailyfx.com/rss/market_news.xml", 
+                "FinancialJuice", 
+                "feed-container-juice"
+            );
         }
 
         /**
@@ -486,7 +521,7 @@
                 const currencies = ['EUR', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'NZD'];
                 
                 currencies.forEach(currency => {
-                    if (!rates[currency] || !oldRates[currency]) return; // Skip if data is missing
+                    if (!rates[currency] || !oldRates[currency]) return;
                     
                     const currentRate = rates[currency];
                     const oldRate = oldRates[currency];
