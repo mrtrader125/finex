@@ -1,18 +1,76 @@
-// ... existing code ...
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Finex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="main.css">
+</head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
-// ... existing code ...
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
+
+        <div class="min-h-screen flex flex-col">
+            <main class="container mx-auto p-4 md:p-8 flex-grow">
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Appearance</h2>
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-color-base">Theme</span>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-sun text-yellow-500"></i>
+                                <label class="form-switch"><input type="checkbox" id="theme-toggle" class="sr-only"><div class="form-switch-bg"><div class="form-switch-knob"></div></div></label>
+                                <i class="fas fa-moon text-blue-400 dark:text-blue-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Sidebar Menu Items</h2>
+                        <p class="text-color-muted mb-6 text-sm">Choose which pages appear in your sidebar navigation for quick access.</p>
+                        <div id="sidebar-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                            <p class="text-color-muted text-center col-span-full">Loading options...</p>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Account</h2>
+                         <div class="space-y-4">
+                             <div><span class="font-semibold text-color-base block mb-1">Email Address</span><span id="account-email" class="text-color-muted">Loading...</span></div>
+                             <div><span class="font-semibold text-color-base block mb-1">Password</span><button class="text-sm text-blue-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed" disabled>Change Password (Coming Soon)</button></div>
+                         </div>
+                    </div>
+                   
+                     <p id="save-status" class="text-center text-sm text-color-muted h-4"></p>
+                </div>
+            </main>
+        </div>
+        </div>
+
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
         import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initSettingsPage(user, db) {
-// ... existing code ...
+            console.log("Setting up Settings page specific logic...");
+            const accountEmailSpan = document.getElementById('account-email');
+            const themeToggle = document.getElementById('theme-toggle');
             const sidebarOptionsContainer = document.getElementById('sidebar-options-container');
             const saveStatus = document.getElementById('save-status');
 
-// ... existing code ...
+            if (!accountEmailSpan || !themeToggle || !sidebarOptionsContainer || !saveStatus) {
+                console.error("Critical settings elements missing!");
+                 const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; return;
+            }
+
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
             
@@ -100,6 +158,9 @@
                      try {
                         // This assumes userPreferences is exported as 'let'
                         const app = await import('./app.js');
+                        // This line might not work as expected if userPreferences is not a mutable export
+                        // A better pattern would be a setter function in app.js
+                        // But we will try to assign it directly
                         app.userPreferences.sidebarItems = finalMergedPrefs;
                         app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
                         renderSidebar(); // Now renderSidebar() will use the updated data
@@ -128,7 +189,8 @@
                     }
 
                     const label = document.createElement('label');
-// ... existing code ...
+                    label.className = 'flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label';
+                    const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800';
                     
@@ -139,7 +201,10 @@
                     
                     checkbox.dataset.itemId = item.id;
                     const icon = document.createElement('i');
-// ... existing code ...
+                    icon.className = `fas ${item.icon} fa-fw text-color-muted`;
+                    const text = document.createElement('span');
+                    text.className = 'text-color-base'; text.textContent = item.text;
+
                     label.appendChild(checkbox); label.appendChild(icon); label.appendChild(text);
                     sidebarOptionsContainer.appendChild(label);
 
@@ -219,3 +284,4 @@
     </script>
 </body>
 </html>
+
