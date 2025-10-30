@@ -29,14 +29,7 @@
     </script>
 
     <style>
-        .news-tab {
-            @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50;
-            @apply text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50;
-            cursor: pointer;
-        }
-        .news-tab[data-state="active"] {
-            @apply bg-white text-zinc-950 shadow dark:bg-zinc-950 dark:text-zinc-50;
-        }
+        /* Styles removed from here and placed directly in the HTML for reliability */
         
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
@@ -151,22 +144,22 @@
                             </button>
                         </div>
                         
-                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium" 
+                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-900 p-1 mb-4" id="news-tab-container">
+                            <button class="news-tab-btn" 
                                 data-tab-name="LiveSquawk" 
                                 data-tab-url="https://www.investing.com/rss/news.rss" 
                                 data-tab-link="https://www.investing.com/news/latest-news"
                                 data-state="inactive">
                                 LiveSquawk
                             </button>
-                            <button class="news-tab inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium" 
+                            <button class="news-tab-btn" 
                                 data-tab-name="PiQ" 
                                 data-tab-url="https://www.investing.com/rss/news_285.rss"
                                 data-tab-link="https://www.investing.com/news/forex-news"
                                 data-state="inactive">
                                 PiQ
                             </button>
-                            <button class="news-tab inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium" 
+                            <button class="news-tab-btn" 
                                 data-tab-name="FinancialJuice" 
                                 data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
                                 data-tab-link="https://www.dailyfx.com/market-news"
@@ -185,7 +178,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                    </div>
 
                 <div class="glass-card p-8">
                     <div class="flex justify-between items-center mb-4">
@@ -225,6 +218,9 @@
 
         const rssFeedCache = new Map();
 
+        /**
+         * This function runs when the main app.js has loaded the user.
+         */
         function initDashboardPage(user, db) {
             console.log("Setting up Dashboard specific logic...");
             
@@ -238,7 +234,6 @@
             loadLatestArticles(db);
             loadLatestAnalysis(db);
             loadLiveNewsTabs(); 
-            // loadSeparateLiveFeeds(); // <-- This function call is removed
             loadLiveCurrencyRates();
         }
 
@@ -379,6 +374,9 @@
             container.appendChild(fragment);
         }
 
+        /**
+         * === UPDATED: Adds logic to the news tabs and styles them ===
+         */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const refreshButton = document.getElementById('news-refresh-btn');
@@ -386,37 +384,48 @@
             
             if (!tabContainer || !refreshButton || !twitterLink) return;
 
-            const activeTabClasses = ['bg-white', 'text-zinc-950', 'shadow', 'dark:bg-zinc-950', 'dark:text-zinc-50'];
+            // These are the Tailwind classes for the tab states
+            // We apply these directly via JS to fix the style issue
+            const activeTabClasses = ['bg-white', 'text-zinc-900', 'shadow', 'dark:bg-zinc-50', 'dark:text-zinc-900'];
             const inactiveTabClasses = ['text-zinc-500', 'hover:text-zinc-900', 'dark:text-zinc-400', 'dark:hover:text-zinc-50'];
+            const baseTabClasses = ['news-tab-btn', 'inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all'];
 
-            let activeTab = tabContainer.querySelector('.news-tab[data-tab-name="LiveSquawk"]'); // Set default
+            let activeTab = tabContainer.querySelector('.news-tab-btn[data-tab-name="LiveSquawk"]'); // Set default
             
+            // Function to style all tabs
+            function styleTabs() {
+                tabContainer.querySelectorAll('.news-tab-btn').forEach(tab => {
+                    tab.classList.remove(...activeTabClasses, ...inactiveTabClasses);
+                    tab.classList.add(...baseTabClasses); // Ensure base classes are always present
+
+                    if (tab === activeTab) {
+                        tab.setAttribute('data-state', 'active');
+                        tab.classList.add(...activeTabClasses);
+                    } else {
+                        tab.setAttribute('data-state', 'inactive');
+                        tab.classList.add(...inactiveTabClasses);
+                    }
+                });
+            }
+
+            // Tab click logic
             tabContainer.addEventListener('click', (e) => {
-                const button = e.target.closest('button.news-tab');
+                const button = e.target.closest('button.news-tab-btn');
                 if (!button) return;
 
                 activeTab = button;
-                
-                tabContainer.querySelectorAll('.news-tab').forEach(tab => {
-                    tab.setAttribute('data-state', 'inactive');
-                    tab.classList.remove(...activeTabClasses);
-                    tab.classList.add(...inactiveTabClasses);
-                });
-                
-                button.setAttribute('data-state', 'active');
-                button.classList.remove(...inactiveTabClasses);
-                button.classList.add(...activeTabClasses);
+                styleTabs(); // Re-style all tabs
                 
                 twitterLink.href = button.dataset.tabLink;
-                
                 fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName, 'news-content-container');
             });
 
+            // Refresh button logic
             refreshButton.addEventListener('click', () => {
                 const icon = refreshButton.querySelector('i');
                 icon.classList.add('animate-spin');
                 
-                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); 
+                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); // true = force refresh
 
                 setTimeout(() => {
                     icon.classList.remove('animate-spin');
@@ -424,14 +433,9 @@
             });
 
             // --- Initial render ---
-            activeTab.setAttribute('data-state', 'active');
-            activeTab.classList.remove(...inactiveTabClasses);
-            activeTab.classList.add(...activeTabClasses);
-            
+            styleTabs(); // Style the tabs on load
             fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
         }
-
-        // --- REMOVED: loadSeparateLiveFeeds() function ---
 
         async function loadLiveCurrencyRates() {
             const container = document.getElementById('currency-strength-container');
