@@ -51,10 +51,13 @@ export const allSidebarItems = [
             { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' }
         ]
     },
-    // *** REMOVED original 'screener' item ***
     // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
     { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
+    
+    // --- NEWLY ADDED ---
+    { id: 'snake', href: 'snake_game.html', icon: 'fa-gamepad', text: 'Snake Game' },
+    
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
@@ -145,49 +148,51 @@ async function loadCommonComponents() {
 async function loadPreferences(settingsDocRef) {
     try {
         // 1. Start with the hard-coded defaults (all items visible)
-        let baseSidebarItems = getDefaultSidebarVisibility();
-        let baseTheme = 'dark'; // Hard-coded default theme
-
+        let defaultItems = getDefaultSidebarVisibility();
+        
         // 2. Load GLOBAL defaults from 'siteSettings/sidebarDefaults'
         const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
         const globalDocSnap = await getDoc(globalSettingsRef);
-
+        let globalPrefs = { theme: 'dark', sidebarItems: {} };
         if (globalDocSnap.exists()) {
-            const globalPrefs = globalDocSnap.data();
-            // Merge global settings OVER hard-coded defaults
-            // This ensures any items NOT in global settings still appear
-            if (globalPrefs.sidebarItems) {
-                baseSidebarItems = { ...baseSidebarItems, ...globalPrefs.sidebarItems };
-            }
-            baseTheme = globalPrefs.theme || baseTheme;
+            globalPrefs = { ...globalPrefs, ...globalDocSnap.data() };
         }
 
-        // 3. Set userPreferences to these merged global defaults
-        userPreferences.sidebarItems = baseSidebarItems;
-        userPreferences.theme = baseTheme;
-
-        // 4. Load the INDIVIDUAL user's settings
+        // 3. Load the INDIVIDUAL user's settings
         const userDocSnap = await getDoc(settingsDocRef);
-        
-        // 5. Merge individual user's settings OVER the global defaults
-        if (userDocSnap.exists()) {
-            const loadedPrefs = userDocSnap.data();
-            // User's theme overrides global/default theme
-            userPreferences.theme = loadedPrefs.theme || userPreferences.theme; 
-            
-            // User's sidebar settings override global/default settings
-            if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
-                // *** IMPORTANT FIX ***
-                // We merge user settings ON TOP of the global defaults.
-                // This ensures if a NEW item is added to global (e.g., 'backtesting'),
-                // it will be TRUE from 'baseSidebarItems' and appear for all users,
-                // even if they have old saved preferences.
-                userPreferences.sidebarItems = { ...baseSidebarItems, ...loadedPrefs.sidebarItems };
-            }
+        let userPrefs = { theme: null, sidebarItems: {} };
+         if (userDocSnap.exists()) {
+            userPrefs = { ...userPrefs, ...userDocSnap.data() };
         }
-        // We NO LONGER create a new user doc here.
-        // A user doc will be created only when they first save their *own* settings.
-        // This ensures they always get the latest global defaults until they choose to override them.
+
+        // 4. Final Calculation
+        // Theme: User's choice > Global choice > Hard-coded 'dark'
+        userPreferences.theme = userPrefs.theme || globalPrefs.theme || 'dark';
+
+        // Sidebar:
+        const finalSidebar = {};
+        Object.keys(defaultItems).forEach(key => {
+            const globalVal = globalPrefs.sidebarItems[key];
+            const userVal = userPrefs.sidebarItems[key];
+
+            // Rule 1: Admin 'false' explicitly wins and hides the item.
+            if (globalVal === false) {
+                finalSidebar[key] = false;
+            }
+            // Rule 2: Otherwise, the user's personal choice (true or false) wins.
+            else if (userVal !== undefined) {
+                finalSidebar[key] = userVal;
+            }
+            // Rule 3: Otherwise, the global admin setting (if 'true' or undefined) wins.
+            else if (globalVal !== undefined) {
+                finalSidebar[key] = globalVal;
+            }
+            // Rule 4: Otherwise, the hard-coded default (true) is the fallback.
+            else {
+                finalSidebar[key] = true;
+            }
+        });
+        userPreferences.sidebarItems = finalSidebar;
 
      } catch (error) { 
          console.error("Error loading preferences:", error);
@@ -222,3 +227,4 @@ export function renderSidebar() {
 function attachCoreEventListeners() {
     const openSidebarBtn=document.getElementById('open-sidebar-btn'); const closeSidebarBtn=document.getElementById('close-sidebar-btn'); const sidebar=document.getElementById('sidebar'); const sidebarOverlay=document.getElementById('sidebar-overlay'); const sidebarNav=document.getElementById('sidebar-nav'); const logoutBtn=document.getElementById('logout-btn'); function openSidebar(){if(sidebar)sidebar.classList.remove('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.remove('hidden'); setTimeout(()=>sidebarOverlay.classList.remove('opacity-0'),10);}} function closeSidebar(){if(sidebar)sidebar.classList.add('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.add('opacity-0'); setTimeout(()=>sidebarOverlay.classList.add('hidden'),300);}} if(openSidebarBtn)openSidebarBtn.addEventListener('click',openSidebar); if(closeSidebarBtn)closeSidebarBtn.addEventListener('click',closeSidebar); if(sidebarOverlay)sidebarOverlay.addEventListener('click',closeSidebar); if(logoutBtn)logoutBtn.addEventListener('click',(e)=>{e.preventDefault(); signOut(auth).then(()=>{window.location.href='index.html';}).catch((error)=>{console.error('Sign out error',error);});}); if(sidebarNav){sidebarNav.addEventListener('click',(e)=>{const link=e.target.closest('a'); const toggle=e.target.closest('button[data-toggle]'); if(link&&!link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}else if(toggle){const subMenuId=`submenu-${toggle.dataset.toggle}`; const subMenu=document.getElementById(subMenuId); const chevron=toggle.querySelector('.chevron-icon'); if(subMenu){if(subMenu.style.maxHeight&&subMenu.style.maxHeight!=='0px'){subMenu.style.maxHeight='0px'; toggle.classList.remove('active-parent'); if(chevron)chevron.classList.remove('rotate-180');}else{subMenu.style.maxHeight=subMenu.scrollHeight+"px"; toggle.classList.add('active-parent'); if(chevron)chevron.classList.add('rotate-180');}}}else if(link&&link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}});}
 }
+
