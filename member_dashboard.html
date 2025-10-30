@@ -253,7 +253,8 @@
         }
 
         /**
-         * Injects the official Twitter/X widget
+         * === UPDATED: Injects the official Twitter/X widget ===
+         * This new function is more reliable.
          */
         function loadTwitterTimeline(username, container) {
             if (!container) return;
@@ -270,17 +271,32 @@
             container.innerHTML = '';
             container.appendChild(anchor);
 
-            if (window.twttr && window.twttr.widgets) {
-                window.twttr.widgets.load(container);
+            // This function ensures the script is loaded only ONCE.
+            if (!window.twttr) {
+                // Check if the script tag already exists, even if window.twttr isn't ready
+                if (document.getElementById('twitter-wjs')) {
+                    // It's loading, but not ready. Tell it to load when it is.
+                    window.twttr.ready((twttr) => {
+                        twttr.widgets.load(container);
+                    });
+                } else {
+                    // It's not loading at all. Create and load it.
+                    const script = document.createElement('script');
+                    script.id = 'twitter-wjs';
+                    script.src = "https://platform.twitter.com/widgets.js";
+                    script.async = true;
+                    script.charset = "utf-8";
+                    script.onload = () => {
+                        // Check if twttr is still not ready (should be, but just in case)
+                        if (window.twttr && window.twttr.widgets) {
+                            window.twttr.widgets.load(container);
+                        }
+                    };
+                    document.body.appendChild(script);
+                }
             } else {
-                const script = document.createElement('script');
-                script.src = "https://platform.twitter.com/widgets.js";
-                script.async = true;
-                script.charset = "utf-8";
-                script.onload = () => {
-                    window.twttr.widgets.load(container);
-                };
-                document.body.appendChild(script);
+                // If script is already fully loaded, just render the widget
+                window.twttr.widgets.load(container);
             }
         }
 
@@ -307,7 +323,6 @@
             loadTwitterTimeline('FinancialJuice', contentContainer);
         }
 
-
         /**
          * Fetches and Renders Live Currency Rates
          */
@@ -324,7 +339,6 @@
                 
                 const data = await response.json();
                 
-                // Get "yesterday's" rates to calculate the change
                 const yesterday = new Date(data.date);
                 yesterday.setDate(yesterday.getDate() - 1);
                 const yesterdayDateString = yesterday.toISOString().split('T')[0];
