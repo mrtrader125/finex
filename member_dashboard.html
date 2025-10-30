@@ -29,7 +29,6 @@
     </script>
 
     <style>
-        /* New styles for the tabs */
         .news-tab {
             @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50;
             @apply text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50;
@@ -52,7 +51,6 @@
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
 
-        /* Style for the Twitter/X embed */
         #news-content-container iframe {
             border-radius: 0.5rem; /* 8px */
         }
@@ -102,18 +100,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Sky News Business Live</h3>
+                        <h3 class="text-2xl font-bold mb-4">CNBC TV18 Live</h3>
                         <div class="aspect-video mb-4 rounded-lg overflow-hidden">
-                            <iframe src="https://www.youtube.com/embed/cmRe1cMkXX4?autoplay=1&mute=1" 
-                                title="Sky News Business Live" 
+                            <iframe src="https://www.youtube.com/embed/1_Ih0JYmkjI?autoplay=1&mute=1" 
+                                title="CNBC TV18 24x7 LIVE" 
                                 class="w-full h-full" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen>
                             </iframe>
                         </div>
                         <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Sky News Business</h4>
-                            <p class="text-sm text-color-muted">Live 24/7 coverage of business, economic, and financial news.</p>
+                            <h4 class="text-lg font-semibold">Live Business & Stock Market News</h4>
+                            <p class="text-sm text-color-muted">24/7 coverage of business news and financial market analysis.</p>
                         </div>
                     </div>
 
@@ -180,11 +178,8 @@
                 memberNameEl.textContent = user.email.split('@')[0] || 'Member';
             }
 
-            // Load content from your database
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            
-            // Load live data from external sources
             loadLiveNewsTabs();
             loadLiveCurrencyRates();
         }
@@ -258,25 +253,23 @@
         }
 
         /**
-         * === NEW: Injects the official Twitter/X widget ===
+         * Injects the official Twitter/X widget
          */
         function loadTwitterTimeline(username, container) {
             if (!container) return;
-            container.innerHTML = '<p class="text-color-muted text-center">Loading live feed...</p>'; // Show loading text
+            container.innerHTML = '<p class="text-color-muted text-center">Loading live feed...</p>';
 
-            // Create the anchor tag for the Twitter/X embed
             const anchor = document.createElement('a');
             anchor.className = "twitter-timeline";
             anchor.dataset.height = "400";
             anchor.dataset.dnt = "true";
-            anchor.dataset.theme = "dark"; // Matches your site's theme
+            anchor.dataset.theme = "dark";
             anchor.href = `https://twitter.com/${username}?ref_src=twsrc%5Etfw`;
             anchor.textContent = `Tweets by ${username}`;
             
-            container.innerHTML = ''; // Clear loading text
+            container.innerHTML = '';
             container.appendChild(anchor);
 
-            // Load the Twitter/X widget script
             if (window.twttr && window.twttr.widgets) {
                 window.twttr.widgets.load(container);
             } else {
@@ -292,25 +285,20 @@
         }
 
         /**
-         * === NEW: Adds logic to the news tabs ===
+         * Adds logic to the news tabs
          */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const contentContainer = document.getElementById('news-content-container');
             if (!tabContainer || !contentContainer) return;
 
-            // Add click event listener to tab container
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab');
                 if (!button) return;
 
-                // Update tab visual state
-                tabContainer.querySelectorAll('.news-tab').forEach(tab => {
-                    tab.setAttribute('data-state', 'inactive');
-                });
+                tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
                 button.setAttribute('data-state', 'active');
 
-                // Render new content
                 const tabName = button.dataset.tab;
                 loadTwitterTimeline(tabName, contentContainer);
             });
@@ -321,7 +309,7 @@
 
 
         /**
-         * === NEW: Fetches and Renders Live Currency Rates ===
+         * Fetches and Renders Live Currency Rates
          */
         async function loadLiveCurrencyRates() {
             const container = document.getElementById('currency-strength-container');
@@ -331,7 +319,6 @@
             container.innerHTML = '<p class="text-color-muted text-center">Loading live rates...</p>';
 
             try {
-                // Base currency is USD. We want to see how EUR, JPY, etc., changed against it.
                 const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD');
                 if (!response.ok) throw new Error('Network response was not ok');
                 
@@ -358,7 +345,6 @@
                     const currentRate = rates[currency];
                     const oldRate = oldRates[currency];
                     
-                    // Calculate percentage change
                     const change = ((currentRate - oldRate) / oldRate) * 100;
 
                     const changeStyle = change > 0.01 ? { class: 'change-green', icon: '▲' } :
