@@ -29,13 +29,20 @@
     </script>
 
     <style>
-        /* These styles are no longer needed for the tabs */
+        /* New styles for the tabs */
+        .news-tab {
+            @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50;
+            @apply text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50;
+            cursor: pointer;
+        }
+        .news-tab[data-state="active"] {
+            @apply bg-white text-zinc-950 shadow dark:bg-zinc-950 dark:text-zinc-50;
+        }
+        
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
         }
-        .strength-bar {
-            @apply h-1.5 rounded-full;
-        }
+        .strength-bar { @apply h-1.5 rounded-full; }
         .strength-bar-green { @apply bg-green-500; }
         .strength-bar-light-green { @apply bg-green-300; }
         .strength-bar-yellow { @apply bg-yellow-300; }
@@ -44,6 +51,11 @@
         .change-green { @apply text-green-500; }
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
+
+        /* Style for the Twitter/X embed */
+        #news-content-container iframe {
+            border-radius: 0.5rem; /* 8px */
+        }
     </style>
 </head>
 
@@ -90,23 +102,28 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Bloomberg News</h3>
+                        <h3 class="text-2xl font-bold mb-4">Sky News Business Live</h3>
                         <div class="aspect-video mb-4 rounded-lg overflow-hidden">
-                            <iframe src="https://www.youtube.com/embed/dp8PhLsUcFE?autoplay=1&mute=1" 
-                                title="Bloomberg News" 
+                            <iframe src="https://www.youtube.com/embed/cmRe1cMkXX4?autoplay=1&mute=1" 
+                                title="Sky News Business Live" 
                                 class="w-full h-full" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen>
                             </iframe>
                         </div>
                         <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Bloomberg Global Financial News</h4>
-                            <p class="text-sm text-color-muted">Live 24/7 coverage of global markets, finance, and top business news.</p>
+                            <h4 class="text-lg font-semibold">Sky News Business</h4>
+                            <p class="text-sm text-color-muted">Live 24/7 coverage of business, economic, and financial news.</p>
                         </div>
                     </div>
 
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Live Financial Feed</h3>
+                        <h3 class="text-2xl font-bold mb-4">Live Market Updates</h3>
+                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
+                            <button class="news-tab" data-tab="FinancialJuice" data-state="active">FinancialJuice</button>
+                            <button class="news-tab" data-tab="LiveSquawk">LiveSquawk</button>
+                            <button class="news-tab" data-tab="PiQ">PiQ</button>
+                        </div>
                         <div id="news-content-container" class="flex-grow overflow-y-auto pr-2">
                             <p class="text-color-muted text-center">Loading live feed...</p>
                         </div>
@@ -131,7 +148,7 @@
 
                     <div class="glass-card p-8">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-2xl font-bold">Live Forex Rates</h3>
+                            <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
                         </div>
                         <div id="currency-strength-container" class="space-y-4">
                             <p class="text-color-muted text-center">Loading live rates...</p>
@@ -163,12 +180,12 @@
                 memberNameEl.textContent = user.email.split('@')[0] || 'Member';
             }
 
-            // Load original content
+            // Load content from your database
             loadLatestArticles(db);
             loadLatestAnalysis(db);
             
-            // Load new live widgets
-            loadLiveNewsFeed();
+            // Load live data from external sources
+            loadLiveNewsTabs();
             loadLiveCurrencyRates();
         }
 
@@ -243,35 +260,65 @@
         /**
          * === NEW: Injects the official Twitter/X widget ===
          */
-        function loadLiveNewsFeed() {
-            const container = document.getElementById('news-content-container');
+        function loadTwitterTimeline(username, container) {
             if (!container) return;
+            container.innerHTML = '<p class="text-color-muted text-center">Loading live feed...</p>'; // Show loading text
 
-            container.innerHTML = ''; // Clear loading text
-            
             // Create the anchor tag for the Twitter/X embed
             const anchor = document.createElement('a');
             anchor.className = "twitter-timeline";
-            anchor.dataset.height = "400"; // Fits nicely in the 500px card
+            anchor.dataset.height = "400";
             anchor.dataset.dnt = "true";
-            anchor.dataset.theme = "dark"; // Will match your site's theme
-            anchor.href = "https://twitter.com/FinancialJuice?ref_src=twsrc%5Etfw";
-            anchor.textContent = "Tweets by FinancialJuice";
+            anchor.dataset.theme = "dark"; // Matches your site's theme
+            anchor.href = `https://twitter.com/${username}?ref_src=twsrc%5Etfw`;
+            anchor.textContent = `Tweets by ${username}`;
+            
+            container.innerHTML = ''; // Clear loading text
             container.appendChild(anchor);
 
             // Load the Twitter/X widget script
-            // We check if it already exists to avoid loading it multiple times
-            if (!window.twttr) {
+            if (window.twttr && window.twttr.widgets) {
+                window.twttr.widgets.load(container);
+            } else {
                 const script = document.createElement('script');
                 script.src = "https://platform.twitter.com/widgets.js";
                 script.async = true;
                 script.charset = "utf-8";
+                script.onload = () => {
+                    window.twttr.widgets.load(container);
+                };
                 document.body.appendChild(script);
-            } else {
-                // If it's already loaded, just tell it to render
-                window.twttr.widgets.load(container);
             }
         }
+
+        /**
+         * === NEW: Adds logic to the news tabs ===
+         */
+        function loadLiveNewsTabs() {
+            const tabContainer = document.getElementById('news-tab-container');
+            const contentContainer = document.getElementById('news-content-container');
+            if (!tabContainer || !contentContainer) return;
+
+            // Add click event listener to tab container
+            tabContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button.news-tab');
+                if (!button) return;
+
+                // Update tab visual state
+                tabContainer.querySelectorAll('.news-tab').forEach(tab => {
+                    tab.setAttribute('data-state', 'inactive');
+                });
+                button.setAttribute('data-state', 'active');
+
+                // Render new content
+                const tabName = button.dataset.tab;
+                loadTwitterTimeline(tabName, contentContainer);
+            });
+
+            // Initial render for the default active tab
+            loadTwitterTimeline('FinancialJuice', contentContainer);
+        }
+
 
         /**
          * === NEW: Fetches and Renders Live Currency Rates ===
@@ -284,15 +331,18 @@
             container.innerHTML = '<p class="text-color-muted text-center">Loading live rates...</p>';
 
             try {
-                // Base currency is USD. We want to see how EUR, JPY, GBP, etc., changed against it.
+                // Base currency is USD. We want to see how EUR, JPY, etc., changed against it.
                 const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD');
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 const data = await response.json();
                 
-                // Now get "yesterday's" rates to calculate the change
-                // Note: The API's "yesterday" might be different depending on time zones, but it's consistent.
-                const yesterdayResponse = await fetch(`https://api.frankfurter.app/${data.date}?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD`);
+                // Get "yesterday's" rates to calculate the change
+                const yesterday = new Date(data.date);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayDateString = yesterday.toISOString().split('T')[0];
+
+                const yesterdayResponse = await fetch(`https://api.frankfurter.app/${yesterdayDateString}?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD`);
                 if (!yesterdayResponse.ok) throw new Error('Network response for historical data was not ok');
                 
                 const yesterdayData = await yesterdayResponse.json();
@@ -302,7 +352,9 @@
                 
                 container.innerHTML = ''; // Clear loading
                 
-                for (const currency in rates) {
+                const currencies = ['EUR', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'NZD'];
+                
+                currencies.forEach(currency => {
                     const currentRate = rates[currency];
                     const oldRate = oldRates[currency];
                     
@@ -313,15 +365,10 @@
                                         change < -0.01 ? { class: 'change-red', icon: '▼' } :
                                         { class: 'change-gray', icon: '■' };
                     
-                    // Display rate as 1 USD = X JPY, but 1 EUR = X USD
-                    let rateString, rateNum, changeNum;
-                    
+                    let rateString;
                     if (currency === "JPY") {
-                        // 1 USD to JPY (e.g., 1 USD = 150.2 JPY)
                         rateString = `1 USD = ${currentRate.toFixed(2)} ${currency}`;
                     } else {
-                        // 1 EUR to USD (e.g., 1 EUR = 1.08 USD)
-                        // We invert the rate for a more common view
                         rateString = `1 ${currency} = ${(1 / currentRate).toFixed(4)} USD`;
                     }
                     
@@ -338,7 +385,7 @@
                             </div>
                         </div>
                     `;
-                }
+                });
                 
                 lastUpdatedEl.textContent = `Live data from ${data.date}`;
 
