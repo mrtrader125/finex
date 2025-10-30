@@ -50,10 +50,6 @@
         .change-green { @apply text-green-500; }
         .change-red { @apply text-red-500; }
         .change-gray { @apply text-gray-500; }
-
-        #news-content-container iframe {
-            border-radius: 0.5rem; /* 8px */
-        }
     </style>
 </head>
 
@@ -116,17 +112,30 @@
                     </div>
 
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Live Market Updates</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold">Live Market Updates</h3>
+                            <button id="news-refresh-btn" class="text-color-muted hover:text-blue-500 transition-colors" title="Refresh Feed">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
                         <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1 mb-4" id="news-tab-container">
                             <button class="news-tab" data-tab="FinancialJuice" data-state="active">FinancialJuice</button>
                             <button class="news-tab" data-tab="LiveSquawk">LiveSquawk</button>
                             <button class="news-tab" data-tab="PiQ">PiQ</button>
                         </div>
-                        <div id="news-content-container" class="flex-grow overflow-y-auto pr-2">
-                            <p class="text-color-muted text-center">Loading live feed...</p>
+                        
+                        <div id="news-content-container" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                            <p class="text-color-muted text-center">Loading news...</p>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-color-base">
+                            <a href="https://twitter.com/FinancialJuice" id="view-on-twitter-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
+                                View more on Twitter <i class="fas fa-external-link-alt fa-xs ml-1"></i>
+                            </a>
                         </div>
                     </div>
-                </div>
+                    </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     
@@ -165,6 +174,26 @@
         import { initializeAppCore, db } from './app.js';
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
+        // === MOCK DATA FOR NEWS WIDGET ===
+        const mockNewsData = {
+            LiveSquawk:[
+                {id:"1", text:"BREAKING: Fed Chair signals potential rate cut in September meeting as inflation continues to moderate", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 25 * 60000).toISOString()},
+                {id:"2", text:"ECB's Lagarde: Eurozone economy showing signs of recovery, but risks remain tilted to the downside", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 55 * 60000).toISOString()},
+                {id:"7", text:"German ZEW Economic Sentiment unexpectedly falls, raising new concerns for EU's largest economy.", username:"LiveSquawk", profileImage:"https://pbs.twimg.com/profile_images/991190329058088961/TW9FNnUl_400x400.jpg", createdAt: new Date(Date.now() - 150 * 60000).toISOString()}
+            ],
+            PiQ:[
+                {id:"3", text:"US Treasury yields fall across the curve following weaker-than-expected jobs report. 10Y yield down 8bps to 4.12%", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 35 * 60000).toISOString()},
+                {id:"4", text:"CHART: S&P500 breaks through key resistance level, setting new all-time high amid tech sector strength", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 120 * 60000).toISOString()},
+                {id:"8", text:"Microsoft (MSFT) announces $20B stock buyback program, shares up 2% in pre-market.", username:"PiQ", profileImage:"https://pbs.twimg.com/profile_images/1455185376876826625/S1AXm-Yc_400x400.jpg", createdAt: new Date(Date.now() - 180 * 60000).toISOString()}
+            ],
+            FinancialJuice:[
+                {id:"5", text:"BREAKING: Bank of Japan maintains ultra-loose monetary policy, yen weakens against dollar", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 15 * 60000).toISOString()},
+                {id:"6", text:"Oil prices surge 3% as Middle East tensions escalate, Brent crude tops $85/barrel", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 75 * 60000).toISOString()},
+                {id:"9", text:"Gold hits 2-week high as traders await key inflation data.", username:"FinancialJuice", profileImage:"https://pbs.twimg.com/profile_images/1346872272596807680/wn83bLgA_400x400.jpg", createdAt: new Date(Date.now() - 210 * 60000).toISOString()}
+            ]
+        };
+        // === END MOCK DATA ===
+
         /**
          * This function runs when the main app.js has loaded the user.
          */
@@ -180,7 +209,7 @@
 
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            loadLiveNewsTabs();
+            loadLiveNewsTabs(); // Changed from Twitter embed
             loadLiveCurrencyRates();
         }
 
@@ -190,7 +219,6 @@
         function loadLatestArticles(db) {
             const container = document.getElementById('latest-articles-list');
             if (!container) return;
-
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
             onSnapshot(q, (snapshot) => {
                 container.innerHTML = ''; 
@@ -198,16 +226,12 @@
                     container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
                     return;
                 }
-                
                 snapshot.forEach((doc, index) => {
                     const article = { id: doc.id, ...doc.data() };
-                    const readTime = article.readTime || '? min read';
-                    const publishedDate = article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A';
-                    
                     container.innerHTML += `
                         <div class="p-4 rounded-lg group hover-bg-base transition-colors">
                             <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
-                            <p class="text-color-muted text-sm">${readTime} • ${publishedDate}</p>
+                            <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
                         </div>
                         ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
                     `;
@@ -224,7 +248,6 @@
         function loadLatestAnalysis(db) {
             const container = document.getElementById('latest-analysis-list');
             if (!container) return;
-            
             const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
             onSnapshot(q, (snapshot) => {
                 container.innerHTML = ''; 
@@ -232,16 +255,12 @@
                     container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
                     return;
                 }
-                
                 snapshot.forEach((doc, index) => {
                     const analysis = { id: doc.id, ...doc.data() };
-                    const category = analysis.category || 'General';
-                    const publishedDate = analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A';
-                    
                     container.innerHTML += `
                         <div class="p-4 rounded-lg group hover-bg-base transition-colors">
                             <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
-                            <p class="text-color-muted text-sm">Category: ${category} • ${publishedDate}</p>
+                            <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
                         </div>
                         ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
                     `;
@@ -253,75 +272,112 @@
         }
 
         /**
-         * === UPDATED: Injects the official Twitter/X widget ===
-         * This new function is more reliable.
+         * === NEW: Helper function to shuffle an array ===
          */
-        function loadTwitterTimeline(username, container) {
-            if (!container) return;
-            container.innerHTML = '<p class="text-color-muted text-center">Loading live feed...</p>';
-
-            const anchor = document.createElement('a');
-            anchor.className = "twitter-timeline";
-            anchor.dataset.height = "400";
-            anchor.dataset.dnt = "true";
-            anchor.dataset.theme = "dark";
-            anchor.href = `https://twitter.com/${username}?ref_src=twsrc%5Etfw`;
-            anchor.textContent = `Tweets by ${username}`;
-            
-            container.innerHTML = '';
-            container.appendChild(anchor);
-
-            // This function ensures the script is loaded only ONCE.
-            if (!window.twttr) {
-                // Check if the script tag already exists, even if window.twttr isn't ready
-                if (document.getElementById('twitter-wjs')) {
-                    // It's loading, but not ready. Tell it to load when it is.
-                    window.twttr.ready((twttr) => {
-                        twttr.widgets.load(container);
-                    });
-                } else {
-                    // It's not loading at all. Create and load it.
-                    const script = document.createElement('script');
-                    script.id = 'twitter-wjs';
-                    script.src = "https://platform.twitter.com/widgets.js";
-                    script.async = true;
-                    script.charset = "utf-8";
-                    script.onload = () => {
-                        // Check if twttr is still not ready (should be, but just in case)
-                        if (window.twttr && window.twttr.widgets) {
-                            window.twttr.widgets.load(container);
-                        }
-                    };
-                    document.body.appendChild(script);
-                }
-            } else {
-                // If script is already fully loaded, just render the widget
-                window.twttr.widgets.load(container);
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
+            return array;
         }
 
         /**
-         * Adds logic to the news tabs
+         * === NEW: Helper function to format time ===
+         */
+        function formatTimeAgo(isoString) {
+            const time = new Date(isoString);
+            const now = new Date();
+            const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
+            
+            if (diffInMinutes < 1) return "just now";
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            
+            const diffInHours = Math.floor(diffInMinutes / 60);
+            if (diffInHours < 24) return `${diffInHours}h ago`;
+            
+            const diffInDays = Math.floor(diffInHours / 24);
+            return `${diffInDays}d ago`;
+        }
+
+
+        /**
+         * === NEW: Renders the mock news feed ===
          */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const contentContainer = document.getElementById('news-content-container');
-            if (!tabContainer || !contentContainer) return;
+            const refreshButton = document.getElementById('news-refresh-btn');
+            const twitterLink = document.getElementById('view-on-twitter-link');
+            
+            if (!tabContainer || !contentContainer || !refreshButton || !twitterLink) return;
 
+            let activeTab = 'FinancialJuice'; // Default tab
+
+            const renderContent = (tabName, isRefresh = false) => {
+                // On refresh, shuffle the data to simulate update
+                if (isRefresh) {
+                    shuffleArray(mockNewsData[tabName]);
+                }
+
+                const data = mockNewsData[tabName];
+                contentContainer.innerHTML = ''; // Clear
+
+                if (!data || data.length === 0) {
+                    contentContainer.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
+                    return;
+                }
+
+                data.forEach(item => {
+                    contentContainer.innerHTML += `
+                        <div class="flex items-start space-x-3 p-3">
+                            <img src="${item.profileImage}" alt="${item.username}" class="h-10 w-10 rounded-full flex-shrink-0">
+                            <div>
+                                <div class="flex items-center">
+                                    <p class="font-semibold text-color-base">${item.username}</p>
+                                    <span class="text-xs text-color-muted ml-2">${formatTimeAgo(item.createdAt)}</span>
+                                </div>
+                                <p class="text-sm text-color-base mt-1">${item.text}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            };
+
+            // Tab click logic
             tabContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button.news-tab');
                 if (!button) return;
 
+                activeTab = button.dataset.tab;
                 tabContainer.querySelectorAll('.news-tab').forEach(tab => tab.setAttribute('data-state', 'inactive'));
                 button.setAttribute('data-state', 'active');
-
-                const tabName = button.dataset.tab;
-                loadTwitterTimeline(tabName, contentContainer);
+                
+                // Update Twitter link
+                twitterLink.href = `https://twitter.com/${activeTab}`;
+                
+                renderContent(activeTab);
             });
 
-            // Initial render for the default active tab
-            loadTwitterTimeline('FinancialJuice', contentContainer);
+            // Refresh button logic
+            refreshButton.addEventListener('click', () => {
+                // Add a simple spin animation
+                const icon = refreshButton.querySelector('i');
+                icon.classList.add('animate-spin');
+                
+                // Re-render the content for the currently active tab with shuffled data
+                renderContent(activeTab, true);
+
+                // Remove animation after it finishes
+                setTimeout(() => {
+                    icon.classList.remove('animate-spin');
+                }, 500); // 500ms animation
+            });
+
+            // Initial render
+            renderContent(activeTab);
         }
+
 
         /**
          * Fetches and Renders Live Currency Rates
@@ -356,6 +412,8 @@
                 const currencies = ['EUR', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'NZD'];
                 
                 currencies.forEach(currency => {
+                    if (!rates[currency] || !oldRates[currency]) return; // Skip if data is missing
+                    
                     const currentRate = rates[currency];
                     const oldRate = oldRates[currency];
                     
