@@ -35,41 +35,42 @@ export const allSidebarItems = [
     { id: 'portfolio', href: 'portfolio.html', icon: 'fa-wallet', text: 'Portfolio' },
     { id: 'articles', href: 'articles.html', icon: 'fa-book-reader', text: 'Articles' },
     { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
-    // === THIS SECTION IS UPDATED ===
     { id: 'planning', icon: 'fa-clipboard-list', text: 'Plan & Journal', subItems: [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
-            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
-            // --- NEW ITEM ADDED BELOW ---
-            { id: 'monthlyReview', href: 'monthly_review.html', icon: 'fa-calendar-check', text: 'Monthly Review' }
-            // --- END OF NEW ITEM ---
-        ] },
-    // === END OF UPDATE ===
+            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' } ] },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
+    // *** UPDATED Market Data Dropdown ***
     {
         id: 'marketData',
         icon: 'fa-chart-bar',
         text: 'Market Data',
         subItems: [
+            // *** MOVED Screener Here ***
             { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
             { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
             { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' }
         ]
     },
+    // *** REMOVED original 'screener' item ***
+    // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
     { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
 let userPreferences = { theme: 'dark', sidebarItems: {} };
-function initializeDefaultVisibility(items) {
-     items.forEach(item => {
-         userPreferences.sidebarItems[item.id] = true;
-         if (item.subItems) {
-             item.subItems.forEach(sub => userPreferences.sidebarItems[sub.id] = true);
-         }
-     });
+
+// Helper function to create a default visibility map from allSidebarItems
+function getDefaultSidebarVisibility() {
+    const visibility = {};
+    allSidebarItems.forEach(item => {
+        visibility[item.id] = true;
+        if (item.subItems) {
+            item.subItems.forEach(sub => visibility[sub.id] = true);
+        }
+    });
+    return visibility;
 }
-initializeDefaultVisibility(allSidebarItems);
 
 
 // --- Main App Initialization --- (MODIFIED FOR STABILITY)
@@ -143,27 +144,26 @@ async function loadCommonComponents() {
 // === THIS FUNCTION IS UPDATED TO LOAD GLOBAL DEFAULTS ===
 async function loadPreferences(settingsDocRef) {
     try {
-        // 1. Start with the hard-coded defaults
-        userPreferences = { theme: 'dark', sidebarItems: {} };
-        initializeDefaultVisibility(allSidebarItems);
-        let baseSettings = { ...userPreferences.sidebarItems };
-        let baseTheme = 'dark';
+        // 1. Start with the hard-coded defaults (all items visible)
+        let baseSidebarItems = getDefaultSidebarVisibility();
+        let baseTheme = 'dark'; // Hard-coded default theme
 
         // 2. Load GLOBAL defaults from 'siteSettings/sidebarDefaults'
         const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
         const globalDocSnap = await getDoc(globalSettingsRef);
 
         if (globalDocSnap.exists()) {
-            // Merge global settings OVER hard-coded defaults
             const globalPrefs = globalDocSnap.data();
+            // Merge global settings OVER hard-coded defaults
+            // This ensures any items NOT in global settings still appear
             if (globalPrefs.sidebarItems) {
-                baseSettings = { ...baseSettings, ...globalPrefs.sidebarItems };
+                baseSidebarItems = { ...baseSidebarItems, ...globalPrefs.sidebarItems };
             }
             baseTheme = globalPrefs.theme || baseTheme;
         }
 
-        // 3. Set userPreferences to these merged defaults
-        userPreferences.sidebarItems = baseSettings;
+        // 3. Set userPreferences to these merged global defaults
+        userPreferences.sidebarItems = baseSidebarItems;
         userPreferences.theme = baseTheme;
 
         // 4. Load the INDIVIDUAL user's settings
@@ -175,9 +175,14 @@ async function loadPreferences(settingsDocRef) {
             // User's theme overrides global/default theme
             userPreferences.theme = loadedPrefs.theme || userPreferences.theme; 
             
+            // User's sidebar settings override global/default settings
             if (loadedPrefs.sidebarItems && typeof loadedPrefs.sidebarItems === 'object') {
-                // User's sidebar settings override global/default settings
-                userPreferences.sidebarItems = { ...userPreferences.sidebarItems, ...loadedPrefs.sidebarItems };
+                // *** IMPORTANT FIX ***
+                // We merge user settings ON TOP of the global defaults.
+                // This ensures if a NEW item is added to global (e.g., 'backtesting'),
+                // it will be TRUE from 'baseSidebarItems' and appear for all users,
+                // even if they have old saved preferences.
+                userPreferences.sidebarItems = { ...baseSidebarItems, ...loadedPrefs.sidebarItems };
             }
         }
         // We NO LONGER create a new user doc here.
@@ -187,8 +192,7 @@ async function loadPreferences(settingsDocRef) {
      } catch (error) { 
          console.error("Error loading preferences:", error);
          // Fallback to just the hard-coded defaults in case of error
-         userPreferences = { theme: 'dark', sidebarItems: {} }; 
-         initializeDefaultVisibility(allSidebarItems); 
+         userPreferences = { theme: 'dark', sidebarItems: getDefaultSidebarVisibility() }; 
      }
 }
 
