@@ -144,7 +144,7 @@
                             </button>
                         </div>
                         
-                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-900 p-1 mb-4" id="news-tab-container">
+                        <div class="inline-flex h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
                             <button class="news-tab-btn" 
                                 data-tab-name="LiveSquawk" 
                                 data-tab-url="https://www.investing.com/rss/news.rss" 
@@ -218,9 +218,6 @@
 
         const rssFeedCache = new Map();
 
-        /**
-         * This function runs when the main app.js has loaded the user.
-         */
         function initDashboardPage(user, db) {
             console.log("Setting up Dashboard specific logic...");
             
@@ -375,7 +372,7 @@
         }
 
         /**
-         * === UPDATED: Adds logic to the news tabs and styles them ===
+         * === UPDATED: Adds logic to the news tabs and styles them to match YOUR THEME ===
          */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
@@ -384,11 +381,13 @@
             
             if (!tabContainer || !refreshButton || !twitterLink) return;
 
-            // These are the Tailwind classes for the tab states
-            // We apply these directly via JS to fix the style issue
-            const activeTabClasses = ['bg-white', 'text-zinc-900', 'shadow', 'dark:bg-zinc-50', 'dark:text-zinc-900'];
-            const inactiveTabClasses = ['text-zinc-500', 'hover:text-zinc-900', 'dark:text-zinc-400', 'dark:hover:text-zinc-50'];
-            const baseTabClasses = ['news-tab-btn', 'inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all'];
+            // --- THEME-MATCHING CLASSES ---
+            // Active tab matches your main-button style
+            const activeTabClasses = ['bg-blue-500', 'text-white', 'shadow'];
+            // Inactive tab matches your muted text style
+            const inactiveTabClasses = ['text-zinc-400', 'hover:text-zinc-50'];
+            // Base classes for all tabs
+            const baseTabClasses = ['inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all'];
 
             let activeTab = tabContainer.querySelector('.news-tab-btn[data-tab-name="LiveSquawk"]'); // Set default
             
@@ -425,7 +424,7 @@
                 const icon = refreshButton.querySelector('i');
                 icon.classList.add('animate-spin');
                 
-                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); // true = force refresh
+                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); 
 
                 setTimeout(() => {
                     icon.classList.remove('animate-spin');
