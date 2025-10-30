@@ -128,21 +128,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
                     <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">CNBC TV18 Live</h3>
+                        <h3 class="text-2xl font-bold mb-4">Reuters Live News</h3>
                         <div class="aspect-video mb-4 rounded-lg overflow-hidden">
-                            <iframe src="https://www.youtube.com/embed/1_Ih0JYmkjI?autoplay=1&mute=1" 
-                                title="CNBC TV18 24x7 LIVE" 
+                            <iframe src="https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1&mute=1" 
+                                title="Reuters 24/7 Live News" 
                                 class="w-full h-full" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen>
                             </iframe>
                         </div>
                         <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Live Business & Stock Market News</h4>
-                            <p class="text-sm text-color-muted">24/7 coverage of business news and financial market analysis.</p>
+                            <h4 class="text-lg font-semibold">Reuters Live</h4>
+                            <p class="text-sm text-color-muted">Live 24/7 coverage of global news, finance, and major events.</p>
                         </div>
                     </div>
-
                     <div class="glass-card h-[500px] flex flex-col p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-2xl font-bold">Live Market Updates</h3>
@@ -242,12 +241,8 @@
         import { initializeAppCore, db } from './app.js';
         import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // This is a cache to store the feed data
         const rssFeedCache = new Map();
 
-        /**
-         * This function runs when the main app.js has loaded the user.
-         */
         function initDashboardPage(user, db) {
             console.log("Setting up Dashboard specific logic...");
             
@@ -258,19 +253,13 @@
                 memberNameEl.textContent = user.email.split('@')[0] || 'Member';
             }
 
-            // Load content from your database
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            
-            // Load live data from external sources
             loadLiveNewsTabs();
-            loadSeparateLiveFeeds(); // New function for the separate cards
+            loadSeparateLiveFeeds();
             loadLiveCurrencyRates();
         }
 
-        /**
-         * Loads the "Fresh Insights" (Articles) card
-         */
         function loadLatestArticles(db) {
             const container = document.getElementById('latest-articles-list');
             if (!container) return;
@@ -297,9 +286,6 @@
             });
         }
 
-        /**
-         * Loads the "Latest Analysis" card
-         */
         function loadLatestAnalysis(db) {
             const container = document.getElementById('latest-analysis-list');
             if (!container) return;
@@ -326,9 +312,6 @@
             });
         }
 
-        /**
-         * Helper function to format time
-         */
         function formatTimeAgo(dateString) {
             const time = new Date(dateString);
             const now = new Date();
@@ -344,24 +327,18 @@
             return `${diffInDays}d ago`;
         }
 
-        /**
-         * Fetches and parses a live RSS feed
-         */
         async function fetchRSSFeed(feedUrl, sourceName, containerId, forceRefresh = false) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            // Show loading text
             container.innerHTML = `<p class="text-color-muted text-center">Loading ${sourceName} feed...</p>`;
             
-            // Check cache first
             if (rssFeedCache.has(feedUrl) && !forceRefresh) {
                 renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, container);
                 return;
             }
             
             try {
-                // Use the rss2json proxy to bypass CORS issues
                 const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
                 if (!response.ok) throw new Error('Network error');
                 
@@ -369,9 +346,7 @@
                 
                 if (data.status !== 'ok') throw new Error('RSS feed error');
 
-                // Cache the data
                 rssFeedCache.set(feedUrl, data.items);
-                // Render the data
                 renderRSSFeed(data.items, sourceName, container);
 
             } catch (error) {
@@ -380,12 +355,9 @@
             }
         }
 
-        /**
-         * Renders the RSS items into the container (Screenshot Style)
-         */
         function renderRSSFeed(items, sourceName, container) {
             if (!container) return;
-            container.innerHTML = ''; // Clear loading
+            container.innerHTML = ''; // Clear
 
             if (!items || items.length === 0) {
                 container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
@@ -395,12 +367,10 @@
             const fragment = document.createDocumentFragment();
 
             items.forEach(item => {
-                // Clean up the description
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = item.description;
                 const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
                 
-                // Use a generic icon as in your screenshot
                 const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish" :
                                   sourceName === "PiQ" ? "fa-chart-pie" : "fa-newspaper";
 
@@ -427,9 +397,6 @@
             container.appendChild(fragment);
         }
 
-        /**
-         * Adds logic to the main news tabs
-         */
         function loadLiveNewsTabs() {
             const tabContainer = document.getElementById('news-tab-container');
             const refreshButton = document.getElementById('news-refresh-btn');
@@ -467,9 +434,6 @@
             fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
         }
 
-        /**
-         * === NEW: Loads the three separate feed cards ===
-         */
         function loadSeparateLiveFeeds() {
             fetchRSSFeed(
                 "https://www.investing.com/rss/news.rss", 
@@ -488,9 +452,6 @@
             );
         }
 
-        /**
-         * Fetches and Renders Live Currency Rates
-         */
         async function loadLiveCurrencyRates() {
             const container = document.getElementById('currency-strength-container');
             const lastUpdatedEl = document.getElementById('currency-last-updated');
