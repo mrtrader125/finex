@@ -13,7 +13,25 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
-</head>
+    <style>
+        .sidebar-option-item summary {
+            list-style: none; /* Hide default <details> marker */
+        }
+        .sidebar-option-item summary::-webkit-details-marker {
+            display: none; /* Hide default <details> marker */
+        }
+        .sidebar-option-item[open] > summary .chevron-icon {
+            transform: rotate(90deg);
+        }
+        .sidebar-option-item .chevron-icon {
+            transition: transform 0.2s ease-in-out;
+            font-size: 0.7rem;
+            margin-right: 0.75rem; /* 12px */
+            width: 1rem; /* w-4 */
+            text-align: center;
+        }
+    </style>
+    </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
         <div id="sidebar-placeholder"></div>
@@ -33,10 +51,11 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Sidebar Menu Items</h2>
                         <p class="text-color-muted mb-6 text-sm">Choose which pages appear in your sidebar navigation for quick access.</p>
-                        <div id="sidebar-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        <div id="sidebar-options-container" class="space-y-1">
                             <p class="text-color-muted text-center col-span-full">Loading options...</p>
                         </div>
                     </div>
@@ -74,7 +93,6 @@
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
             
-            // --- UPDATED: We now need to track global and user prefs separately ---
             let globalPreferences = { theme: 'dark', sidebarItems: {} }; // From admin
             let userPreferences = { theme: 'dark', sidebarItems: {} };   // From user
             
@@ -89,26 +107,22 @@
 
             async function loadPreferencesForSettings() {
                 try {
-                    // --- NEW: Load GLOBAL Prefs first ---
                     const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
                     const globalDocSnap = await getDoc(globalSettingsRef);
                     if (globalDocSnap.exists()) {
                         globalPreferences = { ...globalPreferences, ...globalDocSnap.data() };
                     }
                     
-                    // --- NEW: Load USER Prefs second ---
                     const userDocSnap = await getDoc(settingsDocRef);
                     if (userDocSnap.exists()) {
                         const loadedPrefs = userDocSnap.data();
-                        // Overwrite userPreferences with loaded data
-                        userPreferences.theme = loadedPrefs.theme; // Can be null
+                        userPreferences.theme = loadedPrefs.theme; 
                         userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
                     }
                 } catch (error) { console.error("Error loading preferences for settings:", error); }
                 
                 accountEmailSpan.textContent = user.email;
                 
-                // Theme is user's choice OR global choice
                 const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
                 themeToggle.checked = (finalTheme === 'dark');
                 
@@ -119,10 +133,9 @@
                 if (!settingsDocRef) return; 
                 saveStatus.textContent = 'Saving...';
                 
-                // When saving, we ONLY save the user's choices, not the global ones
                 const dataToSave = {
-                    theme: userPreferences.theme, // This will be the user's explicit choice (or null)
-                    sidebarItems: userPreferences.sidebarItems, // This is just the user's overrides
+                    theme: userPreferences.theme, 
+                    sidebarItems: userPreferences.sidebarItems, 
                     lastUpdated: serverTimestamp()
                 };
 
@@ -131,18 +144,6 @@
                      saveStatus.textContent = 'Preferences Saved.'; 
                      setTimeout(() => saveStatus.textContent = '', 2000);
                      
-                     // We need to re-render the sidebar to show the FINAL merged settings
-                     // This requires re-calculating the final logic
-                     // Note: A full page reload or re-running app.js's loadPreferences() is
-                     // the most robust way, but renderSidebar() is a good approximation.
-                     
-                     // --- Update the main sidebar ---
-                     // This is tricky because userPreferences in app.js is not this file's
-                     // We'll just call renderSidebar() which *should* be using the main instance.
-                     // A better way is to reload app.js's internal state.
-                     // For now, we'll just re-render.
-                     
-                     // Re-calculate final logic for the sidebar render
                      let finalMergedPrefs = {};
                      Object.keys(defaultSidebarItems).forEach(key => {
                         const globalVal = globalPreferences.sidebarItems[key];
@@ -153,20 +154,13 @@
                         else { finalMergedPrefs[key] = true; }
                      });
                      
-                     // Manually update the imported userPreferences in app.js
-                     // This is a bit of a hack, but necessary
                      try {
-                        // This assumes userPreferences is exported as 'let'
                         const app = await import('./app.js');
-                        // This line might not work as expected if userPreferences is not a mutable export
-                        // A better pattern would be a setter function in app.js
-                        // But we will try to assign it directly
                         app.userPreferences.sidebarItems = finalMergedPrefs;
                         app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
-                        renderSidebar(); // Now renderSidebar() will use the updated data
+                        renderSidebar(); 
                      } catch(e) {
                          console.error("Could not update app.js state", e);
-                         // As a fallback, just call renderSidebar(). It might be stale.
                          renderSidebar();
                      }
 
@@ -177,105 +171,143 @@
             }
             function debouncedSavePreferences() { clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...'; debounceTimer = setTimeout(() => savePreferences('sidebar'), 1000); }
 
+            // --- === THIS FUNCTION IS HEAVILY MODIFIED === ---
             function populateSidebarOptions() {
-                sidebarOptionsContainer.innerHTML = '';
+                sidebarOptionsContainer.innerHTML = ''; // Clear loading message
+                
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return; // Skip settings itself
 
-                    // --- THIS IS THE KEY UPDATE ---
                     // If the admin has set this item to 'false', do not render the option
                     if (globalPreferences.sidebarItems[item.id] === false) {
-                        return; // Admin has hidden this, so don't show the toggle.
+                        return; 
                     }
-
-                    const label = document.createElement('label');
-                    label.className = 'flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800';
                     
-                    // User's choice, or global choice, or default (true)
-                    const userValue = userPreferences.sidebarItems[item.id];
-                    const globalValue = globalPreferences.sidebarItems[item.id];
-                    checkbox.checked = (userValue !== undefined) ? userValue : (globalValue !== undefined ? globalValue : true);
+                    // --- Helper function to create a checkbox label ---
+                    const createCheckbox = (itemData, isSubItem = false) => {
+                        const userValue = userPreferences.sidebarItems[itemData.id];
+                        const globalValue = globalPreferences.sidebarItems[itemData.id];
+                        const isChecked = (userValue !== undefined) ? userValue : (globalValue !== undefined ? globalValue : true);
+
+                        const label = document.createElement('label');
+                        label.className = `flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label ${isSubItem ? 'pl-10' : ''}`;
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800';
+                        checkbox.checked = isChecked;
+                        checkbox.dataset.itemId = itemData.id;
+                        
+                        // Add parent/child data attributes for linked checking
+                        if (!isSubItem && itemData.subItems) {
+                            checkbox.dataset.isParent = true;
+                        }
+                        if (isSubItem) {
+                            checkbox.dataset.parentId = item.id;
+                        }
+
+                        const icon = document.createElement('i');
+                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`; // w-4 for alignment
+                        
+                        const text = document.createElement('span');
+                        text.className = 'text-color-base'; 
+                        text.textContent = itemData.text;
+
+                        label.appendChild(checkbox); 
+                        label.appendChild(icon); 
+                        label.appendChild(text);
+                        return label;
+                    };
+
+                    // --- Logic for Parent Items vs. Dropdowns ---
                     
-                    checkbox.dataset.itemId = item.id;
-                    const icon = document.createElement('i');
-                    icon.className = `fas ${item.icon} fa-fw text-color-muted`;
-                    const text = document.createElement('span');
-                    text.className = 'text-color-base'; text.textContent = item.text;
-
-                    label.appendChild(checkbox); label.appendChild(icon); label.appendChild(text);
-                    sidebarOptionsContainer.appendChild(label);
-
-                    checkbox.addEventListener('change', (e) => {
-                         const itemId = e.target.dataset.itemId;
-                         // Save the user's *explicit* choice
-                         userPreferences.sidebarItems[itemId] = e.target.checked;
-                         
-                         // When hiding a parent, also hide its children
-                         const parentItem = allSidebarItems.find(i => i.id === itemId);
-                         if (!e.target.checked && parentItem && parentItem.subItems) {
-                             parentItem.subItems.forEach(sub => {
-                                 userPreferences.sidebarItems[sub.id] = false;
-                                 const childCheckbox = sidebarOptionsContainer.querySelector(`[data-item-id="${sub.id}"]`);
-                                 if (childCheckbox) childCheckbox.checked = false;
-                             });
-                         }
-                         
-                         debouncedSavePreferences();
-                    });
-
-                     // Render sub-items
-                     if (item.subItems) {
+                    // Case 1: Item is a Dropdown (has subItems)
+                    if (item.subItems) {
+                        const details = document.createElement('details');
+                        details.className = 'sidebar-option-item';
+                        details.open = true; // Default to open
+                        
+                        const summary = document.createElement('summary');
+                        summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
+                        
+                        // Add chevron icon
+                        const chevron = document.createElement('i');
+                        chevron.className = 'fas fa-chevron-right chevron-icon text-color-muted';
+                        
+                        // Create parent checkbox
+                        const parentLabel = createCheckbox(item, false);
+                        parentLabel.classList.add('flex-grow'); // Make label take up space
+                        parentLabel.classList.remove('p-2'); // Remove padding, summary has it
+                        
+                        summary.appendChild(chevron);
+                        summary.appendChild(parentLabel);
+                        
+                        const subItemsContainer = document.createElement('div');
+                        subItemsContainer.className = 'space-y-1';
+                        
+                        // Create checkboxes for sub-items
                         item.subItems.forEach(sub => {
                             // Also check if admin has hidden the sub-item
-                            if (globalPreferences.sidebarItems[sub.id] === false) {
-                                return;
+                            if (globalPreferences.sidebarItems[sub.id] !== false) {
+                                subItemsContainer.appendChild(createCheckbox(sub, true));
                             }
-                            
-                            const subLabel = document.createElement('label');
-                            subLabel.className = 'flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label pl-10'; // Indented
-                            const subCheckbox = document.createElement('input');
-                            subCheckbox.type = 'checkbox';
-                            subCheckbox.className = 'form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 dark:ring-offset-gray-800';
-                            
-                            const subUserValue = userPreferences.sidebarItems[sub.id];
-                            const subGlobalValue = globalPreferences.sidebarItems[sub.id];
-                            subCheckbox.checked = (subUserValue !== undefined) ? subUserValue : (subGlobalValue !== undefined ? subGlobalValue : true);
-                            
-                            subCheckbox.dataset.itemId = sub.id;
-                            const subIcon = document.createElement('i');
-                            subIcon.className = `fas ${sub.icon} fa-fw text-color-muted`;
-                            const subText = document.createElement('span');
-                            subText.className = 'text-color-base'; subText.textContent = sub.text;
-
-                            subLabel.appendChild(subCheckbox); subLabel.appendChild(subIcon); subLabel.appendChild(subText);
-                            sidebarOptionsContainer.appendChild(subLabel);
-
-                            subCheckbox.addEventListener('change', (e) => {
-                                const subItemId = e.target.dataset.itemId;
-                                userPreferences.sidebarItems[subItemId] = e.target.checked;
-                                
-                                // If user checks a sub-item, auto-check the parent
-                                if (e.target.checked) {
-                                    userPreferences.sidebarItems[item.id] = true;
-                                    const parentCheckbox = sidebarOptionsContainer.querySelector(`[data-item-id="${item.id}"]`);
-                                    if (parentCheckbox) parentCheckbox.checked = true;
-                                }
-
-                                debouncedSavePreferences();
-                            });
                         });
-                     }
+                        
+                        details.appendChild(summary);
+                        details.appendChild(subItemsContainer);
+                        sidebarOptionsContainer.appendChild(details);
+                    
+                    // Case 2: Item is a simple link
+                    } else {
+                        sidebarOptionsContainer.appendChild(createCheckbox(item, false));
+                    }
+                });
+                
+                // --- Add Event Listeners for new logic ---
+                sidebarOptionsContainer.addEventListener('change', (e) => {
+                    if (e.target.type !== 'checkbox') return;
+                    
+                    const checkbox = e.target;
+                    const itemId = checkbox.dataset.itemId;
+                    const isChecked = checkbox.checked;
+
+                    // Save the user's *explicit* choice
+                    userPreferences.sidebarItems[itemId] = isChecked;
+
+                    // If this is a parent, update its children
+                    if (checkbox.dataset.isParent) {
+                        // Only update children if parent is being *unchecked*
+                        if (!isChecked) {
+                            const children = sidebarOptionsContainer.querySelectorAll(`[data-parent-id="${itemId}"]`);
+                            children.forEach(childCheckbox => {
+                                childCheckbox.checked = false;
+                                userPreferences.sidebarItems[childCheckbox.dataset.itemId] = false;
+                            });
+                        }
+                    }
+                    
+                    // If this is a child, update its parent
+                    if (checkbox.dataset.parentId) {
+                        // Only update parent if child is being *checked*
+                        if (isChecked) {
+                            const parentCheckbox = sidebarOptionsContainer.querySelector(`[data-item-id="${checkbox.dataset.parentId}"]`);
+                            if (parentCheckbox && !parentCheckbox.checked) {
+                                parentCheckbox.checked = true;
+                                userPreferences.sidebarItems[parentCheckbox.dataset.itemId] = true;
+                            }
+                        }
+                    }
+
+                    debouncedSavePreferences();
                 });
             }
+            // --- === END OF MODIFIED FUNCTION === ---
+
 
             themeToggle.addEventListener('change', () => {
-                // Save the user's explicit theme choice
                 userPreferences.theme = themeToggle.checked ? 'dark' : 'light';
                 applyTheme(userPreferences.theme);
-                savePreferences('theme'); // Pass 'theme' to save only theme
+                savePreferences('theme'); 
             });
 
             loadPreferencesForSettings();
@@ -284,4 +316,3 @@
     </script>
 </body>
 </html>
-
