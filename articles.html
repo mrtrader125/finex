@@ -173,10 +173,11 @@
                             </div>
                     </div>
                 </div>
+
                 <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto min-h-[400px]">
                     <p class="text-center text-color-muted md:col-span-2">Loading articles...</p>
                 </div>
-                </div>
+            </div>
 
             <div id="full-article-view" class="page-view">
                 <div class="flex flex-col lg:flex-row max-w-6xl mx-auto gap-8">
@@ -317,7 +318,6 @@
                     currentCategory === 'All' || article.category === currentCategory
                 );
                 
-                // --- MODIFICATION: Clear content before showing loading/no results ---
                 articlesContainer.innerHTML = ''; // Clear previous results
 
                 if (articlesToDisplay.length === 0) {
@@ -400,7 +400,6 @@
                 history.pushState(null, '', window.location.pathname);
             }
 
-Real-World Results
             function showFullArticleView(articleId) {
                 const article = allArticles.find(a => a.id === articleId);
                 if (!article) {
@@ -462,7 +461,6 @@ Real-World Results
                     
                     wrapper.classList.remove('open');
                     
-                    // Re-render the grid with the new category
                     renderArticleGrid();
                 });
                 
