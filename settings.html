@@ -14,16 +14,31 @@
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        .sidebar-option-item summary {
+        /* Main details/summary */
+        details > summary {
             list-style: none; /* Hide default <details> marker */
         }
-        .sidebar-option-item summary::-webkit-details-marker {
+        details > summary::-webkit-details-marker {
             display: none; /* Hide default <details> marker */
         }
-        .sidebar-option-item[open] > summary .chevron-icon {
+        details[open] > summary .chevron-icon {
+            transform: rotate(180deg);
+        }
+        details > summary .chevron-icon {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Nested sidebar item details/summary */
+        .sidebar-option-item summary {
+            list-style: none;
+        }
+        .sidebar-option-item summary::-webkit-details-marker {
+            display: none;
+        }
+        .sidebar-option-item[open] > summary .chevron-icon-nested {
             transform: rotate(90deg);
         }
-        .sidebar-option-item .chevron-icon {
+        .sidebar-option-item .chevron-icon-nested {
             transition: transform 0.2s ease-in-out;
             font-size: 0.7rem;
             margin-right: 0.75rem; /* 12px */
@@ -31,7 +46,7 @@
             text-align: center;
         }
     </style>
-    </head>
+</head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
         <div id="sidebar-placeholder"></div>
@@ -53,11 +68,17 @@
                     </div>
 
                     <div class="glass-card p-6 md:p-8">
-                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Sidebar Menu Items</h2>
-                        <p class="text-color-muted mb-6 text-sm">Choose which pages appear in your sidebar navigation for quick access.</p>
-                        <div id="sidebar-options-container" class="space-y-1">
-                            <p class="text-color-muted text-center col-span-full">Loading options...</p>
-                        </div>
+                        <details open> <summary class="flex justify-between items-center cursor-pointer list-none"> <h2 class="text-2xl font-bold">Sidebar Menu Items</h2>
+                                <i class="fas fa-chevron-down chevron-icon text-color-muted text-lg"></i> 
+                            </summary>
+    
+                            <div class="mt-6 border-t border-color-base pt-6">
+                                <p class="text-color-muted mb-6 text-sm">Choose which pages appear in your sidebar navigation for quick access.</p>
+                                <div id="sidebar-options-container" class="space-y-1">
+                                    <p class="text-color-muted text-center col-span-full">Loading options...</p>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Account</h2>
@@ -171,19 +192,17 @@
             }
             function debouncedSavePreferences() { clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...'; debounceTimer = setTimeout(() => savePreferences('sidebar'), 1000); }
 
-            // --- === THIS FUNCTION IS HEAVILY MODIFIED === ---
+            // --- THIS FUNCTION REMAINS UNCHANGED FROM THE PREVIOUS UPGRADE ---
             function populateSidebarOptions() {
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return; // Skip settings itself
 
-                    // If the admin has set this item to 'false', do not render the option
                     if (globalPreferences.sidebarItems[item.id] === false) {
                         return; 
                     }
                     
-                    // --- Helper function to create a checkbox label ---
                     const createCheckbox = (itemData, isSubItem = false) => {
                         const userValue = userPreferences.sidebarItems[itemData.id];
                         const globalValue = globalPreferences.sidebarItems[itemData.id];
@@ -198,7 +217,6 @@
                         checkbox.checked = isChecked;
                         checkbox.dataset.itemId = itemData.id;
                         
-                        // Add parent/child data attributes for linked checking
                         if (!isSubItem && itemData.subItems) {
                             checkbox.dataset.isParent = true;
                         }
@@ -219,25 +237,20 @@
                         return label;
                     };
 
-                    // --- Logic for Parent Items vs. Dropdowns ---
-                    
-                    // Case 1: Item is a Dropdown (has subItems)
                     if (item.subItems) {
                         const details = document.createElement('details');
                         details.className = 'sidebar-option-item';
-                        details.open = true; // Default to open
+                        details.open = true;
                         
                         const summary = document.createElement('summary');
                         summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
                         
-                        // Add chevron icon
                         const chevron = document.createElement('i');
-                        chevron.className = 'fas fa-chevron-right chevron-icon text-color-muted';
+                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted'; // Use nested class
                         
-                        // Create parent checkbox
                         const parentLabel = createCheckbox(item, false);
-                        parentLabel.classList.add('flex-grow'); // Make label take up space
-                        parentLabel.classList.remove('p-2'); // Remove padding, summary has it
+                        parentLabel.classList.add('flex-grow'); 
+                        parentLabel.classList.remove('p-2');
                         
                         summary.appendChild(chevron);
                         summary.appendChild(parentLabel);
@@ -245,9 +258,7 @@
                         const subItemsContainer = document.createElement('div');
                         subItemsContainer.className = 'space-y-1';
                         
-                        // Create checkboxes for sub-items
                         item.subItems.forEach(sub => {
-                            // Also check if admin has hidden the sub-item
                             if (globalPreferences.sidebarItems[sub.id] !== false) {
                                 subItemsContainer.appendChild(createCheckbox(sub, true));
                             }
@@ -257,13 +268,11 @@
                         details.appendChild(subItemsContainer);
                         sidebarOptionsContainer.appendChild(details);
                     
-                    // Case 2: Item is a simple link
                     } else {
                         sidebarOptionsContainer.appendChild(createCheckbox(item, false));
                     }
                 });
                 
-                // --- Add Event Listeners for new logic ---
                 sidebarOptionsContainer.addEventListener('change', (e) => {
                     if (e.target.type !== 'checkbox') return;
                     
@@ -271,12 +280,9 @@
                     const itemId = checkbox.dataset.itemId;
                     const isChecked = checkbox.checked;
 
-                    // Save the user's *explicit* choice
                     userPreferences.sidebarItems[itemId] = isChecked;
 
-                    // If this is a parent, update its children
                     if (checkbox.dataset.isParent) {
-                        // Only update children if parent is being *unchecked*
                         if (!isChecked) {
                             const children = sidebarOptionsContainer.querySelectorAll(`[data-parent-id="${itemId}"]`);
                             children.forEach(childCheckbox => {
@@ -286,9 +292,7 @@
                         }
                     }
                     
-                    // If this is a child, update its parent
                     if (checkbox.dataset.parentId) {
-                        // Only update parent if child is being *checked*
                         if (isChecked) {
                             const parentCheckbox = sidebarOptionsContainer.querySelector(`[data-item-id="${checkbox.dataset.parentId}"]`);
                             if (parentCheckbox && !parentCheckbox.checked) {
@@ -301,7 +305,7 @@
                     debouncedSavePreferences();
                 });
             }
-            // --- === END OF MODIFIED FUNCTION === ---
+            // --- === END OF FUNCTION === ---
 
 
             themeToggle.addEventListener('change', () => {
