@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retro Snake Game | Finex</title>
     
-    <!-- Standard Finex assets -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Load BOTH fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
@@ -92,7 +90,6 @@
                         </div>
                     </div>
 
-                    <!-- === MODIFIED: Buttons are now hidden === -->
                     <button id="start-button" class="game-btn text-lg mb-4 hidden">
                         Start Game
                     </button>
@@ -131,7 +128,6 @@
         </main>
     </div>
 
-    <!-- === THIS IS THE NEW "HIGH-LEVEL" GAME ENGINE === -->
     <script>
         function initSnakeGame() {
             const canvas = document.getElementById('game-canvas');
@@ -377,7 +373,6 @@
                 
                 const powX = powerUp.x * gridSize + gridSize / 2;
                 const powY = powerUp.y * gridSize + gridSize / 2;
-                const radius = gridSize / 2; // Make it pulse slightly larger
                 
                 // Pulsing effect
                 const pulse = Math.abs(Math.sin(Date.now() / 300)) * 2 + (gridSize / 2 - 2);
@@ -481,6 +476,8 @@
                 }
                 if (food.x === x && food.y === y) return true;
                 if (powerUp && powerUp.x === x && powerUp.y === y) return true;
+                // Don't spawn on the head's next potential move
+                if (x === snake[0].x + direction.x && y === snake[0].y + direction.y) return true;
                 return false;
             }
 
@@ -503,7 +500,11 @@
                             x: Math.floor(Math.random() * tileCount),
                             y: Math.floor(Math.random() * tileCount)
                         };
-                    } while (isOccupied(newObs.x, newObs.y) || (newObs.x === snake[0].x && newObs.y === snake[0].y));
+                    // Don't spawn on the snake or too close to the head
+                    } while (isOccupied(newObs.x, newObs.y) || 
+                             (Math.abs(newObs.x - snake[0].x) < 3 && 
+                              Math.abs(newObs.y - snake[0].y) < 3)
+                            );
                     obstacles.push(newObs);
                 }
             }
@@ -566,6 +567,7 @@
                 
                 // Restart the logic interval with the new speed
                 if (logicInterval) clearInterval(logicInterval);
+                if (!isRunning) return; // Don't restart if game is over
                 logicInterval = setInterval(gameTick, gameSpeed);
             }
 
@@ -594,12 +596,11 @@
                     return; 
                 }
                 
-                // Start game on any key if not running
                 if (!isRunning) {
-                    // Need to check for modifier keys, etc.
                     if (e.key.length === 1 || e.key.startsWith("Arrow")) {
                         startGame();
                     }
+                    return; // Don't process movement if game isn't running
                 }
 
                 switch (e.key) {
@@ -658,7 +659,6 @@
         }
     </script>
     
-    <!-- This loads app.js AND runs the snake game logic AFTER -->
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore } from './app.js';
