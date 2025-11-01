@@ -110,7 +110,7 @@
         #toc-list a.level-2 { @apply font-semibold text-color-base; }
         #toc-list a.level-3 { @apply pl-4; }
 
-        /* === CUSTOM DROPDOWN STYLES (NEW) === */
+        /* === CUSTOM DROPDOWN STYLES === */
         .custom-select-wrapper { 
             position: relative; 
         }
@@ -143,7 +143,6 @@
         html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
         .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
         html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
-        /* === END OF NEW STYLES === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -163,7 +162,7 @@
                     </div>
                 
                 <div class="flex justify-center mb-8">
-                    <div class="custom-select-wrapper w-full max-w-xs">
+                    <div class="custom-select-wrapper w-64">
                         <label class="text-sm text-color-muted block mb-1 text-center">Filter by Category</label>
                         <input type="hidden" id="category-select-value" value="All">
                         <div class="custom-select-trigger" data-dropdown-trigger="category-select">
@@ -174,10 +173,10 @@
                             </div>
                     </div>
                 </div>
-                <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto min-h-[400px]">
                     <p class="text-center text-color-muted md:col-span-2">Loading articles...</p>
                 </div>
-            </div>
+                </div>
 
             <div id="full-article-view" class="page-view">
                 <div class="flex flex-col lg:flex-row max-w-6xl mx-auto gap-8">
@@ -225,19 +224,17 @@
             const featuredArticleContainer = document.getElementById('featured-article-container');
             const backToListBtn = document.getElementById('back-to-list-btn');
 
-            // --- NEW: Dropdown Elements ---
+            // --- Dropdown Elements ---
             const categorySelectWrapperEl = document.querySelector('[data-dropdown-trigger="category-select"]');
             const categorySelectOptions = document.getElementById('category-select-options');
             const categorySelectValue = document.getElementById('category-select-value');
             
-            // Check essential elements
             if (!articlesListView || !fullArticleView || !articlesContainer || !backToListBtn || !featuredArticleContainer || !categorySelectWrapperEl || !categorySelectOptions || !categorySelectValue) {
                 console.error("One or more essential article elements not found!");
                 if (articlesContainer) articlesContainer.innerHTML = "<p class='text-red-500 text-center'>Error loading page elements.</p>"
                 return;
             }
             
-            // Get trigger text span *after* checking wrapper
             const categorySelectTriggerText = categorySelectWrapperEl.querySelector('span');
 
             // --- State ---
@@ -277,7 +274,7 @@
             });
 
             // --- Render Functions ---
-            function renderFeaturedArticle() { /* ... (no changes) ... */
+            function renderFeaturedArticle() {
                 if (allArticles.length === 0) return;
                 const featured = allArticles[0]; 
                 const formattedDate = featured.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
@@ -301,7 +298,6 @@
                     </a>`;
             }
 
-            // --- MODIFIED: Renders dropdown options ---
             function renderCategories() {
                 const categories = ['All', ...new Set(allArticles.map(a => a.category).filter(Boolean))];
                 
@@ -316,14 +312,19 @@
                 categorySelectValue.value = selectedOption;
             }
 
-            function renderArticleGrid() { /* ... (no changes) ... */
+            function renderArticleGrid() {
                 const articlesToDisplay = allArticles.slice(1).filter(article => 
                     currentCategory === 'All' || article.category === currentCategory
                 );
+                
+                // --- MODIFICATION: Clear content before showing loading/no results ---
+                articlesContainer.innerHTML = ''; // Clear previous results
+
                 if (articlesToDisplay.length === 0) {
                     articlesContainer.innerHTML = '<p class="text-center text-color-muted md:col-span-2">No articles in this category.</p>';
                     return;
                 }
+                
                 articlesContainer.innerHTML = articlesToDisplay.map(article => {
                     const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) || '';
                     const coverImg = article.coverImage || placeholderImage(600, 400, 'Article');
@@ -346,7 +347,7 @@
                 }).join('');
             }
 
-            function generateTableOfContents(contentEl) { /* ... (no changes) ... */
+            function generateTableOfContents(contentEl) {
                 const tocList = document.getElementById('toc-list');
                 if (!tocList) return;
                 tocList.innerHTML = '';
@@ -370,7 +371,7 @@
                 document.getElementById('toc-container').style.display = hasHeadings ? 'block' : 'none';
             }
             
-            function renderRelatedArticles(currentArticleId, category) { /* ... (no changes) ... */
+            function renderRelatedArticles(currentArticleId, category) {
                 const relatedList = document.getElementById('related-articles-list');
                 if (!relatedList) return;
                 const related = allArticles.filter(a => 
@@ -391,15 +392,16 @@
                 }).join('');
             }
 
-            // --- Page View Functions (Unchanged URL logic) ---
-            function showListView() { /* ... (no changes) ... */
+            // --- Page View Functions ---
+            function showListView() {
                 fullArticleView.classList.remove('active');
                 articlesListView.classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'auto' });
                 history.pushState(null, '', window.location.pathname);
             }
 
-            function showFullArticleView(articleId) { /* ... (no changes) ... */
+Real-World Results
+            function showFullArticleView(articleId) {
                 const article = allArticles.find(a => a.id === articleId);
                 if (!article) {
                     console.warn(`Article with ID ${articleId} not found. Showing list view.`);
@@ -436,7 +438,7 @@
                 renderRelatedArticles(article.id, article.category);
             }
 
-            // --- NEW: Dropdown Event Handling ---
+            // --- Dropdown Event Handling ---
             function setupCategoryDropdown() {
                 const wrapper = categorySelectWrapperEl.closest('.custom-select-wrapper');
 
@@ -464,7 +466,6 @@
                     renderArticleGrid();
                 });
                 
-                // Global click to close
                 document.addEventListener('click', () => {
                     if (wrapper.classList.contains('open')) {
                         wrapper.classList.remove('open');
@@ -474,7 +475,6 @@
 
             // --- Event Listeners Setup ---
             function setupEventListeners() {
-                // Main article click listener
                 document.body.addEventListener('click', (e) => {
                     const articleLink = e.target.closest('a[data-id]');
                     if (articleLink) {
@@ -483,13 +483,11 @@
                     }
                 });
 
-                // Back button
                 backToListBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     showListView();
                 });
 
-                // Browser back/forward
                 window.addEventListener('popstate', () => {
                     const urlParams = new URLSearchParams(window.location.search);
                     const articleIdFromUrl = urlParams.get('id');
@@ -505,7 +503,6 @@
                     }
                 });
                 
-                // --- NEW: Initialize the dropdown ---
                 setupCategoryDropdown();
             }
 
