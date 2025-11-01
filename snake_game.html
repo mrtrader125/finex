@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Snake Game | Finex</title> <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="main.css">
+    
+    <style>
+        /* Custom styles */
+        .game-wrapper {
+            font-family: 'Press Start 2P', cursive;
+            overscroll-behavior: none; /* Prevents pull-to-refresh on mobile */
+        }
+        
+        /* Style for the game canvas */
+        .game-wrapper canvas {
+            background-color: #0c0c0c;
+            /* A glowing border effect */
+            border: 4px solid #48bb78; /* green-500 */
+            box-shadow: 0 0 20px #48bb78;
+            image-rendering: pixelated; /* Keeps the pixel art sharp */
+        }
+
+        /* Style for game buttons */
+        .game-wrapper .game-btn {
+            @apply px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg transform transition-all duration-150; /* Smaller padding */
+            @apply hover:bg-green-700 hover:shadow-xl active:scale-95;
+            border-bottom: 4px solid #2f855a; /* darker green */
+        }
+        
+        .game-wrapper .game-btn:active {
+            border-bottom-width: 2px;
+            transform: translateY(2px);
+        }
+
+        /* On-screen controls styling */
+        .game-wrapper .controls-btn {
+            @apply w-14 h-14 sm:w-16 sm:h-16 bg-gray-700 text-white rounded-lg shadow-md flex items-center justify-center text-2xl; /* Made smaller */
+            @apply active:bg-gray-800 active:scale-95 transition-transform;
+            border-bottom: 4px solid #2d3748; /* darker gray */
+        }
+        
+        .game-wrapper .controls-btn:active {
+            border-bottom-width: 2px;
+            transform: translateY(2px);
+        }
+        
+        /* Custom message box for game over/start */
+        .game-wrapper #message-box {
+            @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-75 p-6 rounded-lg text-center text-base sm:text-xl shadow-2xl; /* Smaller text/padding */
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="antialiased textured-background">
+
+    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <div id="app-wrapper" style="display: none;">
+        
+        <div id="sidebar-placeholder"></div>
+        <div id="header-placeholder"></div>
+
+        <main class="container mx-auto p-4 md:p-8 flex-grow pt-[68px]">
+            <div class="flex items-center justify-center">
+                
+                <div class="glass-card w-full max-w-sm text-center p-6 game-wrapper">
+                    <h1 class="text-3xl sm:text-4xl font-bold text-green-400 mb-4" style="text-shadow: 0 0 10px #48bb78;">
+                        SNAKE
+                    </h1>
+
+                    <div id="score-display" class="text-xl mb-4 text-color-base">
+                        Score: 0
+                    </div>
+
+                    <div id="game-container" class="relative w-full aspect-square max-w-xs mx-auto mb-4">
+                        <canvas id="game-canvas" class="w-full h-full rounded-lg"></canvas>
+                        
+                        <div id="message-box" class="hidden text-white"> <p id="message-text">Press Start!</p>
+                        </div>
+                    </div>
+
+                    <button id="start-button" class="game-btn text-lg mb-4">
+                        Start Game
+                    </button>
+
+                    <div class="grid grid-cols-3 gap-2 w-44 sm:w-52 mx-auto">
+                        <div></div>
+                        <button id="btn-up" class="controls-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                        <div></div>
+                        <button id="btn-left" class="controls-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <div></div>
+                        <button id="btn-right" class="controls-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <div></div>
+                        <button id="btn-down" class="controls-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // This script is intentionally not a module, so it can run after app.js
+        // We wrap it to wait for app.js to finish
+        function initSnakeGame() {
+            const canvas = document.getElementById('game-canvas');
+            if (!canvas) return; // In case page fails to load
+            
+            const ctx = canvas.getContext('2d');
+            const scoreEl = document.getElementById('score-display');
+            const startButton = document.getElementById('start-button');
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+
+            // --- Game Settings ---
+            const gridSize = 20; // Size of each square in the grid
+            let tileCount = 20; // 20x20 grid
+            let canvasSize = gridSize * tileCount;
+
+            // --- Game State ---
+            let snake, food, direction, score, gameLoop, isRunning;
+
+            function initializeGame() {
+                snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
+                direction = { x: 0, y: 0 };
+                score = 0;
+                isRunning = false;
+                scoreEl.textContent = 'Score: 0';
+                startButton.textContent = 'Start Game';
+                
+                generateFood();
+                
+                canvas.width = canvasSize;
+                canvas.height = canvasSize;
+
+                if (gameLoop) {
+                    clearInterval(gameLoop);
+                }
+                
+                draw();
+                showMessage('Press Start!', false);
+            }
+
+            function startGame() {
+                if (isRunning) return; 
+                
+                snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
+                direction = { x: 0, y: 0 }; 
+                score = 0;
+                scoreEl.textContent = 'Score: 0';
+                isRunning = true;
+                startButton.textContent = 'In Progress';
+                hideMessage();
+                
+                gameLoop = setInterval(gameTick, 120); 
+            }
+
+            function gameTick() {
+                if (!isRunning) return;
+                const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+                if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                    return gameOver();
+                }
+                
+                for (let i = 1; i < snake.length; i++) {
+                    if (head.x === snake[i].x && head.y === snake[i].y) {
+                        return gameOver();
+                    }
+                }
+
+                snake.unshift(head);
+
+                if (head.x === food.x && head.y === food.y) {
+                    score++;
+                    scoreEl.textContent = `Score: ${score}`;
+                    generateFood(); 
+                } else {
+                    snake.pop();
+                }
+                draw();
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0c0c0c';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#48bb78'; // green-500
+                snake.forEach((part, index) => {
+                    ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 1, gridSize - 1);
+                    if (index === 0) {
+                        ctx.fillStyle = '#38a169'; // green-600
+                        ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 1, gridSize - 1);
+                        ctx.fillStyle = '#48bb78'; // reset
+                    }
+                });
+
+                ctx.fillStyle = '#f56565'; // red-500
+                ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 1, gridSize - 1);
+                ctx.fillStyle = '#fc8181'; // red-400
+                ctx.fillRect(food.x * gridSize + 2, food.y * gridSize + 2, gridSize - 5, gridSize - 5);
+            }
+
+            function generateFood() {
+                let newFood;
+                let onSnake;
+                do {
+                    onSnake = false;
+                    newFood = {
+                        x: Math.floor(Math.random() * tileCount),
+                        y: Math.floor(Math.random() * tileCount)
+                    };
+                    for (let part of snake) {
+                        if (part.x === newFood.x && part.y === newFood.y) {
+                            onSnake = true;
+                            break;
+                        }
+                    }
+                } while (onSnake); 
+                
+                food = newFood;
+            }
+
+            function gameOver() {
+                isRunning = false;
+                clearInterval(gameLoop);
+                startButton.textContent = 'Restart Game';
+                showMessage(`Game Over! Score: ${score}`);
+            }
+
+            function showMessage(text, autoHide = false) {
+                messageText.textContent = text;
+                messageBox.classList.remove('hidden');
+                
+                if (autoHide) {
+                    setTimeout(() => {
+                        hideMessage();
+                    }, 2000);
+                }
+            }
+
+            function hideMessage() {
+                messageBox.classList.add('hidden');
+            }
+
+            // --- Event Listeners ---
+            document.addEventListener('keydown', e => {
+                if (!isRunning && (e.key.startsWith('Arrow') || ['w', 'a', 's', 'd'].includes(e.key))) {
+                    // Don't start if the user is typing in an input (like the search bar)
+                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                        return;
+                    }
+                    startGame();
+                }
+
+                switch (e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                        if (direction.y === 0) direction = { x: 0, y: -1 };
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                        if (direction.y === 0) direction = { x: 0, y: 1 };
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                        if (direction.x === 0) direction = { x: -1, y: 0 };
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                        if (direction.x === 0) direction = { x: 1, y: 0 };
+                        break;
+                }
+                
+                if (e.key.startsWith('Arrow')) {
+                    e.preventDefault();
+                }
+            });
+
+            document.getElementById('btn-up').addEventListener('click', () => {
+                if (!isRunning) startGame();
+                if (direction.y === 0) direction = { x: 0, y: -1 };
+            });
+            document.getElementById('btn-down').addEventListener('click', () => {
+                if (!isRunning) startGame();
+                if (direction.y === 0) direction = { x: 0, y: 1 };
+            });
+            document.getElementById('btn-left').addEventListener('click', () => {
+                if (!isRunning) startGame();
+                if (direction.x === 0) direction = { x: -1, y: 0 };
+            });
+            document.getElementById('btn-right').addEventListener('click', () => {
+                if (!isRunning) startGame();
+                if (direction.x === 0) direction = { x: 1, y: 0 };
+            });
+
+            startButton.addEventListener('click', () => {
+                if (isRunning) {
+                    initializeGame(); 
+                    startGame(); 
+                } else {
+                    initializeGame(); 
+                    startGame(); 
+                }
+            });
+
+            initializeGame();
+        }
+    </script>
+    
+    <script type="module" src="app.js"></script>
+    <script type="module">
+        import { initializeAppCore } from './app.js';
+        
+        // This is the page-specific function passed to the core initializer
+        function initGamePage(user, db) {
+            console.log("Setting up Snake Game page...");
+            // The snake game logic is in the <script> tag above,
+            // but we need to call its init function.
+            // We use a small delay to ensure the DOM is fully ready
+            setTimeout(() => {
+                if (typeof initSnakeGame === 'function') {
+                    initSnakeGame();
+                } else {
+                    console.error("Snake Game init function not found!");
+                }
+            }, 100); // 100ms delay
+        }
+
+        // Initialize the app core
+        initializeAppCore(initGamePage);
+    </script>
+</body>
+</html>
