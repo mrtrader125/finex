@@ -55,6 +55,20 @@
         <div class="min-h-screen flex flex-col">
             <main class="container mx-auto p-4 md:p-8 flex-grow">
                 <div class="max-w-4xl mx-auto space-y-8">
+
+                    <div class="glass-card p-6 md:p-8">
+                        <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Profile</h2>
+                        <form id="profile-form" class="space-y-4">
+                            <div>
+                                <label for="display-name" class="text-sm text-color-muted block mb-1">Display Name</label>
+                                <input type="text" id="display-name" required class="form-input w-full md:w-1/2" placeholder="e.g., Alex">
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <button type="submit" id="save-profile-btn" class="main-button py-2 px-5">Save Profile</button>
+                                <p id="profile-save-status" class="text-sm text-color-muted h-4"></p>
+                            </div>
+                        </form>
+                    </div>
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Appearance</h2>
                         <div class="flex items-center justify-between">
@@ -68,7 +82,9 @@
                     </div>
 
                     <div class="glass-card p-6 md:p-8">
-                        <details open> <summary class="flex justify-between items-center cursor-pointer list-none"> <h2 class="text-2xl font-bold">Sidebar Menu Items</h2>
+                        <details open>
+                            <summary class="flex justify-between items-center cursor-pointer list-none">
+                                <h2 class="text-2xl font-bold">Sidebar Menu Items</h2>
                                 <i class="fas fa-chevron-down chevron-icon text-color-muted text-lg"></i> 
                             </summary>
     
@@ -80,6 +96,7 @@
                             </div>
                         </details>
                     </div>
+
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Account</h2>
                          <div class="space-y-4">
@@ -97,58 +114,123 @@
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
-        import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // === MODIFIED: Added updateDoc ===
+        import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initSettingsPage(user, db) {
             console.log("Setting up Settings page specific logic...");
-            const accountEmailSpan = document.getElementById('account-email');
-            const themeToggle = document.getElementById('theme-toggle');
-            const sidebarOptionsContainer = document.getElementById('sidebar-options-container');
-            const saveStatus = document.getElementById('save-status');
+            
+            // === MODIFIED: Added new elements ===
+            const elements = {
+                accountEmailSpan: document.getElementById('account-email'),
+                themeToggle: document.getElementById('theme-toggle'),
+                sidebarOptionsContainer: document.getElementById('sidebar-options-container'),
+                saveStatus: document.getElementById('save-status'),
+                profileForm: document.getElementById('profile-form'),
+                displayNameInput: document.getElementById('display-name'),
+                saveProfileBtn: document.getElementById('save-profile-btn'),
+                profileSaveStatus: document.getElementById('profile-save-status')
+            };
+            // === END MODIFICATION ===
 
-            if (!accountEmailSpan || !themeToggle || !sidebarOptionsContainer || !saveStatus) {
+            if (!elements.accountEmailSpan || !elements.themeToggle || !elements.sidebarOptionsContainer || !elements.saveStatus || !elements.profileForm) {
                 console.error("Critical settings elements missing!");
                  const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; return;
             }
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
+            // === NEW: Add ref to main user doc ===
+            let userDocRef = doc(db, "users", currentUserId);
             
-            let globalPreferences = { theme: 'dark', sidebarItems: {} }; // From admin
-            let userPreferences = { theme: 'dark', sidebarItems: {} };   // From user
+            let globalPreferences = { theme: 'dark', sidebarItems: {} };
+            let userPreferences = { theme: 'dark', sidebarItems: {} };   
             
-            // Initialize local defaults using the imported allSidebarItems
             let defaultSidebarItems = {};
             allSidebarItems.forEach(item => {
-                defaultSidebarItems[item.id] = true; // Default parent to true
-                if(item.subItems) { item.subItems.forEach(sub => defaultSidebarItems[sub.id] = true); } // Default subitems to true
+                defaultSidebarItems[item.id] = true; 
+                if(item.subItems) { item.subItems.forEach(sub => defaultSidebarItems[sub.id] = true); } 
             });
 
             let debounceTimer = null;
 
+            // === MODIFIED: This function now also loads the user's profile ===
             async function loadPreferencesForSettings() {
                 try {
+                    // --- Load Preferences ---
                     const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
-                    const globalDocSnap = await getDoc(globalSettingsRef);
+                    const [globalDocSnap, userDocSnap] = await Promise.all([
+                        getDoc(globalSettingsRef),
+                        getDoc(settingsDocRef)
+                    ]);
+                    
                     if (globalDocSnap.exists()) {
                         globalPreferences = { ...globalPreferences, ...globalDocSnap.data() };
                     }
-                    
-                    const userDocSnap = await getDoc(settingsDocRef);
                     if (userDocSnap.exists()) {
                         const loadedPrefs = userDocSnap.data();
                         userPreferences.theme = loadedPrefs.theme; 
                         userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
                     }
-                } catch (error) { console.error("Error loading preferences for settings:", error); }
+                    
+                    // --- Load Profile ---
+                    const mainUserDocSnap = await getDoc(userDocRef);
+                    if (mainUserDocSnap.exists()) {
+                        const userData = mainUserDocSnap.data();
+                        // Set display name or fall back to email prefix
+                        elements.displayNameInput.value = userData.displayName || user.email.split('@')[0];
+                    } else {
+                        // Fallback if user doc somehow doesn't exist
+                        elements.displayNameInput.value = user.email.split('@')[0];
+                    }
+
+                } catch (error) { console.error("Error loading data:", error); }
                 
-                accountEmailSpan.textContent = user.email;
+                elements.accountEmailSpan.textContent = user.email;
                 
                 const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
-                themeToggle.checked = (finalTheme === 'dark');
+                elements.themeToggle.checked = (finalTheme === 'dark');
                 
                 populateSidebarOptions();
             }
+            // === END MODIFICATION ===
+            
+            // === NEW: Function to save profile changes ===
+            async function saveProfile(e) {
+                e.preventDefault();
+                if (!userDocRef) return;
+                
+                const newName = elements.displayNameInput.value.trim();
+                if (!newName) {
+                    showProfileMessage("Name cannot be empty.", true);
+                    return;
+                }
+                
+                elements.saveProfileBtn.disabled = true;
+                elements.saveProfileBtn.textContent = 'Saving...';
+                showProfileMessage("Saving profile...", false);
+
+                try {
+                    await updateDoc(userDocRef, {
+                        displayName: newName
+                    });
+                    showProfileMessage("Profile Saved!", false);
+                } catch (error) {
+                    console.error("Error saving profile:", error);
+                    showProfileMessage("Error saving profile.", true);
+                } finally {
+                    elements.saveProfileBtn.disabled = false;
+                    elements.saveProfileBtn.textContent = 'Save Profile';
+                }
+            }
+            
+            function showProfileMessage(message, isError = false) {
+                 elements.profileSaveStatus.textContent = message;
+                 elements.profileSaveStatus.className = `text-sm h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
+                 setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
+            }
+            // === END NEW FUNCTIONS ===
+
 
             async function savePreferences(type = 'all') {
                 if (!settingsDocRef) return; 
@@ -192,7 +274,6 @@
             }
             function debouncedSavePreferences() { clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...'; debounceTimer = setTimeout(() => savePreferences('sidebar'), 1000); }
 
-            // --- THIS FUNCTION REMAINS UNCHANGED FROM THE PREVIOUS UPGRADE ---
             function populateSidebarOptions() {
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
@@ -305,14 +386,16 @@
                     debouncedSavePreferences();
                 });
             }
-            // --- === END OF FUNCTION === ---
 
 
-            themeToggle.addEventListener('change', () => {
-                userPreferences.theme = themeToggle.checked ? 'dark' : 'light';
+            elements.themeToggle.addEventListener('change', () => {
+                userPreferences.theme = elements.themeToggle.checked ? 'dark' : 'light';
                 applyTheme(userPreferences.theme);
                 savePreferences('theme'); 
             });
+            
+            // === NEW: Add listener for profile form ===
+            elements.profileForm.addEventListener('submit', saveProfile);
 
             loadPreferencesForSettings();
         }
