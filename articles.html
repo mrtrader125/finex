@@ -96,8 +96,7 @@
             ],
         }
     </script>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script> <!-- Load typography plugin -->
-    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script> <link rel="stylesheet" href="main.css">
     <style>
         .page-view { display: none; }
         .page-view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
@@ -136,65 +135,49 @@
 
         <main class="container mx-auto p-4 md:p-8">
             
-            <!-- ====== ARTICLES LIST VIEW ====== -->
-            <div id="articles-list-view" class="page-view active">
+            <div id="articles-list-view" class="page-view">
                 <div class="text-center mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold text-color-base">Finex Guides</h1>
                     <p class="text-lg text-color-muted mt-4 max-w-2xl mx-auto">Browse our library of in-depth guides and strategies, published by our team.</p>
                 </div>
 
-                <!-- Featured Article -->
                 <div id="featured-article-container" class="mb-12">
-                    <!-- Featured Article will be injected here -->
-                </div>
+                    </div>
                 
-                <!-- Category Filters -->
                 <div id="category-filters" class="flex flex-wrap gap-2 justify-center mb-8">
-                    <!-- Category tabs will be injected here -->
-                </div>
+                    </div>
 
-                <!-- Article Grid -->
                 <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                     <p class="text-center text-color-muted md:col-span-2">Loading articles...</p>
                 </div>
             </div>
 
-            <!-- ====== FULL ARTICLE VIEW ====== -->
             <div id="full-article-view" class="page-view">
-                <!-- Wrapper for ToC and Article -->
                 <div class="flex flex-col lg:flex-row max-w-6xl mx-auto gap-8">
                     
-                    <!-- Left Rail: Back Button -->
                     <div class="w-full lg:w-48 flex-shrink-0">
                         <button id="back-to-list-btn" class="text-blue-500 hover:text-blue-400 mb-6 inline-flex items-center group">
                             <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>Back to All Articles
                         </button>
                     </div>
 
-                    <!-- Center: Article Content -->
                     <div class="glass-card p-6 md:p-10 flex-grow min-w-0">
-                        <!-- Cover Image -->
                         <img id="article-cover-image" src="" alt="Article Cover Image" class="w-full h-auto object-cover rounded-lg mb-8 shadow-lg">
                         
-                        <!-- Title & Meta -->
                         <div class="text-center mb-8">
                             <h1 id="article-title-full" class="text-4xl md:text-5xl font-bold leading-tight mb-4"></h1>
                             <div id="article-meta-full" class="flex flex-wrap items-center justify-center text-sm text-color-muted space-x-2"></div>
                         </div>
 
-                        <!-- Article Content (Prose) -->
                         <article id="article-content-full" class="article-content"></article>
 
-                         <!-- Related Articles -->
-                        <div id="related-articles-container" class="mt-12 pt-8 border-t border-color-base">
+                         <div id="related-articles-container" class="mt-12 pt-8 border-t border-color-base">
                             <h3 class="text-2xl font-bold mb-4 text-color-base">Related Articles</h3>
                             <div id="related-articles-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <!-- Related articles will be injected here -->
-                            </div>
+                                </div>
                         </div>
                     </div>
 
-                    <!-- Right Rail: Table of Contents (Sticky) -->
                     <div id="toc-container">
                         <div id="toc-sticky-wrapper">
                             <h3 class="font-bold text-color-base mb-2">On This Page</h3>
@@ -231,10 +214,13 @@
             const placeholderImage = (width, height, text) => `https://placehold.co/${width}x${height}/334155/9ca3af?text=${text}`;
 
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
+            
+            // --- MODIFIED: Upgraded onSnapshot logic ---
             onSnapshot(q, (querySnapshot) => {
                 allArticles = [];
                 if (querySnapshot.empty) {
                     articlesContainer.innerHTML = '<p class="text-center text-color-muted">No articles published yet.</p>';
+                    articlesListView.classList.add('active'); // Show the list view even if empty
                     return;
                 }
                 
@@ -242,14 +228,28 @@
                     allArticles.push({ id: doc.id, ...doc.data() });
                 });
                 
-                renderFeaturedArticle();
-                renderCategories();
-                renderArticleGrid();
+                // === UPGRADE: Check URL for a specific article ID ===
+                const urlParams = new URLSearchParams(window.location.search);
+                const articleIdFromUrl = urlParams.get('id');
+                const articleExists = articleIdFromUrl && allArticles.find(a => a.id === articleIdFromUrl);
+
+                if (articleExists) {
+                    // A valid article ID was found in the URL. Show it directly.
+                    showFullArticleView(articleIdFromUrl);
+                } else {
+                    // No ID (or a bad ID) was found. Show the standard list view.
+                    renderFeaturedArticle();
+                    renderCategories();
+                    renderArticleGrid();
+                    articlesListView.classList.add('active'); // Show the list
+                }
+                // === END UPGRADE ===
 
             }, (error) => {
                 console.error("Error fetching articles:", error);
                 articlesContainer.innerHTML = '<p class="text-center text-red-500">Could not load articles.</p>';
             });
+            // --- END MODIFICATION ---
 
             function renderFeaturedArticle() {
                 if (allArticles.length === 0) return;
@@ -378,16 +378,27 @@
                 }).join('');
             }
 
-
+            // --- MODIFIED: Upgraded showListView function ---
             function showListView() {
                 fullArticleView.classList.remove('active');
                 articlesListView.classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'auto' });
+                // === UPGRADE: Clear URL parameter when going back to list ===
+                history.pushState(null, '', window.location.pathname);
             }
 
+            // --- MODIFIED: Upgraded showFullArticleView function ---
             function showFullArticleView(articleId) {
                 const article = allArticles.find(a => a.id === articleId);
-                if (!article) return;
+                if (!article) {
+                    console.warn(`Article with ID ${articleId} not found. Showing list view.`);
+                    showListView();
+                    // Also make sure list view content is rendered
+                    renderFeaturedArticle();
+                    renderCategories();
+                    renderArticleGrid();
+                    return;
+                }
                 
                 const coverImg = article.coverImage || placeholderImage(1200, 600, 'Article');
                 document.getElementById('article-cover-image').src = coverImg;
@@ -408,7 +419,16 @@
                 contentEl.innerHTML = article.content;
                 
                 articlesListView.classList.remove('active');
-                fullArticleView.classList.add('active');
+Z                fullArticleView.classList.add('active');
+                
+                // === UPGRADE: Set URL parameter when viewing an article ===
+                const url = new URL(window.location);
+                if (url.searchParams.get('id') !== articleId) {
+                    url.searchParams.set('id', articleId);
+                    history.pushState(null, '', url.toString());
+                }
+                // === END UPGRADE ===
+                
                 window.scrollTo({ top: 0, behavior: 'auto' });
                 
                 // Post-render generation
@@ -423,13 +443,8 @@
                 const articleLink = e.target.closest('a[data-id]');
                 if (articleLink) {
                     e.preventDefault();
-                    // Check if we are already on the article page (e.g., clicked a related article)
-                    const isAlreadyOnArticleView = fullArticleView.classList.contains('active');
+                    // This function now handles URL changes and scrolling
                     showFullArticleView(articleLink.dataset.id);
-                    // If we clicked a related article, scroll to top
-                    if (isAlreadyOnArticleView) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
                 }
             });
 
@@ -450,6 +465,26 @@
                 e.preventDefault();
                 showListView();
             });
+
+            // --- NEW: Handle browser back/forward buttons ---
+            window.addEventListener('popstate', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const articleIdFromUrl = urlParams.get('id');
+                const articleExists = articleIdFromUrl && allArticles.find(a => a.id === articleIdFromUrl);
+
+                if (articleExists) {
+                    // User pressed 'forward' to an article
+                    showFullArticleView(articleIdFromUrl);
+                } else {
+                    // User pressed 'back' to the list
+                    showListView();
+                    // Ensure list content is rendered (in case page was loaded directly to article)
+                    renderFeaturedArticle();
+                    renderCategories();
+                    renderArticleGrid();
+                }
+            });
+
         }
         
         initializeAppCore(initArticlesPage);
