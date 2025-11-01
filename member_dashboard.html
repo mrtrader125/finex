@@ -214,15 +214,18 @@
 
         const rssFeedCache = new Map();
 
-        function initDashboardPage(user, db) {
+        // === MODIFIED: Function now accepts userProfile ===
+        function initDashboardPage(user, db, userProfile) {
             console.log("Setting up Dashboard specific logic...");
             
+            // === MODIFIED: Use the new userProfile object ===
             const memberNameEl = document.getElementById('member-name');
-            if (memberNameEl && user && user.displayName) {
-                memberNameEl.textContent = user.displayName.split(' ')[0] || 'Member';
-            } else if (memberNameEl && user) {
-                memberNameEl.textContent = user.email.split('@')[0] || 'Member';
+            if (memberNameEl && userProfile && userProfile.displayName) {
+                // Capitalize the first letter of the name
+                const name = userProfile.displayName;
+                memberNameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
             }
+            // === END MODIFICATION ===
 
             loadLatestArticles(db);
             loadLatestAnalysis(db);
