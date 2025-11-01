@@ -37,7 +37,11 @@ export const allSidebarItems = [
     { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
     { id: 'planning', icon: 'fa-clipboard-list', text: 'Plan & Journal', subItems: [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
-            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' } ] },
+            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
+            // === THIS IS THE NEW LINE YOU REQUESTED ===
+            { id: 'monthlyReview', href: 'monthly_review.html', icon: 'fa-calendar-check', text: 'Monthly Review' }
+            // === END OF NEW LINE ===
+        ] },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
     // *** UPDATED Market Data Dropdown ***
     {
@@ -226,5 +230,6 @@ export function renderSidebar() {
 // --- Core Event Listeners Attachment ---
 function attachCoreEventListeners() {
     const openSidebarBtn=document.getElementById('open-sidebar-btn'); const closeSidebarBtn=document.getElementById('close-sidebar-btn'); const sidebar=document.getElementById('sidebar'); const sidebarOverlay=document.getElementById('sidebar-overlay'); const sidebarNav=document.getElementById('sidebar-nav'); const logoutBtn=document.getElementById('logout-btn'); function openSidebar(){if(sidebar)sidebar.classList.remove('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.remove('hidden'); setTimeout(()=>sidebarOverlay.classList.remove('opacity-0'),10);}} function closeSidebar(){if(sidebar)sidebar.classList.add('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.add('opacity-0'); setTimeout(()=>sidebarOverlay.classList.add('hidden'),300);}} if(openSidebarBtn)openSidebarBtn.addEventListener('click',openSidebar); if(closeSidebarBtn)closeSidebarBtn.addEventListener('click',closeSidebar); if(sidebarOverlay)sidebarOverlay.addEventListener('click',closeSidebar); if(logoutBtn)logoutBtn.addEventListener('click',(e)=>{e.preventDefault(); signOut(auth).then(()=>{window.location.href='index.html';}).catch((error)=>{console.error('Sign out error',error);});}); if(sidebarNav){sidebarNav.addEventListener('click',(e)=>{const link=e.target.closest('a'); const toggle=e.target.closest('button[data-toggle]'); if(link&&!link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}else if(toggle){const subMenuId=`submenu-${toggle.dataset.toggle}`; const subMenu=document.getElementById(subMenuId); const chevron=toggle.querySelector('.chevron-icon'); if(subMenu){if(subMenu.style.maxHeight&&subMenu.style.maxHeight!=='0px'){subMenu.style.maxHeight='0px'; toggle.classList.remove('active-parent'); if(chevron)chevron.classList.remove('rotate-180');}else{subMenu.style.maxHeight=subMenu.scrollHeight+"px"; toggle.classList.add('active-parent'); if(chevron)chevron.classList.add('rotate-180');}}}else if(link&&link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}});}
-}
 
+
+}
