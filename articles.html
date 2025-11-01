@@ -102,30 +102,48 @@
         .page-view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* New styles for article content */
         .article-content { @apply prose dark:prose-invert max-w-prose mx-auto; }
 
-        /* New styles for ToC */
-        #toc-container {
-            @apply hidden lg:block w-64 flex-shrink-0;
-        }
-        #toc-sticky-wrapper {
-            @apply sticky top-24; /* top-24 assumes header height */
-        }
-        #toc-list a {
-            @apply block text-sm py-1.5 text-color-muted hover:text-blue-500 transition-colors;
-        }
+        #toc-container { @apply hidden lg:block w-64 flex-shrink-0; }
+        #toc-sticky-wrapper { @apply sticky top-24; }
+        #toc-list a { @apply block text-sm py-1.5 text-color-muted hover:text-blue-500 transition-colors; }
         #toc-list a.level-2 { @apply font-semibold text-color-base; }
         #toc-list a.level-3 { @apply pl-4; }
 
-        /* New category filter tabs */
-        .category-tab {
-            @apply px-4 py-2 text-sm font-semibold rounded-full cursor-pointer transition-colors;
-            @apply text-color-muted hover:text-color-base bg-white/5 hover:bg-white/10;
+        /* === CUSTOM DROPDOWN STYLES (NEW) === */
+        .custom-select-wrapper { 
+            position: relative; 
         }
-        .category-tab.active {
-            @apply text-white bg-blue-600 hover:bg-blue-700;
+        .custom-select-trigger {
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            padding: 0.75rem; border-radius: 0.5rem; width: 100%;
+            background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
+        html.dark .custom-select-trigger {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
+        }
+        .custom-select-trigger .fa-chevron-down {
+            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem;
+        }
+        html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
+        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
+        .custom-select-options {
+            position: absolute; z-index: 50; width: 100%;
+            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
+            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        html.dark .custom-select-options { background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1); }
+        .custom-select-wrapper.open .custom-select-options { display: block; }
+        .custom-option { padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937; }
+        html.dark .custom-option { color: #f4f6f9; }
+        .custom-option:hover { background-color: #dbeafe; }
+        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
+        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
+        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
+        /* === END OF NEW STYLES === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -144,9 +162,18 @@
                 <div id="featured-article-container" class="mb-12">
                     </div>
                 
-                <div id="category-filters" class="flex flex-wrap gap-2 justify-center mb-8">
+                <div class="flex justify-center mb-8">
+                    <div class="custom-select-wrapper w-full max-w-xs">
+                        <label class="text-sm text-color-muted block mb-1 text-center">Filter by Category</label>
+                        <input type="hidden" id="category-select-value" value="All">
+                        <div class="custom-select-trigger" data-dropdown-trigger="category-select">
+                            <span>All</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div id="category-select-options" class="custom-select-options">
+                            </div>
                     </div>
-
+                </div>
                 <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                     <p class="text-center text-color-muted md:col-span-2">Loading articles...</p>
                 </div>
@@ -154,30 +181,24 @@
 
             <div id="full-article-view" class="page-view">
                 <div class="flex flex-col lg:flex-row max-w-6xl mx-auto gap-8">
-                    
                     <div class="w-full lg:w-48 flex-shrink-0">
                         <button id="back-to-list-btn" class="text-blue-500 hover:text-blue-400 mb-6 inline-flex items-center group">
                             <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>Back to All Articles
                         </button>
                     </div>
-
                     <div class="glass-card p-6 md:p-10 flex-grow min-w-0">
                         <img id="article-cover-image" src="" alt="Article Cover Image" class="w-full h-auto object-cover rounded-lg mb-8 shadow-lg">
-                        
                         <div class="text-center mb-8">
                             <h1 id="article-title-full" class="text-4xl md:text-5xl font-bold leading-tight mb-4"></h1>
                             <div id="article-meta-full" class="flex flex-wrap items-center justify-center text-sm text-color-muted space-x-2"></div>
                         </div>
-
                         <article id="article-content-full" class="article-content"></article>
-
-                         <div id="related-articles-container" class="mt-12 pt-8 border-t border-color-base">
+                        <div id="related-articles-container" class="mt-12 pt-8 border-t border-color-base">
                             <h3 class="text-2xl font-bold mb-4 text-color-base">Related Articles</h3>
                             <div id="related-articles-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 </div>
                         </div>
                     </div>
-
                     <div id="toc-container">
                         <div id="toc-sticky-wrapper">
                             <h3 class="font-bold text-color-base mb-2">On This Page</h3>
@@ -196,31 +217,41 @@
 
         function initArticlesPage(user, db) {
             console.log("Setting up Articles page specific logic...");
+            
+            // --- DOM Elements ---
             const articlesListView = document.getElementById('articles-list-view');
             const fullArticleView = document.getElementById('full-article-view');
             const articlesContainer = document.getElementById('articles-container');
             const featuredArticleContainer = document.getElementById('featured-article-container');
-            const categoryFilters = document.getElementById('category-filters');
             const backToListBtn = document.getElementById('back-to-list-btn');
 
-            if (!articlesListView || !fullArticleView || !articlesContainer || !backToListBtn || !featuredArticleContainer || !categoryFilters) {
+            // --- NEW: Dropdown Elements ---
+            const categorySelectWrapperEl = document.querySelector('[data-dropdown-trigger="category-select"]');
+            const categorySelectOptions = document.getElementById('category-select-options');
+            const categorySelectValue = document.getElementById('category-select-value');
+            
+            // Check essential elements
+            if (!articlesListView || !fullArticleView || !articlesContainer || !backToListBtn || !featuredArticleContainer || !categorySelectWrapperEl || !categorySelectOptions || !categorySelectValue) {
                 console.error("One or more essential article elements not found!");
                 if (articlesContainer) articlesContainer.innerHTML = "<p class='text-red-500 text-center'>Error loading page elements.</p>"
                 return;
             }
+            
+            // Get trigger text span *after* checking wrapper
+            const categorySelectTriggerText = categorySelectWrapperEl.querySelector('span');
 
+            // --- State ---
             let allArticles = [];
             let currentCategory = 'All';
             const placeholderImage = (width, height, text) => `https://placehold.co/${width}x${height}/334155/9ca3af?text=${text}`;
 
+            // --- Firestore Listener ---
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
-            
-            // --- MODIFIED: Upgraded onSnapshot logic ---
             onSnapshot(q, (querySnapshot) => {
                 allArticles = [];
                 if (querySnapshot.empty) {
                     articlesContainer.innerHTML = '<p class="text-center text-color-muted">No articles published yet.</p>';
-                    articlesListView.classList.add('active'); // Show the list view even if empty
+                    articlesListView.classList.add('active'); 
                     return;
                 }
                 
@@ -228,36 +259,29 @@
                     allArticles.push({ id: doc.id, ...doc.data() });
                 });
                 
-                // === UPGRADE: Check URL for a specific article ID ===
                 const urlParams = new URLSearchParams(window.location.search);
                 const articleIdFromUrl = urlParams.get('id');
                 const articleExists = articleIdFromUrl && allArticles.find(a => a.id === articleIdFromUrl);
 
                 if (articleExists) {
-                    // A valid article ID was found in the URL. Show it directly.
                     showFullArticleView(articleIdFromUrl);
                 } else {
-                    // No ID (or a bad ID) was found. Show the standard list view.
                     renderFeaturedArticle();
-                    renderCategories();
+                    renderCategories(); // Renders the dropdown
                     renderArticleGrid();
-                    articlesListView.classList.add('active'); // Show the list
+                    articlesListView.classList.add('active'); 
                 }
-                // === END UPGRADE ===
-
             }, (error) => {
                 console.error("Error fetching articles:", error);
                 articlesContainer.innerHTML = '<p class="text-center text-red-500">Could not load articles.</p>';
             });
-            // --- END MODIFICATION ---
 
-            function renderFeaturedArticle() {
+            // --- Render Functions ---
+            function renderFeaturedArticle() { /* ... (no changes) ... */
                 if (allArticles.length === 0) return;
-                
-                const featured = allArticles[0]; // The newest article
+                const featured = allArticles[0]; 
                 const formattedDate = featured.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
                 const coverImg = featured.coverImage || placeholderImage(1200, 600, 'Featured');
-
                 featuredArticleContainer.innerHTML = `
                     <a href="#" class="block group glass-card md:flex gap-8 p-6 md:p-8" data-id="${featured.id}">
                         <div class="md:w-3/5 flex-shrink-0">
@@ -274,34 +298,35 @@
                         <div class="md:w-2/5 mt-6 md:mt-0">
                             <img src="${coverImg}" alt="${featured.title}" class="w-full h-64 object-cover rounded-lg shadow-lg transform group-hover:scale-105 transition-transform duration-300">
                         </div>
-                    </a>
-                `;
+                    </a>`;
             }
 
+            // --- MODIFIED: Renders dropdown options ---
             function renderCategories() {
                 const categories = ['All', ...new Set(allArticles.map(a => a.category).filter(Boolean))];
-                categoryFilters.innerHTML = categories.map(cat => `
-                    <button class="category-tab ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">
+                
+                categorySelectOptions.innerHTML = categories.map(cat => `
+                    <div class="custom-option ${cat === currentCategory ? 'selected' : ''}" data-value="${cat}">
                         ${cat}
-                    </button>
+                    </div>
                 `).join('');
+                
+                const selectedOption = categories.find(cat => cat === currentCategory) || 'All';
+                categorySelectTriggerText.textContent = selectedOption;
+                categorySelectValue.value = selectedOption;
             }
 
-            function renderArticleGrid() {
-                // Start from article 1 (index 1) since article 0 is featured
+            function renderArticleGrid() { /* ... (no changes) ... */
                 const articlesToDisplay = allArticles.slice(1).filter(article => 
                     currentCategory === 'All' || article.category === currentCategory
                 );
-                
                 if (articlesToDisplay.length === 0) {
                     articlesContainer.innerHTML = '<p class="text-center text-color-muted md:col-span-2">No articles in this category.</p>';
                     return;
                 }
-                
                 articlesContainer.innerHTML = articlesToDisplay.map(article => {
                     const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) || '';
                     const coverImg = article.coverImage || placeholderImage(600, 400, 'Article');
-                    
                     return `
                     <a href="#" class="glass-card block group" data-id="${article.id}">
                         <img src="${coverImg}" alt="${article.title}" class="w-full h-48 object-cover rounded-t-lg">
@@ -317,55 +342,44 @@
                                 </span>
                             </div>
                         </div>
-                    </a>
-                    `;
+                    </a>`;
                 }).join('');
             }
 
-            function generateTableOfContents(contentEl) {
+            function generateTableOfContents(contentEl) { /* ... (no changes) ... */
                 const tocList = document.getElementById('toc-list');
                 if (!tocList) return;
                 tocList.innerHTML = '';
                 let hasHeadings = false;
-
                 const headings = contentEl.querySelectorAll('h2, h3');
                 headings.forEach((heading, index) => {
                     hasHeadings = true;
                     const id = `heading-${index}`;
-                    heading.id = id; // Add an ID to the heading to link to
-                    
+                    heading.id = id; 
                     const level = heading.tagName === 'H2' ? 'level-2' : 'level-3';
                     const link = document.createElement('a');
                     link.href = `#${id}`;
                     link.textContent = heading.textContent;
                     link.className = level;
-                    
-                    // Smooth scroll
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     });
-                    
                     tocList.appendChild(link);
                 });
-                
-                // If no headings, hide the ToC
                 document.getElementById('toc-container').style.display = hasHeadings ? 'block' : 'none';
             }
             
-            function renderRelatedArticles(currentArticleId, category) {
+            function renderRelatedArticles(currentArticleId, category) { /* ... (no changes) ... */
                 const relatedList = document.getElementById('related-articles-list');
                 if (!relatedList) return;
-
                 const related = allArticles.filter(a => 
                     a.id !== currentArticleId && a.category === category
-                ).slice(0, 3); // Get 3 related articles
-
+                ).slice(0, 3); 
                 if (related.length === 0) {
                     relatedList.innerHTML = '<p class="text-color-muted text-sm">No related articles found.</p>';
                     return;
                 }
-                
                 relatedList.innerHTML = related.map(article => {
                     const coverImg = article.coverImage || placeholderImage(400, 200, 'Related');
                     return `
@@ -373,37 +387,31 @@
                         <img src="${coverImg}" alt="${article.title}" class="w-full h-32 object-cover rounded-lg mb-2">
                         <h4 class="text-sm font-semibold text-color-base group-hover:text-blue-400">${article.title}</h4>
                         <p class="text-xs text-color-muted">${article.readTime || ''}</p>
-                    </a>
-                    `;
+                    </a>`;
                 }).join('');
             }
 
-            // --- MODIFIED: Upgraded showListView function ---
-            function showListView() {
+            // --- Page View Functions (Unchanged URL logic) ---
+            function showListView() { /* ... (no changes) ... */
                 fullArticleView.classList.remove('active');
                 articlesListView.classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'auto' });
-                // === UPGRADE: Clear URL parameter when going back to list ===
                 history.pushState(null, '', window.location.pathname);
             }
 
-            // --- MODIFIED: Upgraded showFullArticleView function ---
-            function showFullArticleView(articleId) {
+            function showFullArticleView(articleId) { /* ... (no changes) ... */
                 const article = allArticles.find(a => a.id === articleId);
                 if (!article) {
                     console.warn(`Article with ID ${articleId} not found. Showing list view.`);
                     showListView();
-                    // Also make sure list view content is rendered
                     renderFeaturedArticle();
                     renderCategories();
                     renderArticleGrid();
                     return;
                 }
-                
                 const coverImg = article.coverImage || placeholderImage(1200, 600, 'Article');
                 document.getElementById('article-cover-image').src = coverImg;
                 document.getElementById('article-cover-image').alt = article.title;
-                
                 document.getElementById('article-title-full').textContent = article.title;
                 const formattedDate = article.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'No date';
                 document.getElementById('article-meta-full').innerHTML = `
@@ -414,77 +422,95 @@
                     <span>${formattedDate}</span>
                     ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
                 `;
-                
                 const contentEl = document.getElementById('article-content-full');
                 contentEl.innerHTML = article.content;
-                
                 articlesListView.classList.remove('active');
                 fullArticleView.classList.add('active');
-                
-                // === UPGRADE: Set URL parameter when viewing an article ===
                 const url = new URL(window.location);
                 if (url.searchParams.get('id') !== articleId) {
                     url.searchParams.set('id', articleId);
                     history.pushState(null, '', url.toString());
                 }
-                // === END UPGRADE ===
-                
                 window.scrollTo({ top: 0, behavior: 'auto' });
-                
-                // Post-render generation
                 generateTableOfContents(contentEl);
                 renderRelatedArticles(article.id, article.category);
             }
 
-            // --- Event Listeners ---
+            // --- NEW: Dropdown Event Handling ---
+            function setupCategoryDropdown() {
+                const wrapper = categorySelectWrapperEl.closest('.custom-select-wrapper');
 
-            // Listener for all article clicks (list, featured, related)
-            document.body.addEventListener('click', (e) => {
-                const articleLink = e.target.closest('a[data-id]');
-                if (articleLink) {
+                categorySelectWrapperEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    wrapper.classList.toggle('open');
+                });
+
+                categorySelectOptions.addEventListener('click', (e) => {
+                    const option = e.target.closest('.custom-option');
+                    if (!option) return;
+                    
+                    const selectedValue = option.dataset.value;
+                    
+                    currentCategory = selectedValue;
+                    categorySelectValue.value = selectedValue;
+                    categorySelectTriggerText.textContent = option.textContent;
+                    
+                    categorySelectOptions.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    wrapper.classList.remove('open');
+                    
+                    // Re-render the grid with the new category
+                    renderArticleGrid();
+                });
+                
+                // Global click to close
+                document.addEventListener('click', () => {
+                    if (wrapper.classList.contains('open')) {
+                        wrapper.classList.remove('open');
+                    }
+                });
+            }
+
+            // --- Event Listeners Setup ---
+            function setupEventListeners() {
+                // Main article click listener
+                document.body.addEventListener('click', (e) => {
+                    const articleLink = e.target.closest('a[data-id]');
+                    if (articleLink) {
+                        e.preventDefault();
+                        showFullArticleView(articleLink.dataset.id);
+                    }
+                });
+
+                // Back button
+                backToListBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // This function now handles URL changes and scrolling
-                    showFullArticleView(articleLink.dataset.id);
-                }
-            });
-
-            // Listener for category tabs
-            categoryFilters.addEventListener('click', (e) => {
-                const tab = e.target.closest('.category-tab');
-                if (tab) {
-                    currentCategory = tab.dataset.category;
-                    // Update active state on tabs
-                    categoryFilters.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    // Re-render the grid
-                    renderArticleGrid();
-                }
-            });
-
-            backToListBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                showListView();
-            });
-
-            // --- NEW: Handle browser back/forward buttons ---
-            window.addEventListener('popstate', () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const articleIdFromUrl = urlParams.get('id');
-                const articleExists = articleIdFromUrl && allArticles.find(a => a.id === articleIdFromUrl);
-
-                if (articleExists) {
-                    // User pressed 'forward' to an article
-                    showFullArticleView(articleIdFromUrl);
-                } else {
-                    // User pressed 'back' to the list
                     showListView();
-                    // Ensure list content is rendered (in case page was loaded directly to article)
-                    renderFeaturedArticle();
-                    renderCategories();
-                    renderArticleGrid();
-                }
-            });
+                });
 
+                // Browser back/forward
+                window.addEventListener('popstate', () => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const articleIdFromUrl = urlParams.get('id');
+                    const articleExists = articleIdFromUrl && allArticles.find(a => a.id === articleIdFromUrl);
+
+                    if (articleExists) {
+                        showFullArticleView(articleIdFromUrl);
+                    } else {
+                        showListView();
+                        renderFeaturedArticle();
+                        renderCategories();
+                        renderArticleGrid();
+                    }
+                });
+                
+                // --- NEW: Initialize the dropdown ---
+                setupCategoryDropdown();
+            }
+
+            // --- Initial Call ---
+            setupEventListeners();
         }
         
         initializeAppCore(initArticlesPage);
