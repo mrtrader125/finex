@@ -28,7 +28,7 @@
             background-color: #0c0c0c;
             border: 4px solid #48bb78; /* green-500 */
             box-shadow: 0 0 20px #48bb78;
-            image-rendering: pixelated; 
+            image-rendering: auto; /* Use auto for smooth gradients */
         }
 
         .game-wrapper .game-btn {
@@ -143,8 +143,8 @@
             let canvasSize = gridSize * tileCount;
 
             // --- Game State ---
-            let snake; // Stores LOGICAL grid positions (e.g., {x: 10, y: 10})
-            let visualSnake; // Stores VISUAL pixel positions (e.g., {x: 200.5, y: 200.5})
+            let snake; // Stores LOGICAL grid positions {x, y}
+            let visualSnake; // Stores VISUAL pixel positions {x, y}
             let food;
             let direction;
             let score;
@@ -160,12 +160,10 @@
                 snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
                 
                 // VISUAL state (mirrors logic state, but with pixel coords)
-                visualSnake = [
-                    { 
-                        x: snake[0].x * gridSize + gridSize / 2, 
-                        y: snake[0].y * gridSize + gridSize / 2 
-                    }
-                ];
+                visualSnake = snake.map(seg => ({
+                    x: seg.x * gridSize + gridSize / 2,
+                    y: seg.y * gridSize + gridSize / 2
+                }));
                 
                 direction = { x: 0, y: 0 };
                 score = 0;
@@ -195,12 +193,10 @@
                 // Reset logic state
                 snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
                 // Reset visual state
-                visualSnake = [
-                    { 
-                        x: snake[0].x * gridSize + gridSize / 2, 
-                        y: snake[0].y * gridSize + gridSize / 2 
-                    }
-                ];
+                visualSnake = snake.map(seg => ({
+                    x: seg.x * gridSize + gridSize / 2,
+                    y: seg.y * gridSize + gridSize / 2
+                }));
                 
                 direction = { x: 0, y: 0 }; 
                 score = 0;
@@ -215,71 +211,62 @@
             }
 
             // --- LOGIC LOOP (runs every 160ms) ---
-            // This loop updates the "target" grid positions
             function gameTick() {
                 if (!isRunning) return;
                 
-                // 1. Calculate new logical head position
-                const head = { 
-                    x: snake[0].x + direction.x, 
-                    y: snake[0].y + direction.y 
-                };
+                const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
-                // 2. Check wall collision
                 if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
                     return gameOver();
                 }
                 
-                // 3. Check self collision
                 for (let i = 1; i < snake.length; i++) {
                     if (head.x === snake[i].x && head.y === snake[i].y) {
                         return gameOver();
                     }
                 }
 
-                // 4. Update LOGIC array
                 snake.unshift(head);
-
-                // 5. Update VISUAL array
+                
+                // === NEW "FOLLOW-THE-LEADER" VISUALS ===
                 // Add a new visual segment *at the previous head's position*
                 // It will then animate to the new head's position
-                visualSnake.unshift({ 
-                    x: visualSnake[0].x, 
-                    y: visualSnake[0].y 
-                });
+                visualSnake.unshift({ x: visualSnake[0].x, y: visualSnake[0].y });
 
-
-                // 6. Check food
                 if (head.x === food.x && head.y === food.y) {
                     score++;
                     scoreEl.textContent = `Score: ${score}`;
                     generateFood(); 
                 } else {
-                    // Remove tail from BOTH arrays
                     snake.pop();
-                    visualSnake.pop();
+                    visualSnake.pop(); // Remove tail from BOTH arrays
                 }
             }
             
             // --- RENDER LOOP (runs every frame, ~16.67ms) ---
-            // This loop smoothly animates the visual snake toward the logical snake
             function renderLoop() {
-                if (!ctx) return; // Stop if canvas is gone
+                if (!ctx) return; 
 
-                // Move the visual snake parts toward their logical targets
+                // === NEW "FOLLOW-THE-LEADER" ANIMATION ===
+                // Each visual segment smoothly follows the one in front of it
                 for (let i = 0; i < visualSnake.length; i++) {
-                    const targetX = snake[i].x * gridSize + gridSize / 2;
-                    const targetY = snake[i].y * gridSize + gridSize / 2;
+                    let targetX, targetY;
+                    if (i === 0) {
+                        // The head follows the LOGICAL grid target
+                        targetX = snake[0].x * gridSize + gridSize / 2;
+                        targetY = snake[0].y * gridSize + gridSize / 2;
+                    } else {
+                        // The body follows the VISUAL segment in front of it
+                        targetX = visualSnake[i - 1].x;
+                        targetY = visualSnake[i - 1].y;
+                    }
                     
-                    // The "0.3" is the smoothing factor. Smaller = smoother but "draggier"
-                    visualSnake[i].x = lerp(visualSnake[i].x, targetX, 0.3);
-                    visualSnake[i].y = lerp(visualSnake[i].y, targetY, 0.3);
+                    // The "0.25" is the smoothing factor.
+                    visualSnake[i].x = lerp(visualSnake[i].x, targetX, 0.25);
+                    visualSnake[i].y = lerp(visualSnake[i].y, targetY, 0.25);
                 }
                 
-                // Now draw the smoothed visual snake
-                draw();
-                
-                // Continue the loop
+                draw(); // Now draw the smoothed visual snake
                 renderLoopId = requestAnimationFrame(renderLoop);
             }
 
@@ -313,36 +300,65 @@
                     bodyGradient.addColorStop(1, '#38a169'); 
                     
                     ctx.strokeStyle = bodyGradient;
-                    ctx.lineWidth = gridSize - 4; // 16px
                     ctx.lineCap = 'round'; 
                     ctx.lineJoin = 'round'; 
 
                     ctx.beginPath();
-                    // Move to the tail
                     ctx.moveTo(visualSnake[visualSnake.length - 1].x, visualSnake[visualSnake.length - 1].y);
                     
                     // Draw lines through all segments to the head
                     for (let i = visualSnake.length - 2; i >= 0; i--) {
+                        // === NEW: Tapering tail ===
+                        // Line width shrinks towards the tail
+                        const t = (i + 1) / visualSnake.length;
+                        ctx.lineWidth = 4 + (gridSize - 8) * t; // Tapers from 4px to 16px
                         ctx.lineTo(visualSnake[i].x, visualSnake[i].y);
                     }
                     ctx.stroke();
                 }
 
                 // --- Draw Snake Head (on top) ---
-                const headX = visualSnake[0].x;
-                const headY = visualSnake[0].y;
-                const headRadius = gridSize / 2 - 1;
+                const head = visualSnake[0];
+                const headRadius = (gridSize / 2) - 1;
 
                 const headGradient = ctx.createRadialGradient(
-                    headX - headRadius / 3, headY - headRadius / 3, headRadius / 5,
-                    headX, headY, headRadius
+                    head.x - headRadius / 3, head.y - headRadius / 3, headRadius / 5,
+                    head.x, head.y, headRadius
                 );
                 headGradient.addColorStop(0, '#68d391'); 
                 headGradient.addColorStop(1, '#38a169'); 
                 
                 ctx.fillStyle = headGradient;
                 ctx.beginPath();
-                ctx.arc(headX, headY, headRadius, 0, 2 * Math.PI);
+                ctx.arc(head.x, head.y, headRadius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // --- Draw Cartoon Eyes ---
+                const eyeRadius = 3;
+                const eyeOffsetX = direction.y * (headRadius / 2);
+                const eyeOffsetY = -direction.x * (headRadius / 2);
+
+                const eyeX1 = head.x + eyeOffsetX + direction.x * (headRadius / 3);
+                const eyeY1 = head.y + eyeOffsetY + direction.y * (headRadius / 3);
+                const eyeX2 = head.x - eyeOffsetX + direction.x * (headRadius / 3);
+                const eyeY2 = head.y - eyeOffsetY + direction.y * (headRadius / 3);
+                
+                // Eye Whites
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(eyeX1, eyeY1, eyeRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(eyeX2, eyeY2, eyeRadius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Pupils (looking in the direction of movement)
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(eyeX1 + direction.x * 1.5, eyeY1 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(eyeX2 + direction.x * 1.5, eyeY2 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI);
                 ctx.fill();
             }
             // --- END OF DRAW FUNCTION ---
@@ -369,8 +385,8 @@
 
             function gameOver() {
                 isRunning = false;
-                clearInterval(logicInterval); // Stop logic loop
-                // The render loop continues automatically, but gameTick stops
+                clearInterval(logicInterval); 
+                // renderLoopId continues to run, showing the final animation
                 startButton.textContent = 'Restart Game';
                 showMessage(`Game Over! Score: ${score}`);
             }
@@ -393,7 +409,7 @@
             // --- Event Listeners ---
             document.addEventListener('keydown', e => {
                 if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                    return; // Don't control snake while typing elsewhere
+                    return; 
                 }
                 
                 if (!isRunning && (e.key.startsWith('Arrow') || ['w', 'a', 's', 'd'].includes(e.key))) {
@@ -406,6 +422,7 @@
                         if (direction.y === 0) direction = { x: 0, y: -1 };
                         break;
                     case 'ArrowDown':
+                    S
                     case 's':
                         if (direction.y === 0) direction = { x: 0, y: 1 };
                         break;
@@ -442,7 +459,6 @@
             });
 
             startButton.addEventListener('click', () => {
-                // Stop any old loops just in case
                 if (logicInterval) clearInterval(logicInterval);
                 if (renderLoopId) cancelAnimationFrame(renderLoopId);
                 
@@ -450,7 +466,7 @@
                 startGame(); 
             });
 
-            initializeGame(); // This also starts the renderLoop
+            initializeGame(); 
         }
     </script>
     
@@ -466,7 +482,7 @@
                 } else {
                     console.error("Snake Game init function not found!");
                 }
-            }, 100); // 100ms delay
+            }, 100); 
         }
 
         initializeAppCore(initGamePage);
