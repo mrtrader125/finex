@@ -13,65 +13,6 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
-    <style>
-        /* Reusing styles for consistency */
-        .glass-card-inset { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); padding: 0.75rem; border-radius: 0.5rem; }
-        html.dark .glass-card-inset { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .stat-card { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); padding: 0.75rem; border-radius: 0.5rem; }
-        html.dark .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
-        .stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
-        .week-reflection { @apply mb-4 border-b border-color-base pb-4; }
-        .week-reflection:last-child { @apply border-b-0 pb-0 mb-0; }
-        .week-title { @apply font-semibold text-color-base mb-1 text-sm; }
-        .week-notes { @apply text-color-muted text-sm whitespace-pre-wrap; }
-        .loader { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #0052cc; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        html.dark .loader { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #0065ff; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* === CUSTOM DROPDOWN STYLES (Z-Index Fix) === */
-        /* Wrapper needs relative position but lower z-index than options */
-        .custom-select-wrapper { 
-            position: relative; 
-            z-index: 10; /* Lower than options */
-            width: 100%; 
-            @apply sm:w-auto; 
-        } 
-        .custom-select-trigger {
-            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-            padding: 0.75rem; border-radius: 0.5rem; width: 100%;
-            background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-        html.dark .custom-select-trigger {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
-        }
-        .custom-select-trigger .fa-chevron-down {
-            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem;
-        }
-        html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
-        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
-        /* Options need absolute position and higher z-index */
-        .custom-select-options {
-            position: absolute; 
-            z-index: 50; /* Needs to be higher than subsequent cards (default is auto/0) */
-            width: 100%; 
-            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
-            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            display: none;
-        }
-        html.dark .custom-select-options { background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1); }
-        .custom-select-wrapper.open .custom-select-options { display: block; }
-        .custom-option { padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937; }
-        html.dark .custom-option { color: #f4f6f9; }
-        .custom-option:hover { background-color: #dbeafe; }
-        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
-        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
-        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
-        /* === END OF NEW STYLES === */
-
-    </style>
 </head>
 <body class="antialiased textured-background">
     <div id="app-wrapper" style="display: none;">
