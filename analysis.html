@@ -121,7 +121,7 @@
                     </div>
                 </div>
 
-                 <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto min-h-[500px]">
+                 <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto min-h-[500px]">
                     <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
                     <p id="no-results-message" class="text-center text-color-muted col-span-full" style="display: none;">No analysis found matching your criteria.</p>
                 </div>
@@ -296,27 +296,26 @@
                         ? `<button data-delete-id="${item.id}" class="delete-analysis-btn text-xs text-red-500 hover:text-red-400 ml-auto"><i class="fas fa-trash-alt"></i></button>`
                         : '';
 
-                    // This is the new card template
+                    // This is the new 4-column card template
                     return `
                     <div class="glass-card group flex flex-col overflow-hidden">
                         <div class="overflow-hidden relative">
                              <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer analysis-card-image" loading="lazy" data-id="${item.id}">
                          </div>
-                        <div class="p-4 flex flex-col flex-grow">
+                        <div class="p-3 flex flex-col flex-grow">
                             <span class="text-xs font-bold uppercase text-blue-400 mb-1">${item.category || 'General'}</span>
                              
                              <h3 class="font-semibold text-base text-color-base mb-2 cursor-pointer analysis-card-title" title="${item.title || ''}" data-id="${item.id}" style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; min-height: 3.0rem;">
                                 ${item.title || 'Untitled Analysis'}
                              </h3>
                              
-                             <p class="text-sm text-color-muted mb-4 overflow-hidden" style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; min-height: 2.5rem;">
+                             <p class="text-sm text-color-muted mb-4 overflow-hidden truncate" style="min-height: 1.25rem;">
                                 ${item.description ? item.description : 'Click to see more...'}
                              </p>
                              
                             <div class="mt-auto pt-2 border-t border-color-base flex justify-between items-center">
                                 <span class="text-xs text-color-muted">${analystDisplay}</span>
                                 <div class="flex gap-1 items-center">
-                                     <div class="flex gap-1">${tagsHTML}</div>
                                      ${deleteButtonHTML} 
                                 </div>
                             </div>
