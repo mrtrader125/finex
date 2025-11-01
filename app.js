@@ -1,6 +1,7 @@
 // app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+// === MODIFIED: Added getDoc and doc ===
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
 // --- Firebase Config ---
@@ -38,34 +39,27 @@ export const allSidebarItems = [
     { id: 'planning', icon: 'fa-clipboard-list', text: 'Plan & Journal', subItems: [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
             { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
-            // === THIS IS THE NEW LINE YOU REQUESTED ===
             { id: 'monthlyReview', href: 'monthly_review.html', icon: 'fa-calendar-check', text: 'Monthly Review' }
-            // === END OF NEW LINE ===
         ] },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
-    // *** UPDATED Market Data Dropdown ***
     {
         id: 'marketData',
         icon: 'fa-chart-bar',
         text: 'Market Data',
         subItems: [
-            // *** MOVED Screener Here ***
             { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
             { id: 'news', href: 'news.html', icon: 'fa-newspaper', text: 'Live News Feed' },
             { id: 'calendar', href: 'economic_calendar.html', icon: 'fa-calendar-alt', text: 'Economic Calendar' }
         ]
     },
-    // { id: 'screener', href: 'market_screener.html', icon: 'fa-search-dollar', text: 'Market Screener' },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
     { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
-    
-    // --- NEWLY ADDED ---
     { id: 'snake', href: 'snake_game.html', icon: 'fa-gamepad', text: 'Snake Game' },
-    
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-let userPreferences = { theme: 'dark', sidebarItems: {} };
+// === MODIFIED: This is now 'export let' so it can be modified ===
+export let userPreferences = { theme: 'dark', sidebarItems: {} };
 
 // Helper function to create a default visibility map from allSidebarItems
 function getDefaultSidebarVisibility() {
@@ -80,20 +74,28 @@ function getDefaultSidebarVisibility() {
 }
 
 
-// --- Main App Initialization --- (MODIFIED FOR STABILITY)
+// --- Main App Initialization --- (MODIFIED)
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             
-            // --- STABILITY FIX ---
-            // We will wait for components (header/sidebar) AND 
-            // preferences (theme) to load *before* hiding the spinner.
-            // This prevents all "flashing" and "jumping".
-
+            // --- MODIFICATION: Load user profile first ---
+            const userDocRef = doc(db, 'users', user.uid);
+            let userProfile = { email: user.email, displayName: user.email.split('@')[0] }; // Default
+            try {
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    userProfile.displayName = userDocSnap.data().displayName || userProfile.displayName;
+                }
+            } catch (e) {
+                console.error("Error fetching user profile:", e);
+            }
+            // --- END MODIFICATION ---
+            
             // 1. Start page-specific logic (like loading articles) immediately.
-            //    This can run in the background while the layout loads.
+            //    Pass the loaded user profile to it.
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                pageSpecificInit(user, db);
+                pageSpecificInit(user, db, userProfile); // <-- MODIFIED: Pass userProfile
             }
 
             const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
@@ -102,7 +104,7 @@ export async function initializeAppCore(pageSpecificInit) {
                 // 2. Wait for *both* components and preferences to finish
                 await Promise.all([
                     loadCommonComponents(),
-                    loadPreferences(settingsDocRef) // This function is now updated
+                    loadPreferences(settingsDocRef) 
                 ]);
 
                 // 3. Now that we have all data, apply it *before* showing the page
@@ -112,7 +114,9 @@ export async function initializeAppCore(pageSpecificInit) {
                 // 4. Attach event listeners (to the now-loaded components)
                 attachCoreEventListeners();
                 const userEmailSpan = document.getElementById('user-email');
-                if (userEmailSpan) userEmailSpan.textContent = user.email;
+                // --- MODIFICATION: Use userProfile.email ---
+                if (userEmailSpan) userEmailSpan.textContent = userProfile.email; 
+                // --- END MODIFICATION ---
 
                 // 5. FINALLY, hide the loader and show the fully-ready page
                 const appLoader = document.getElementById('app-loader');
@@ -148,13 +152,10 @@ async function loadCommonComponents() {
  }
 
 // --- Preference Management ---
-// === THIS FUNCTION IS UPDATED TO LOAD GLOBAL DEFAULTS ===
 async function loadPreferences(settingsDocRef) {
     try {
-        // 1. Start with the hard-coded defaults (all items visible)
         let defaultItems = getDefaultSidebarVisibility();
         
-        // 2. Load GLOBAL defaults from 'siteSettings/sidebarDefaults'
         const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
         const globalDocSnap = await getDoc(globalSettingsRef);
         let globalPrefs = { theme: 'dark', sidebarItems: {} };
@@ -162,36 +163,28 @@ async function loadPreferences(settingsDocRef) {
             globalPrefs = { ...globalPrefs, ...globalDocSnap.data() };
         }
 
-        // 3. Load the INDIVIDUAL user's settings
         const userDocSnap = await getDoc(settingsDocRef);
         let userPrefs = { theme: null, sidebarItems: {} };
          if (userDocSnap.exists()) {
             userPrefs = { ...userPrefs, ...userDocSnap.data() };
         }
 
-        // 4. Final Calculation
-        // Theme: User's choice > Global choice > Hard-coded 'dark'
         userPreferences.theme = userPrefs.theme || globalPrefs.theme || 'dark';
 
-        // Sidebar:
         const finalSidebar = {};
         Object.keys(defaultItems).forEach(key => {
             const globalVal = globalPrefs.sidebarItems[key];
             const userVal = userPrefs.sidebarItems[key];
 
-            // Rule 1: Admin 'false' explicitly wins and hides the item.
             if (globalVal === false) {
                 finalSidebar[key] = false;
             }
-            // Rule 2: Otherwise, the user's personal choice (true or false) wins.
             else if (userVal !== undefined) {
                 finalSidebar[key] = userVal;
             }
-            // Rule 3: Otherwise, the global admin setting (if 'true' or undefined) wins.
             else if (globalVal !== undefined) {
                 finalSidebar[key] = globalVal;
             }
-            // Rule 4: Otherwise, the hard-coded default (true) is the fallback.
             else {
                 finalSidebar[key] = true;
             }
@@ -200,7 +193,6 @@ async function loadPreferences(settingsDocRef) {
 
      } catch (error) { 
          console.error("Error loading preferences:", error);
-         // Fallback to just the hard-coded defaults in case of error
          userPreferences = { theme: 'dark', sidebarItems: getDefaultSidebarVisibility() }; 
      }
 }
@@ -230,6 +222,3 @@ export function renderSidebar() {
 // --- Core Event Listeners Attachment ---
 function attachCoreEventListeners() {
     const openSidebarBtn=document.getElementById('open-sidebar-btn'); const closeSidebarBtn=document.getElementById('close-sidebar-btn'); const sidebar=document.getElementById('sidebar'); const sidebarOverlay=document.getElementById('sidebar-overlay'); const sidebarNav=document.getElementById('sidebar-nav'); const logoutBtn=document.getElementById('logout-btn'); function openSidebar(){if(sidebar)sidebar.classList.remove('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.remove('hidden'); setTimeout(()=>sidebarOverlay.classList.remove('opacity-0'),10);}} function closeSidebar(){if(sidebar)sidebar.classList.add('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.add('opacity-0'); setTimeout(()=>sidebarOverlay.classList.add('hidden'),300);}} if(openSidebarBtn)openSidebarBtn.addEventListener('click',openSidebar); if(closeSidebarBtn)closeSidebarBtn.addEventListener('click',closeSidebar); if(sidebarOverlay)sidebarOverlay.addEventListener('click',closeSidebar); if(logoutBtn)logoutBtn.addEventListener('click',(e)=>{e.preventDefault(); signOut(auth).then(()=>{window.location.href='index.html';}).catch((error)=>{console.error('Sign out error',error);});}); if(sidebarNav){sidebarNav.addEventListener('click',(e)=>{const link=e.target.closest('a'); const toggle=e.target.closest('button[data-toggle]'); if(link&&!link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}else if(toggle){const subMenuId=`submenu-${toggle.dataset.toggle}`; const subMenu=document.getElementById(subMenuId); const chevron=toggle.querySelector('.chevron-icon'); if(subMenu){if(subMenu.style.maxHeight&&subMenu.style.maxHeight!=='0px'){subMenu.style.maxHeight='0px'; toggle.classList.remove('active-parent'); if(chevron)chevron.classList.remove('rotate-180');}else{subMenu.style.maxHeight=subMenu.scrollHeight+"px"; toggle.classList.add('active-parent'); if(chevron)chevron.classList.add('rotate-180');}}}else if(link&&link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}});}
-
-
-}
