@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retro Snake Game | Finex</title>
     
+    <!-- Standard Finex assets -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Load BOTH fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
@@ -86,15 +88,16 @@
                     <div id="game-container" class="relative w-full aspect-square max-w-md mx-auto mb-4">
                         <canvas id="game-canvas" class="w-full h-full rounded-lg"></canvas>
                         <div id="message-box" class="hidden text-white">
-                            <p id="message-text">Press Start!</p>
+                            <p id="message-text">Press Any Key To Start</p>
                         </div>
                     </div>
 
-                    <button id="start-button" class="game-btn text-lg mb-4">
+                    <!-- === MODIFIED: Buttons are now hidden === -->
+                    <button id="start-button" class="game-btn text-lg mb-4 hidden">
                         Start Game
                     </button>
 
-                    <div class="grid grid-cols-3 gap-2 w-52 sm:w-64 mx-auto">
+                    <div class="grid grid-cols-3 gap-2 w-52 sm:w-64 mx-auto hidden">
                         <div></div>
                         <button id="btn-up" class="controls-btn">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,12 +124,14 @@
                         </button>
                         <div></div>
                     </div>
+                    <p class="text-sm text-color-muted">Use Arrow Keys to control</p>
                 </div>
 
             </div>
         </main>
     </div>
 
+    <!-- === THIS IS THE NEW "HIGH-LEVEL" GAME ENGINE === -->
     <script>
         function initSnakeGame() {
             const canvas = document.getElementById('game-canvas');
@@ -138,45 +143,82 @@
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');
 
+            // --- Game Constants ---
             const gridSize = 20; 
-            let tileCount = 20; 
-            let canvasSize = gridSize * tileCount;
+            const tileCount = 20; 
+            const canvasSize = gridSize * tileCount;
+            const BASE_SPEED = 160; // Base game speed in ms
+            const FAST_SPEED = 80;
+            const SLOW_SPEED = 240;
+            const POWERUP_DURATION = 5000; // 5 seconds
+            const INITIAL_OBSTACLES = 5;
 
-            let snake, visualSnake, food, direction, score, logicInterval, renderLoopId, isRunning;
+            // --- Game State Variables ---
+            let snake, visualSnake, food, obstacles, powerUp;
+            let direction, score, gameSpeed, logicInterval, renderLoopId;
+            let isRunning, isPowerUpActive, powerUpTimer;
             
+            // Linear interpolation function for smoothing
             const lerp = (a, b, t) => a + (b - a) * t;
 
+            /**
+             * Initializes or resets the entire game state.
+             */
             function initializeGame() {
+                // Stop any running loops
+                if (logicInterval) clearInterval(logicInterval);
+                if (renderLoopId) cancelAnimationFrame(renderLoopId);
+                
+                // --- Logical State (Grid-based) ---
                 snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
+                obstacles = [];
+                food = {};
+                powerUp = null;
+                
+                // --- Visual State (Pixel-based) ---
                 visualSnake = snake.map(seg => ({
                     x: seg.x * gridSize + gridSize / 2,
                     y: seg.y * gridSize + gridSize / 2
                 }));
                 
+                // --- Game Flags ---
                 direction = { x: 0, y: 0 };
                 score = 0;
+                gameSpeed = BASE_SPEED;
                 isRunning = false;
+                isPowerUpActive = false;
+                if (powerUpTimer) clearTimeout(powerUpTimer);
+
+                // --- UI State ---
                 scoreEl.textContent = 'Score: 0';
                 startButton.textContent = 'Start Game';
                 
-                generateFood();
-                
+                // --- Setup Canvas ---
                 canvas.width = canvasSize;
                 canvas.height = canvasSize;
 
-                if (logicInterval) clearInterval(logicInterval);
-                if (renderLoopId) cancelAnimationFrame(renderLoopId);
+                // --- Generate Initial Game Objects ---
+                // Must be in this order to avoid overlaps
+                generateObstacles(INITIAL_OBSTACLES);
+                generateFood();
+                generatePowerUp();
                 
-                draw(); 
-                showMessage('Press Start!', false);
+                draw(); // Initial draw
+                showMessage('Press Any Key To Start');
                 
+                // Start the render loop (it will just draw a static scene)
                 renderLoop();
             }
 
+            /**
+             * Starts the game logic loop.
+             */
             function startGame() {
                 if (isRunning) return; 
                 
+                // Reset logic state
                 snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
+                // Reset visual state
                 visualSnake = snake.map(seg => ({
                     x: seg.x * gridSize + gridSize / 2,
                     y: seg.y * gridSize + gridSize / 2
@@ -184,82 +226,175 @@
                 
                 direction = { x: 0, y: 0 }; 
                 score = 0;
+                gameSpeed = BASE_SPEED;
                 scoreEl.textContent = 'Score: 0';
                 isRunning = true;
                 startButton.textContent = 'In Progress';
                 hideMessage();
                 
-                logicInterval = setInterval(gameTick, 160); 
+                // Clear any old obstacles/powerups and create new ones
+                obstacles = [];
+                powerUp = null;
+                generateObstacles(INITIAL_OBSTACLES);
+                generateFood();
+                generatePowerUp();
+                
+                // Stop/start intervals
+                if (logicInterval) clearInterval(logicInterval);
+                logicInterval = setInterval(gameTick, gameSpeed); 
             }
 
+            // --- Game Loops ---
+
+            /**
+             * The main LOGIC loop. Runs on a timer (setInterval).
+             * Handles collisions, eating, and scoring.
+             */
             function gameTick() {
                 if (!isRunning) return;
                 
-                const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+                // 1. Calculate new logical head position
+                const head = { 
+                    x: snake[0].x + direction.x, 
+                    y: snake[0].y + direction.y 
+                };
 
+                // 2. Check Wall Collision
                 if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
                     return gameOver();
                 }
                 
+                // 3. Check Self Collision
                 for (let i = 1; i < snake.length; i++) {
                     if (head.x === snake[i].x && head.y === snake[i].y) {
                         return gameOver();
                     }
                 }
+                
+                // 4. Check Obstacle Collision
+                for (const obs of obstacles) {
+                    if (head.x === obs.x && head.y === obs.y) {
+                        return gameOver();
+                    }
+                }
 
+                // 5. Update LOGIC array
                 snake.unshift(head);
                 visualSnake.unshift({ x: visualSnake[0].x, y: visualSnake[0].y });
 
+                // 6. Check Power-up Collision
+                if (powerUp && head.x === powerUp.x && head.y === powerUp.y) {
+                    applyPowerUp(powerUp.type);
+                    powerUp = null;
+                    // Respawn a new one after a delay
+                    setTimeout(generatePowerUp, 7000 + Math.random() * 5000);
+                }
+
+                // 7. Check Food Collision
                 if (head.x === food.x && head.y === food.y) {
                     score++;
                     scoreEl.textContent = `Score: ${score}`;
                     generateFood(); 
+                    
+                    // Add new obstacle every 5 points
+                    if (score % 5 === 0 && score > 0) {
+                        generateObstacles(1);
+                    }
+                    
+                    // Update speed if no power-up is active
+                    if (!isPowerUpActive) {
+                        updateGameSpeed();
+                    }
                 } else {
                     snake.pop();
                     visualSnake.pop(); 
                 }
             }
             
+            /**
+             * The main RENDER loop. Runs every frame.
+             * Smoothly animates the visuals towards the logical state.
+             */
             function renderLoop() {
                 if (!ctx) return; 
 
+                // Smoothly animate each visual segment to follow the one in front of it
                 for (let i = 0; i < visualSnake.length; i++) {
                     let targetX, targetY;
                     if (i === 0) {
+                        // The head follows the LOGICAL grid target
                         targetX = snake[0].x * gridSize + gridSize / 2;
                         targetY = snake[0].y * gridSize + gridSize / 2;
                     } else {
+                        // The body follows the VISUAL segment in front of it
                         targetX = visualSnake[i - 1].x;
                         targetY = visualSnake[i - 1].y;
                     }
+                    
+                    // The "0.25" is the smoothing factor.
                     visualSnake[i].x = lerp(visualSnake[i].x, targetX, 0.25);
                     visualSnake[i].y = lerp(visualSnake[i].y, targetY, 0.25);
                 }
                 
-                draw(); 
+                draw(); // Draw the smoothed visuals
                 renderLoopId = requestAnimationFrame(renderLoop);
             }
 
+            // --- Drawing Functions ---
+
+            /**
+             * Draws the entire game scene onto the canvas.
+             */
             function draw() {
                 ctx.fillStyle = '#0c0c0c';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                drawFood();
+                drawObstacles();
+                drawPowerUp();
+                drawSnake();
+            }
+            
+            function drawFood() {
                 const foodX = food.x * gridSize + gridSize / 2;
                 const foodY = food.y * gridSize + gridSize / 2;
                 const foodRadius = gridSize / 2 - 1; 
+                draw3DSphere(ctx, foodX, foodY, foodRadius, '#fc8181', '#f56565');
+            }
 
-                const foodGradient = ctx.createRadialGradient(
-                    foodX - foodRadius / 3, foodY - foodRadius / 3, foodRadius / 5,
-                    foodX, foodY, foodRadius
-                );
-                foodGradient.addColorStop(0, '#fc8181'); 
-                foodGradient.addColorStop(1, '#f56565'); 
+            function drawObstacles() {
+                for (const obs of obstacles) {
+                    const obsX = obs.x * gridSize + gridSize / 2;
+                    const obsY = obs.y * gridSize + gridSize / 2;
+                    const radius = gridSize / 2 - 1;
+                    // Draw as dark grey "rocks"
+                    draw3DSphere(ctx, obsX, obsY, radius, '#718096', '#2d3748');
+                }
+            }
+
+            function drawPowerUp() {
+                if (!powerUp) return;
                 
-                ctx.fillStyle = foodGradient;
-                ctx.beginPath();
-                ctx.arc(foodX, foodY, foodRadius, 0, 2 * Math.PI);
-                ctx.fill();
+                const powX = powerUp.x * gridSize + gridSize / 2;
+                const powY = powerUp.y * gridSize + gridSize / 2;
+                const radius = gridSize / 2; // Make it pulse slightly larger
+                
+                // Pulsing effect
+                const pulse = Math.abs(Math.sin(Date.now() / 300)) * 2 + (gridSize / 2 - 2);
+                
+                let lightColor, darkColor;
+                switch (powerUp.type) {
+                    case 'bonus_points':
+                        lightColor = '#F6E05E'; darkColor = '#D69E2E'; break; // Yellow/Gold
+                    case 'slow_down':
+                        lightColor = '#63B3ED'; darkColor = '#3182CE'; break; // Blue
+                    case 'speed_up':
+                        lightColor = '#B794F4'; darkColor = '#805AD5'; break; // Purple
+                }
+                draw3DSphere(ctx, powX, powY, pulse, lightColor, darkColor);
+            }
 
+            function drawSnake() {
                 if (visualSnake.length > 1) {
                     const bodyGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
                     bodyGradient.addColorStop(0, '#48bb78'); 
@@ -296,6 +431,7 @@
                 ctx.arc(head.x, head.y, headRadius, 0, 2 * Math.PI);
                 ctx.fill();
 
+                // Draw Cartoon Eyes
                 const eyeRadius = 3;
                 const eyeOffsetX = direction.y * (headRadius / 2);
                 const eyeOffsetY = -direction.x * (headRadius / 2);
@@ -306,58 +442,146 @@
                 const eyeY2 = head.y - eyeOffsetY + direction.y * (headRadius / 3);
                 
                 ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(eyeX1, eyeY1, eyeRadius, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(eyeX2, eyeY2, eyeRadius, 0, 2 * Math.PI);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeX1, eyeY1, eyeRadius, 0, 2 * Math.PI); ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeX2, eyeY2, eyeRadius, 0, 2 * Math.PI); ctx.fill();
 
                 ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(eyeX1 + direction.x * 1.5, eyeY1 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(eyeX2 + direction.x * 1.5, eyeY2 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeX1 + direction.x * 1.5, eyeY1 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI); ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeX2 + direction.x * 1.5, eyeY2 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI); ctx.fill();
+            }
+            
+            /**
+             * Helper to draw a 3D-style sphere with a gradient.
+             */
+            function draw3DSphere(context, x, y, radius, lightColor, darkColor) {
+                const gradient = context.createRadialGradient(
+                    x - radius / 3, y - radius / 3, radius / 5,
+                    x, y, radius
+                );
+                gradient.addColorStop(0, lightColor); 
+                gradient.addColorStop(1, darkColor); 
+                
+                context.fillStyle = gradient;
+                context.beginPath();
+                context.arc(x, y, radius, 0, 2 * Math.PI);
+                context.fill();
+            }
+            
+            // --- Generation Functions ---
+            
+            /**
+             * Checks if a grid position is currently occupied by anything.
+             */
+            function isOccupied(x, y) {
+                for (const part of snake) {
+                    if (part.x === x && part.y === y) return true;
+                }
+                for (const obs of obstacles) {
+                    if (obs.x === x && obs.y === y) return true;
+                }
+                if (food.x === x && food.y === y) return true;
+                if (powerUp && powerUp.x === x && powerUp.y === y) return true;
+                return false;
             }
 
             function generateFood() {
                 let newFood;
-                let onSnake;
                 do {
-                    onSnake = false;
                     newFood = {
                         x: Math.floor(Math.random() * tileCount),
                         y: Math.floor(Math.random() * tileCount)
                     };
-                    for (let part of snake) {
-                        if (part.x === newFood.x && part.y === newFood.y) {
-                            onSnake = true;
-                            break;
-                        }
-                    }
-                } while (onSnake); 
-                
+                } while (isOccupied(newFood.x, newFood.y)); 
                 food = newFood;
+            }
+            
+            function generateObstacles(count) {
+                for (let i = 0; i < count; i++) {
+                    let newObs;
+                    do {
+                        newObs = {
+                            x: Math.floor(Math.random() * tileCount),
+                            y: Math.floor(Math.random() * tileCount)
+                        };
+                    } while (isOccupied(newObs.x, newObs.y) || (newObs.x === snake[0].x && newObs.y === snake[0].y));
+                    obstacles.push(newObs);
+                }
+            }
+            
+            function generatePowerUp() {
+                if (powerUp || isPowerUpActive) return; // Don't spawn if one is already active/present
+                let newPow;
+                do {
+                    newPow = {
+                        x: Math.floor(Math.random() * tileCount),
+                        y: Math.floor(Math.random() * tileCount)
+                    };
+                } while (isOccupied(newPow.x, newPow.y));
+                
+                const rand = Math.random();
+                if (rand < 0.4) newPow.type = 'bonus_points';
+                else if (rand < 0.8) newPow.type = 'slow_down';
+                else newPow.type = 'speed_up';
+                
+                powerUp = newPow;
+            }
+            
+            // --- Game Logic Helpers ---
+
+            function applyPowerUp(type) {
+                if (isPowerUpActive) return; // Only one at a time
+                
+                isPowerUpActive = true;
+                if (powerUpTimer) clearTimeout(powerUpTimer);
+
+                switch (type) {
+                    case 'bonus_points':
+                        score += 5;
+                        scoreEl.textContent = `Score: ${score}`;
+                        isPowerUpActive = false; // Instant effect, no timer
+                        break;
+                    case 'slow_down':
+                        updateGameSpeed(SLOW_SPEED);
+                        powerUpTimer = setTimeout(resetSpeed, POWERUP_DURATION);
+                        break;
+                    case 'speed_up':
+                        updateGameSpeed(FAST_SPEED);
+                        powerUpTimer = setTimeout(resetSpeed, POWERUP_DURATION);
+                        break;
+                }
+            }
+            
+            function resetSpeed() {
+                isPowerUpActive = false;
+                updateGameSpeed(); // Resets to score-based speed
+            }
+
+            function updateGameSpeed(forceSpeed = null) {
+                if (forceSpeed) {
+                    gameSpeed = forceSpeed;
+                } else {
+                    // Game gets faster as score increases
+                    gameSpeed = Math.max(70, BASE_SPEED - (score * 2));
+                }
+                
+                // Restart the logic interval with the new speed
+                if (logicInterval) clearInterval(logicInterval);
+                logicInterval = setInterval(gameTick, gameSpeed);
             }
 
             function gameOver() {
                 isRunning = false;
                 clearInterval(logicInterval); 
+                if (powerUpTimer) clearTimeout(powerUpTimer);
+                isPowerUpActive = false;
+                
                 startButton.textContent = 'Restart Game';
-                showMessage(`Game Over! Score: ${score}`);
+                showMessage('Game Over! Press Any Key');
             }
 
-            function showMessage(text, autoHide = false) {
+            function showMessage(text) {
                 messageText.textContent = text;
                 messageBox.classList.remove('hidden');
-                
-                if (autoHide) {
-                    setTimeout(() => {
-                        hideMessage();
-                    }, 2000);
-                }
             }
 
             function hideMessage() {
@@ -370,8 +594,12 @@
                     return; 
                 }
                 
-                if (!isRunning && (e.key.startsWith('Arrow') || ['w', 'a', 's', 'd'].includes(e.key))) {
-                    startGame();
+                // Start game on any key if not running
+                if (!isRunning) {
+                    // Need to check for modifier keys, etc.
+                    if (e.key.length === 1 || e.key.startsWith("Arrow")) {
+                        startGame();
+                    }
                 }
 
                 switch (e.key) {
@@ -398,7 +626,8 @@
                     e.preventDefault();
                 }
             });
-
+            
+            // --- Listeners for (now hidden) buttons ---
             document.getElementById('btn-up').addEventListener('click', () => {
                 if (!isRunning) startGame();
                 if (direction.y === 0) direction = { x: 0, y: -1 };
@@ -424,10 +653,12 @@
                 startGame(); 
             });
 
+            // --- Initial Game Load ---
             initializeGame(); 
         }
     </script>
     
+    <!-- This loads app.js AND runs the snake game logic AFTER -->
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore } from './app.js';
