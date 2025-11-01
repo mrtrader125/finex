@@ -26,7 +26,7 @@
         details[open] > summary .chevron-icon { transform: rotate(180deg); }
         summary .chevron-icon { transition: transform 0.2s ease-in-out; }
 
-        /* === CUSTOM DROPDOWN STYLES (NEW) === */
+        /* === CUSTOM DROPDOWN STYLES === */
         .custom-select-wrapper { 
             position: relative; 
         }
@@ -59,7 +59,6 @@
         html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
         .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
         html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
-        /* === END OF NEW STYLES === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -121,7 +120,8 @@
                             </div>
                     </div>
                 </div>
-                <div id="analysis-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto min-h-[500px]">
+
+                 <div id="analysis-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto min-h-[500px]">
                     <p id="loading-message" class="text-center text-color-muted col-span-full">Loading analysis...</p>
                     <p id="no-results-message" class="text-center text-color-muted col-span-full" style="display: none;">No analysis found matching your criteria.</p>
                 </div>
@@ -156,7 +156,6 @@
             }
             const currentUserId = user.uid; 
 
-            // --- MODIFIED: Updated element IDs for new dropdowns ---
             const elements = {
                 container: document.getElementById('analysis-container'),
                 modal: document.getElementById('analysis-modal'),
@@ -169,29 +168,23 @@
                 closeModalBtn: document.getElementById('close-modal-btn'),
                 loadingMsg: document.getElementById('loading-message'),
                 noResultsMsg: document.getElementById('no-results-message'),
-                // New dropdown elements
                 analysisTypeSelect: document.getElementById('analysis-type-value'),
                 analysisCategorySelect: document.getElementById('analysis-category-value'),
                 analysisTypeOptions: document.getElementById('analysis-type-options'),
                 analysisCategoryOptions: document.getElementById('analysis-category-options'),
                 analysisTypeTriggerText: document.querySelector('[data-dropdown-trigger="analysis-type"] span'),
                 analysisCategoryTriggerText: document.querySelector('[data-dropdown-trigger="analysis-category"] span'),
-                // Form elements (unchanged)
                 createAnalysisDetails: document.getElementById('create-analysis-details'),
                 createAnalysisForm: document.getElementById('create-analysis-form'),
                 saveAnalysisBtn: document.getElementById('save-analysis-btn'),
                 createFormMessage: document.getElementById('create-form-message')
             };
-            // --- END MODIFICATION ---
 
             for (let key in elements) { if (!elements[key]) { console.error(`Error: Element ID '${key}' not found!`); return; } }
 
             let allAnalysis = []; 
-            // --- MODIFIED: State now read from dropdowns ---
             let currentAnalysisType = 'all'; 
             let currentCategory = 'All';
-            // --- END MODIFICATION ---
-            
             const placeholderImage = (width, height, text) => `https://placehold.co/${width}x${height}/334155/9ca3af?text=${text}`;
 
             function fetchAnalysis() {
@@ -211,19 +204,15 @@
                         return;
                     }
                     
-                    // --- MODIFIED: URL Check Logic ---
                     const urlParams = new URLSearchParams(window.location.search);
                     const analysisIdFromUrl = urlParams.get('id');
                     const analysisExists = analysisIdFromUrl && allAnalysis.find(a => a.id === analysisIdFromUrl);
 
                     if (analysisExists) {
-                        // A valid ID was found in the URL. Show it directly.
                         openModal(analysisExists);
                     }
-                    // Always render the grid in the background
                     renderCategories(); 
                     renderAnalysisGrid();
-                    // --- END MODIFICATION ---
 
                 }, (error) => {
                     console.error("Error fetching analysis data:", error);
@@ -235,7 +224,6 @@
                 });
             }
 
-            // --- MODIFIED: Renders category dropdown ---
             function renderCategories() {
                 const currentlyVisibleAnalysis = filterAnalysisData();
                 const categories = ['All', ...new Set(currentlyVisibleAnalysis.map(a => a.category).filter(Boolean))].sort();
@@ -260,15 +248,12 @@
                     elements.analysisCategorySelect.closest('.custom-select-wrapper').style.display = '';
                 }
             }
-            // --- END MODIFICATION ---
             
-            // --- MODIFIED: Reads from state variables ---
             function filterAnalysisData() {
-                 return allAnalysis.filter(item => {
-                     // Read from state variables
-                     currentAnalysisType = elements.analysisTypeSelect.value;
-                     currentCategory = elements.analysisCategorySelect.value;
+                 currentAnalysisType = elements.analysisTypeSelect.value;
+                 currentCategory = elements.analysisCategorySelect.value;
                  
+                 return allAnalysis.filter(item => {
                      let typeMatch = false;
                      if (currentAnalysisType === 'all') {
                          typeMatch = true;
@@ -285,8 +270,8 @@
                      return true; 
                  });
             }
-            // --- END MODIFICATION ---
 
+            // --- MODIFIED: This function contains the new card structure ---
             function renderAnalysisGrid() {
                 elements.loadingMsg.style.display = 'none';
                 elements.container.innerHTML = ''; // Clear existing
@@ -311,16 +296,24 @@
                         ? `<button data-delete-id="${item.id}" class="delete-analysis-btn text-xs text-red-500 hover:text-red-400 ml-auto"><i class="fas fa-trash-alt"></i></button>`
                         : '';
 
+                    // This is the new card template
                     return `
                     <div class="glass-card group flex flex-col overflow-hidden">
                         <div class="overflow-hidden relative">
-                             <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer analysis-card-image" loading="lazy" data-id="${item.id}">
+                             <img src="${coverImg}" alt="${item.title || 'Analysis'}" class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer analysis-card-image" loading="lazy" data-id="${item.id}">
                          </div>
-                        <div class="p-4 flex flex-col flex-grow">
+                        <div class="p-5 flex flex-col flex-grow">
                             <span class="text-xs font-bold uppercase text-blue-400 mb-1">${item.category || 'General'}</span>
-                             <h3 class="font-semibold text-color-base truncate mb-2 cursor-pointer analysis-card-title" title="${item.title || ''}" data-id="${item.id}">${item.title || 'Untitled Analysis'}</h3>
-                             <p class="text-sm text-color-muted mb-4 h-10 overflow-hidden">${item.description ? (item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '')) : 'Click to see more...'}</p>
-                            <div class="mt-auto pt-2 border-t border-color-base flex justify-between items-center">
+                             
+                             <h3 class="font-semibold text-lg text-color-base mb-2 cursor-pointer analysis-card-title" title="${item.title || ''}" data-id="${item.id}" style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; min-height: 3.5rem;">
+                                ${item.title || 'Untitled Analysis'}
+                             </h3>
+                             
+                             <p class="text-sm text-color-muted mb-4 overflow-hidden" style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; text-overflow: ellipsis; min-height: 3.75rem;">
+                                ${item.description ? item.description : 'Click to see more...'}
+                             </p>
+                             
+                            <div class="mt-auto pt-3 border-t border-color-base flex justify-between items-center">
                                 <span class="text-xs text-color-muted">${analystDisplay}</span>
                                 <div class="flex gap-1 items-center">
                                      <div class="flex gap-1">${tagsHTML}</div>
@@ -333,8 +326,9 @@
 
                 renderCategories(); 
             }
+            // --- END MODIFICATION ---
 
-             // --- MODIFIED: Added URL management ---
+
              function openModal(item) {
                  if (!item) return;
                  
@@ -360,7 +354,6 @@
                  elements.modal.classList.add('opacity-100');
                  elements.modal.classList.remove('pointer-events-none');
                  
-                 // Set URL parameter
                  const url = new URL(window.location);
                  if (url.searchParams.get('id') !== item.id) {
                      url.searchParams.set('id', item.id);
@@ -371,10 +364,7 @@
              function closeModal() {
                  elements.modal.classList.remove('opacity-100');
                  elements.modal.classList.add('pointer-events-none');
-                 
-                 // Clear URL parameter
                  history.pushState(null, '', window.location.pathname);
-                 
                  setTimeout(() => { 
                      elements.modalImage.src = ""; 
                      elements.modalTitle.textContent = "";
@@ -383,7 +373,6 @@
                      elements.modalDescription.textContent = "";
                  }, 300);
              }
-             // --- END MODIFICATION ---
 
             async function saveAnalysisPost(e) { /* ... (no changes) ... */
                 e.preventDefault();
@@ -441,7 +430,6 @@
                  setTimeout(() => { if (element) element.textContent = ''; }, 3000);
             }
 
-            // --- MODIFIED: Replaced all listeners with new dropdown logic ---
             function setupCustomDropdown(triggerSelector) {
                 const trigger = document.querySelector(triggerSelector);
                 if (!trigger) return;
@@ -453,7 +441,6 @@
 
                 trigger.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    // Close other dropdowns
                     document.querySelectorAll('.custom-select-wrapper.open').forEach(openWrapper => {
                         if (openWrapper !== wrapper) openWrapper.classList.remove('open');
                     });
@@ -463,18 +450,12 @@
                 optionsContainer.addEventListener('click', (e) => {
                     const option = e.target.closest('.custom-option');
                     if (!option) return;
-                    
                     const selectedValue = option.dataset.value;
-                    
                     hiddenInput.value = selectedValue;
                     triggerText.textContent = option.textContent;
-                    
                     optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
                     option.classList.add('selected');
-                    
                     wrapper.classList.remove('open');
-                    
-                    // Re-render the grid
                     renderAnalysisGrid();
                 });
             }
@@ -494,11 +475,9 @@
                     } 
                 });
                 
-                // Setup the two dropdowns
                 setupCustomDropdown('[data-dropdown-trigger="analysis-type"]');
                 setupCustomDropdown('[data-dropdown-trigger="analysis-category"]');
                 
-                // Global click to close dropdowns
                 document.addEventListener('click', () => {
                     document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => {
                         wrapper.classList.remove('open');
@@ -519,7 +498,6 @@
 
                  elements.createAnalysisForm.addEventListener('submit', saveAnalysisPost);
                  
-                 // Handle browser back/forward buttons
                  window.addEventListener('popstate', () => {
                     const urlParams = new URLSearchParams(window.location.search);
                     const analysisIdFromUrl = urlParams.get('id');
@@ -534,7 +512,6 @@
                     }
                 });
             }
-            // --- END MODIFICATION ---
 
             // --- Initial Load ---
             setupEventListeners();
