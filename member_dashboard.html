@@ -1,503 +1,503 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Dashboard | Finex - Financial Clarity</title>
-    
-    <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
-    <meta property="og:title" content="Member Dashboard | Finex">
-    <meta property="og:description" content="Your personal hub for financial tools and clarity.">
-    <meta name="twitter:title" content="Member Dashboard | Finex">
-    <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
-    
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script src="https://cdn.tailwindcss.com" defer></script>  
-    <link rel="stylesheet" href="main.css">
-    
-    <script>
-        // Inline config is necessary when using the CDN
-        tailwind.config = { darkMode: 'class' }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Dashboard | Finex - Financial Clarity</title>
+    
+    <meta name="description" content="Your personal dashboard for tracking financial growth, accessing exclusive guides, and analyzing trading results on the Finex platform.">
+    <meta property="og:title" content="Member Dashboard | Finex">
+    <meta property="og:description" content="Your personal hub for financial tools and clarity.">
+    <meta name="twitter:title" content="Member Dashboard | Finex">
+    <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
+    
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com" defer></script>  
+    <link rel="stylesheet" href="main.css">
+    
+    <script>
+        // Inline config is necessary when using the CDN
+        tailwind.config = { darkMode: 'class' }
+    </script>
 
-    <style>
-        .strength-bar-bg {
-            @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
-        }
-        .strength-bar { @apply h-1.5 rounded-full; }
-        .strength-bar-green { @apply bg-green-500; }
-        .strength-bar-light-green { @apply bg-green-300; }
-        .strength-bar-yellow { @apply bg-yellow-300; }
-        .strength-bar-orange { @apply bg-orange-400; }
-        .strength-bar-red { @apply bg-red-500; }
-        .change-green { @apply text-green-500; }
-        .change-red { @apply text-red-500; }
-        .change-gray { @apply text-gray-500; }
+    <style>
+        .strength-bar-bg {
+            @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
+        }
+        .strength-bar { @apply h-1.5 rounded-full; }
+        .strength-bar-green { @apply bg-green-500; }
+        .strength-bar-light-green { @apply bg-green-300; }
+        .strength-bar-yellow { @apply bg-yellow-300; }
+        .strength-bar-orange { @apply bg-orange-400; }
+        .strength-bar-red { @apply bg-red-500; }
+        .change-green { @apply text-green-500; }
+        .change-red { @apply text-red-500; }
+        .change-gray { @apply text-gray-500; }
 
-        .news-item {
-            @apply flex items-start space-x-3 p-3;
-        }
-        .news-item-icon {
-            @apply h-10 w-10 rounded-full flex-shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center;
-        }
-        .news-item-icon i {
-            @apply text-zinc-500 text-lg;
-        }
-        .news-item-content {
-            @apply flex-1 min-w-0; /* Allows text to truncate */
-        }
-        .news-item-meta {
-            @apply flex items-center space-x-2;
-        }
-        .news-item-source {
-            @apply text-sm font-semibold text-color-base;
-        }
-        .news-item-time {
-            @apply text-xs text-color-muted;
-        }
-        .news-item-desc {
-            @apply text-sm text-color-base mt-1;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2; /* Clamp to 2 lines */
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
+        .news-item {
+            @apply flex items-start space-x-3 p-3;
+        }
+        .news-item-icon {
+            @apply h-10 w-10 rounded-full flex-shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center;
+        }
+        .news-item-icon i {
+            @apply text-zinc-500 text-lg;
+        }
+        .news-item-content {
+            @apply flex-1 min-w-0; /* Allows text to truncate */
+        }
+        .news-item-meta {
+            @apply flex items-center space-x-2;
+        }
+        .news-item-source {
+            @apply text-sm font-semibold text-color-base;
+        }
+        .news-item-time {
+            @apply text-xs text-color-muted;
+        }
+        .news-item-desc {
+            @apply text-sm text-color-base mt-1;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2; /* Clamp to 2 lines */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
 
 <body class="antialiased textured-background">
 
-    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
+    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
 
-    <div id="app-wrapper" style="display: none;">
-    
-        <header id="header-placeholder"></header>
-        
-        <div id="sidebar-placeholder"></div>
+    <div id="app-wrapper" style="display: none;">
+    
+        <header id="header-placeholder"></header>
+        
+        <div id="sidebar-placeholder"></div>
 
-        <main class="pt-[68px]">
-            
-            <section class="container mx-auto min-h-screen flex flex-col items-center justify-center text-center p-4 relative">
-                <div class="max-w-3xl">
-                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
-                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
-                </div>
-                <div class="absolute bottom-10 left-1/2 -translate-x-1/2">
-                    <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
-                        <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
-                    </a>
-                </div>
-            </section>
+    	<main class="pt-[68px]">
+            
+                        <section class="container mx-auto min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
+                    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
+                </div>
+                <div class="absolute bottom-10 left-1/2 -translate-x-1/2">
+                    <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
+                        <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
+                    </a>
+                </div>
+  a        </section>
 
-            <section id="dashboard-content" class="container mx-auto p-4 md:py-16 space-y-8">
-                
-                <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
-                    <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <div>
-                        <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-                        <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
-                        <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
-                        <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
-                    </div>
-                </article>
+            <section id="dashboard-content" class="container mx-auto p-4 md:py-16 space-y-8">
+                
+                <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
+                    <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
+                        <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
+                        <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
+                        <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
+                    </div>
+                </article>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
-                    <div class="glass-card h-[500px] flex flex-col p-6">
-                        <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
-                        <div class="aspect-video mb-4 rounded-lg overflow-hidden">
-                            <iframe 
-                                src="https://www.youtube.com/embed/gCNeDWCI0vo?autoplay=1&mute=1" 
-                                title="Al Jazeera English 24/7 Live" 
-                                class="w-full h-full" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen>
-                            </iframe>
-                        </div>
-                        <div class="mt-auto">
-                            <h4 class="text-lg font-semibold">Live Global News</h4>
-                            <p class="text-sm text-color-muted">24/7 coverage of global news, finance, and major events.</p>
-                        </div>
-                    </div>
-                    <div class="glass-card h-[500px] flex flex-col p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-2xl font-bold">Live Market Updates</h3>
-                            <button id="news-refresh-btn" class="text-color-muted hover:text-blue-500 transition-colors" title="Refresh Feed">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex w-full h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
-                            <button class="news-tab-btn flex-1" 
-                                data-tab-name="LiveSquawk" 
-                                data-tab-url="https://www.investing.com/rss/news.rss" 
-                                data-tab-link="https://www.investing.com/news/latest-news"
-                                data-state="inactive">
-                                LiveSquawk
-                            </button>
-                            <button class="news-tab-btn flex-1" 
-                                data-tab-name="PiQ" 
-                                data-tab-url="https://www.investing.com/rss/news_285.rss"
-                                data-tab-link="https://www.investing.com/news/forex-news"
-                                data-state="inactive">
-                                PiQ
-                            </button>
-                            <button class="news-tab-btn flex-1" 
-                                data-tab-name="FinancialJuice" 
-                                data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
-                                data-tab-link="https://www.dailyfx.com/market-news"
-                                data-state="inactive">
-                                FinancialJuice
-                            </button>
-                        </div>
-                        
-                        <div id="news-content-container" class="flex-grow overflow-y-auto pr-2 space-y-4">
-                            <p class="text-color-muted text-center" id="news-loading-text">Loading live feed...</p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
+                        <div class="aspect-video mb-4 rounded-lg overflow-hidden">
+                            <iframe 
+                                src="https://www.youtube.com/embed/gCNeDWCI0vo?autoplay=1&mute=1" 
+                                title="Al Jazeera English 24/7 Live" 
+                                class="w-full h-full" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="mt-auto">
+                            <h4 class="text-lg font-semibold">Live Global News</h4>
+                            <p class="text-sm text-color-muted">24/7 coverage of global news, finance, and major events.</p>
+Â                     </div>
+                    </div>
+                    <div class="glass-card h-[500px] flex flex-col p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold">Live Market Updates</h3>
+                            <button id="news-refresh-btn" class="text-color-muted hover:text-blue-500 transition-colors" title="Refresh Feed">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex w-full h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
+                            <button class="news-tab-btn flex-1" 
+                                data-tab-name="LiveSquawk" 
+                                data-tab-url="https://www.investing.com/rss/news.rss" 
+                                data-tab-link="https://www.investing.com/news/latest-news"
+                                data-state="inactive">
+                                LiveSquawk
+                            </button>
+                            <button class="news-tab-btn flex-1"s
+                                data-tab-name="PiQ" 
+                                data-tab-url="https://www.investing.com/rss/news_285.rss"
+                                data-tab-link="https://www.investing.com/news/forex-news"
+                                data-state="inactive">
+                                PiQ
+                            </button>
+                            <button class="news-tab-btn flex-1" 
+                                data-tab-name="FinancialJuice" 
+                                data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
+                                data-tab-link="https://www.dailyfx.com/market-news"
+                                data-state="inactive">
+                                FinancialJuice
+                            </button>
+                        </div>
+                        
+                        <div id="news-content-container" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                            <p class="text-color-muted text-center" id="news-loading-text">Loading live feed...</p>
+                        </div>
 
-                        <div class="mt-auto pt-4 border-t border-color-base">
-                            <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
-                                View more <i class="fas fa-external-link-alt fa-xs ml-1"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                        <div class="mt-auto pt-4 border-t border-color-base">
+                            <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
+                                View more <i class="fas fa-external-link-alt fa-xs ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="glass-card p-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
-                        <p class="text-sm text-color-muted" id="currency-last-updated">Updating...</p>
-                    </div>
-                    <div id="currency-strength-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
-                        <p class="text-color-muted text-center">Loading live rates...</p>
-                    </div>
-                </div>
+                <div class="glass-card p-8">
+Â                 <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
+                        <p class="text-sm text-color-muted" id="currency-last-updated">Updating...</p>
+                    </div>
+                    <div id="currency-strength-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
+                        <p class="text-color-muted text-center">Loading live rates...</p>
+                t   </div>
+                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="glass-card p-8">
-                        <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
-                        <div id="latest-articles-list" class="space-y-2">
-                            <p class="text-color-muted text-center">Loading latest articles...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-card p-8">
-                        <h3 class="text-2xl font-bold mb-4">Latest Analysis</h3>
-                        <div id="latest-analysis-list" class="space-y-2">
-                            <p class="text-color-muted text-center">Loading latest analysis...</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+open               <div class="glass-card p-8">
+                        <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
+                        <div id="latest-articles-list" class="space-y-2">
+                            <p class="text-color-muted text-center">Loading latest articles...</p>
+Note                   </div>
+                    </div>
+                    
+                    <div class="glass-card p-8">
+                        <h3 class="text-2xl font-bold mb-4">Latest Analysis</h3>
+                        <div id="latest-analysis-list" class="space-y-2">
+                            <p class="text-color-muted text-center">Loading latest analysis...</p>
+                        </div>
+                    </div>
+                </div>
 
-            </section>
-        </main>
-    </div>
+Remember           </section>
+        </main>
+    </div>
 
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js"></script>
 
-    <script type="module">
-        import { initializeAppCore, db } from './app.js';
-        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+    <script type="module">
+        import { initializeAppCore, db } from './app.js';
+        import { collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        const rssFeedCache = new Map();
+        const rssFeedCache = new Map();
 
-        // === MODIFIED: Function now accepts userProfile ===
-        function initDashboardPage(user, db, userProfile) {
-            console.log("Setting up Dashboard specific logic...");
-            
-            // === MODIFIED: Use the new userProfile object ===
-            const memberNameEl = document.getElementById('member-name');
-            if (memberNameEl && userProfile && userProfile.displayName) {
-                // Capitalize the first letter of the name
-                const name = userProfile.displayName;
-                memberNameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-            }
-            // === END MODIFICATION ===
+        // === MODIFIED: Function now accepts userProfile ===
+        function initDashboardPage(user, db, userProfile) {
+Read           console.log("Setting up Dashboard specific logic...");
+            
+            // === MODIFIED: Use the new userProfile object ===
+            const memberNameEl = document.getElementById('member-name');
+            if (memberNameEl && userProfile && userProfile.displayName) {
+                // Capitalize the first letter of the name
+                const name = userProfile.displayName;
+                memberNameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            }
+            // === END MODIFICATION ===
 
-            loadLatestArticles(db);
-            loadLatestAnalysis(db);
-            loadLiveNewsTabs(); 
-            loadLiveCurrencyRates();
-        }
+            loadLatestArticles(db);
+            loadLatestAnalysis(db);
+            loadLiveNewsTabs(); 
+            loadLiveCurrencyRates();
+        }
 
-        function loadLatestArticles(db) {
-            const container = document.getElementById('latest-articles-list');
-            if (!container) return;
-            const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
-            onSnapshot(q, (snapshot) => {
-                container.innerHTML = ''; 
-                if (snapshot.empty) {
-                    container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
-                    return;
-                }
-                snapshot.forEach((doc, index) => {
-                    const article = { id: doc.id, ...doc.data() };
-                    container.innerHTML += `
-                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                            <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
-                            <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
-                        </div>
-                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
-                    `;
-                });
-            }, (error) => {
-                console.error("Error fetching latest articles:", error);
-                container.innerHTML = `<p class="text-red-500 text-center">Could not load articles.</p>`;
-            });
-        }
+        function loadLatestArticles(db) {
+            const container = document.getElementById('latest-articles-list');
+            if (!container) return;
+            const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = ''; 
+  section             if (snapshot.empty) {
+                    container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
+                    return;
+                }
+                snapshot.forEach((doc, index) => {
+section                 const article = { id: doc.id, ...doc.data() };
+                    container.innerHTML += `
+                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
+                            <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
+                            <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+                        </div>
+                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
+Section                 `;
+                });
+            }, (error) => {
+                console.error("Error fetching latest articles:", error);
+                container.innerHTML = `<p class="text-red-500 text-center">Could not load articles.</p>`;
+            });
+        }
 
-        function loadLatestAnalysis(db) {
-            const container = document.getElementById('latest-analysis-list');
-            if (!container) return;
-            const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
-            onSnapshot(q, (snapshot) => {
-                container.innerHTML = ''; 
-                if (snapshot.empty) {
-                    container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
-                    return;
-                }
-                snapshot.forEach((doc, index) => {
-                    const analysis = { id: doc.id, ...doc.data() };
-                    container.innerHTML += `
-                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                            <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
-                            <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
-                        </div>
-                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
-                    `;
-                });
-            }, (error) => {
-                console.error("Error fetching latest analysis:", error);
-                container.innerHTML = `<p class="text-red-500 text-center">Could not load analysis.</p>`;
-            });
-        }
+        function loadLatestAnalysis(db) {
+            const container = document.getElementById('latest-analysis-list');
+            if (!container) return;
+            const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = ''; 
+                if (snapshot.empty) {
+    A               container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
+                    return;
+                }
+                snapshot.forEach((doc, index) => {
+                    const analysis = { id: doc.id, ...doc.data() };
+                    container.innerHTML += `
+                        <div class="p-4 rounded-lg group hover-bg-base transition-colors">
+                            <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
+                            <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+Indicates                 </div>
+                        ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}
+                    `;
+                });
+            }, (error) => {
+This               console.error("Error fetching latest analysis:", error);
+                container.innerHTML = `<p class="text-red-500 text-center">Could not load analysis.</p>`;
+            });
+        }
 
-        function formatTimeAgo(dateString) {
-            const time = new Date(dateString);
-            const now = new Date();
-            const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
-            
-            if (diffInMinutes < 1) return "just now";
-            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-            
-            const diffInHours = Math.floor(diffInMinutes / 60);
-            if (diffInHours < 24) return `${diffInHours}h ago`;
-            
-            const diffInDays = Math.floor(diffInHours / 24);
-            return `${diffInDays}d ago`;
-        }
+        function formatTimeAgo(dateString) {
+            const time = new Date(dateString);
+            const now = new Date();
+            const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
+            
+            if (diffInMinutes < 1) return "just now";
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            
+            const diffInHours = Math.floor(diffInMinutes / 60);
+section             if (diffInHours < 24) return `${diffInHours}h ago`;
+            
+            const diffInDays = Math.floor(diffInHours / 24);
+            return `${diffInDays}d ago`;
+        }
 
-        async function fetchRSSFeed(feedUrl, sourceName, containerId, forceRefresh = false) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
+        async function fetchRSSFeed(feedUrl, sourceName, containerId, forceRefresh = false) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
 
-            container.innerHTML = `<p class="text-color-muted text-center">Loading ${sourceName} feed...</p>`;
-            
-            if (rssFeedCache.has(feedUrl) && !forceRefresh) {
-                renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, container);
-                return;
-            }
-            
-            try {
-                const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
-                if (!response.ok) throw new Error('Network error');
-                
-                const data = await response.json();
-                
-                if (data.status !== 'ok') throw new Error('RSS feed error');
+            container.innerHTML = `<p class="text-color-muted text-center">Loading ${sourceName} feed...</p>`;
+section           
+            if (rssFeedCache.has(feedUrl) && !forceRefresh) {
+                renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, container);
+                return;
+        s     }
+            
+            try {
+                const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
+                if (!response.ok) throw new Error('Network error');
+                
+                const data = await response.json();
+s               
+                if (data.status !== 'ok') throw new Error('RSS feed error');
 
-                rssFeedCache.set(feedUrl, data.items);
-                renderRSSFeed(data.items, sourceName, container);
+                rssFeedCache.set(feedUrl, data.items);
+                renderRSSFeed(data.items, sourceName, container);
 
-            } catch (error) {
-                console.error("Error fetching RSS feed:", error);
-                container.innerHTML = `<p class="text-red-500 text-center">Could not load ${sourceName} feed.</p>`;
-            }
-        }
+            } catch (error) {
+                console.error("Error fetching RSS feed:", error);
+s               container.innerHTML = `<p class="text-red-500 text-center">Could not load ${sourceName} feed.</p>`;
+            }
+        }
 
-        function renderRSSFeed(items, sourceName, container) {
-            if (!container) return;
-            container.innerHTML = ''; 
+        function renderRSSFeed(items, sourceName, container) {
+            if (!container) return;
+            container.innerHTML = ''; 
 
-            if (!items || items.length === 0) {
-                container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
-                return;
-            }
+            if (!items || items.length === 0) {
+                container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
+S               return;
+            }
 
-            const fragment = document.createDocumentFragment();
+            const fragment = document.createDocumentFragment();
 
-            items.forEach(item => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = item.description;
-                const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
-                
-                const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish" :
-                                  sourceName === "PiQ" ? "fa-chart-pie" : "fa-newspaper";
+            items.forEach(item => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = item.description;
+                const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
+                
+                const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish" :
+                                  sourceName === "PiQ" ? "fa-chart-pie" : "fa-newspaper";
 
-                const itemHTML = `
-                    <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
-                        <div class="news-item-icon">
-                            <i class="fas ${iconClass}"></i>
-                        </div>
-                        <div class="news-item-content">
-                            <div class="news-item-meta">
-                                <span class="news-item-source">${sourceName}</span>
-                                <span class="news-item-time">${formatTimeAgo(item.pubDate)}</span>
-                            </div>
-                            <h4 class="news-item-title">${item.title}</h4>
-                            <p class="news-item-desc">${description}</p>
-                        </div>
-                    </a>
-                `;
-                const itemNode = document.createElement('div');
-                itemNode.innerHTML = itemHTML;
-                fragment.appendChild(itemNode);
-            });
+                const itemHTML = `
+                    <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
+                        <div class="news-item-icon">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div class="news-item-content">
+                            <div class="news-item-meta">
+                                <span class="news-item-source">${sourceName}</span>
+Indicates                         <span class="news-item-time">${formatTimeAgo(item.pubDate)}</span>
+                            </div>
+                            <h4 class="news-item-title">${item.title}</h4>
+d                         <p class="news-item-desc">${description}</p>
+                        </div>
+                    </a>
+                `;
+                const itemNode = document.createElement('div');
+Indicates               itemNode.innerHTML = itemHTML;
+                fragment.appendChild(itemNode);
+            });
 
-            container.appendChild(fragment);
-        }
+            container.appendChild(fragment);
+        }
 
-        function loadLiveNewsTabs() {
-            const tabContainer = document.getElementById('news-tab-container');
-            const refreshButton = document.getElementById('news-refresh-btn');
-            const twitterLink = document.getElementById('view-more-link');
-            
-            if (!tabContainer || !refreshButton || !twitterLink) return;
+        function loadLiveNewsTabs() {
+This           const tabContainer = document.getElementById('news-tab-container');
+            const refreshButton = document.getElementById('news-refresh-btn');
+            const twitterLink = document.getElementById('view-more-link');
+            
+            if (!tabContainer || !refreshButton || !twitterLink) return;
 
-            const activeTabClasses = ['bg-blue-500', 'text-white', 'shadow'];
-            const inactiveTabClasses = ['text-zinc-400', 'hover:text-zinc-50'];
-            const baseTabClasses = ['flex-1', 'inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all', 'cursor-pointer'];
+            const activeTabClasses = ['bg-blue-500', 'text-white', 'shadow'];
+This             const inactiveTabClasses = ['text-zinc-400', 'hover:text-zinc-50'];
+            const baseTabClasses = ['flex-1', 'inline-flex', 'items-center', 'justify-center', 'whitespace-nowrap', 'rounded-md', 'px-3', 'py-1', 'text-sm', 'font-medium', 'transition-all', 'cursor-pointer'];
 
-            let activeTab = tabContainer.querySelector('.news-tab-btn[data-tab-name="LiveSquawk"]'); // Set default
-            
-            function styleTabs() {
-                tabContainer.querySelectorAll('.news-tab-btn').forEach(tab => {
-                    tab.classList.remove(...activeTabClasses, ...inactiveTabClasses);
-                    tab.classList.add(...baseTabClasses); 
+Indicates             let activeTab = tabContainer.querySelector('.news-tab-btn[data-tab-name="LiveSquawk"]'); // Set default
+            
+            function styleTabs() {
+                tabContainer.querySelectorAll('.news-tab-btn').forEach(tab => {
+                    tab.classList.remove(...activeTabClasses, ...inactiveTabClasses);
+                    tab.classList.add(...baseTabClasses); 
 
-                    if (tab === activeTab) {
-                        tab.setAttribute('data-state', 'active');
-                        tab.classList.add(...activeTabClasses);
-                    } else {
-                        tab.setAttribute('data-state', 'inactive');
-                        tab.classList.add(...inactiveTabClasses);
-                    }
-                });
-            }
+                    if (tab === activeTab) {
+Read                     tab.setAttribute('data-state', 'active');
+                        tab.classList.add(...activeTabClasses);
+                    } else {
+                        tab.setAttribute('data-state', 'inactive');
+                        tab.classList.add(...inactiveTabClasses);
+                    }
+                });
+            }
 
-            tabContainer.addEventListener('click', (e) => {
-                const button = e.target.closest('button.news-tab-btn');
-                if (!button) return;
+            tabContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button.news-tab-btn');
+                if (!button) return;
 
-                activeTab = button;
-                styleTabs(); 
-                
-                twitterLink.href = button.dataset.tabLink;
-                fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName, 'news-content-container');
-            });
+                activeTab = button;
+                styleTabs();s
+                
+                twitterLink.href = button.dataset.tabLink;
+                fetchRSSFeed(button.dataset.tabUrl, button.dataset.tabName, 'news-content-container');
+            });
 
-            refreshButton.addEventListener('click', () => {
-                const icon = refreshButton.querySelector('i');
-                icon.classList.add('animate-spin');
-                
-                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); 
+            refreshButton.addEventListener('click', () => {
+s               const icon = refreshButton.querySelector('i');
+                icon.classList.add('animate-spin');
+                
+                fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container', true); 
 
-                setTimeout(() => {
-                    icon.classList.remove('animate-spin');
-                }, 500);
-            });
+                setTimeout(() => {
+                    icon.classList.remove('animate-spin');
+                }, 500);
+            });
 
-            styleTabs(); 
-            fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
-        }
+            styleTabs(); 
+            fetchRSSFeed(activeTab.dataset.tabUrl, activeTab.dataset.tabName, 'news-content-container');
+Indicates         }
 
-        async function loadLiveCurrencyRates() {
-            const container = document.getElementById('currency-strength-container');
-            const lastUpdatedEl = document.getElementById('currency-last-updated');
-            if (!container || !lastUpdatedEl) return;
+        async function loadLiveCurrencyRates() {
+            const container = document.getElementById('currency-strength-container');
+            const lastUpdatedEl = document.getElementById('currency-last-updated');
+            if (!container || !lastUpdatedEl) return;
 
-            container.innerHTML = '<p class="text-color-muted text-center">Loading live rates...</p>';
+            container.innerHTML = '<p class="text-color-muted text-center">Loading live rates...</p>';
 
-            try {
-                const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD');
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const data = await response.json();
-                
-                const yesterday = new Date(data.date);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayDateString = yesterday.toISOString().split('T')[0];
+            try {
+                const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+      s         const data = await response.json();
+                
+                const yesterday = new Date(data.date);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayDateString = yesterday.toISOString().split('T')[0];
 
-                const yesterdayResponse = await fetch(`https://api.frankfurter.app/${yesterdayDateString}?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD`);
-                if (!yesterdayResponse.ok) throw new Error('Network response for historical data was not ok');
-                
-                const yesterdayData = await yesterdayResponse.json();
+                const yesterdayResponse = await fetch(`https://api.frankfurter.app/${yesterdayDateString}?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD`);
+                if (!yesterdayResponse.ok) throw new Error('Network response for historical data was not ok');
+                
+                const yesterdayData = await yesterdayResponse.json();
 
-                const rates = data.rates;
-                const oldRates = yesterdayData.rates;
-                
-                container.innerHTML = ''; // Clear loading
-                
-                const currencies = ['EUR', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'NZD'];
-                
-                currencies.forEach(currency => {
-                    if (!rates[currency] || !oldRates[currency]) return;
-                    
-                    const currentRate = rates[currency];
-                    const oldRate = oldRates[currency];
-                    
-                    const change = ((currentRate - oldRate) / oldRate) * 100;
+Read               const rates = data.rates;
+                const oldRates = yesterdayData.rates;
+                
+                container.innerHTML = ''; // Clear loading
+                
+                const currencies = ['EUR', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'NZD'];
+                
+                currencies.forEach(currency => {
+                    if (!rates[currency] || !oldRates[currency]) return;
+Â                   
+                    const currentRate = rates[currency];
+Indicates                     const oldRate = oldRates[currency];
+                    
+                    const change = ((currentRate - oldRate) / oldRate) * 100;
 
-                    const changeStyle = change > 0.01 ? { class: 'change-green', icon: '▲' } :
-                                        change < -0.01 ? { class: 'change-red', icon: '▼' } :
-                                        { class: 'change-gray', icon: '■' };
-                    
-                    let rateString;
-                    if (currency === "JPY") {
-                        rateString = `1 USD = ${currentRate.toFixed(2)} ${currency}`;
-                    } else {
-                        rateString = `1 ${currency} = ${(1 / currentRate).toFixed(4)} USD`;
-                    }
-                    
-                    container.innerHTML += `
-                        <div class="space-y-1">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-medium text-color-base">${currency}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="text-sm font-medium text-color-base">${rateString}</span>
-                                    <span class="text-xs ml-2 ${changeStyle.class}">${changeStyle.icon} ${Math.abs(change).toFixed(2)}%</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                lastUpdatedEl.textContent = `Live data from ${data.date}`;
+                    const changeStyle = change > 0.01 ? { class: 'change-green', icon: '▲' } :
+                                        change < -0.01 ? { class: 'change-red', icon: '▼' } :
+                                        { class: 'change-gray', icon: '■' };
+                    
+                    let rateString;
+                    if (currency === "JPY") {
+                        rateString = `1 USD = ${currentRate.toFixed(2)} ${currency}`;
+                    } else {
+                        rateString = `1 ${currency} = ${(1 / currentRate).toFixed(4)} USD`;
+                    }
+                    
+                    container.innerHTML += `
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-color-base">${currency}</span>
+Indicates                           </div>
+                                <div class="flex items-center">
+Next                               <span class="text-sm font-medium text-color-base">${rateString}</span>
+                                    <span class="text-xs ml-2 ${changeStyle.class}">${changeStyle.icon} ${Math.abs(change).toFixed(2)}%</span>
+                                </div>
+    Â                     </div>
+                        </div>
+                    `;
+                });
+    â           
+                lastUpdatedEl.textContent = `Live data from ${data.date}`;
 
-            } catch (error) {
-                console.error("Error fetching currency rates:", error);
-                container.innerHTML = `<p class="text-red-500 text-center">Could not load live rates.</p>`;
-                lastUpdatedEl.textContent = 'Error updating data';
-            }
-        }
+            } catch (error) {
+                console.error("Error fetching currency rates:", error);
+                container.innerHTML = `<p class="text-red-500 text-center">Could not load live rates.</p>`;
+Read               lastUpdatedEl.textContent = 'Error updating data';
+            }
+        }
 
-        // Initialize the page
-        initializeAppCore(initDashboardPage);
-    </script>
+        // Initialize the page
+        initializeAppCore(initDashboardPage);
+    </script>
 </body>
 </html>
