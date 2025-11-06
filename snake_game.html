@@ -131,7 +131,7 @@
     <script>
         function initSnakeGame() {
             const canvas = document.getElementById('game-canvas');
-            if (!canvas) return; 
+            if (!canvas) return;
             
             const ctx = canvas.getContext('2d');
             const scoreEl = document.getElementById('score-display');
@@ -140,8 +140,8 @@
             const messageText = document.getElementById('message-text');
 
             // --- Game Constants ---
-            const gridSize = 20; 
-            const tileCount = 20; 
+            const gridSize = 20;
+            const tileCount = 20;
             const canvasSize = gridSize * tileCount;
             const BASE_SPEED = 160; // Base game speed in ms
             const FAST_SPEED = 80;
@@ -210,7 +210,7 @@
              * Starts the game logic loop.
              */
             function startGame() {
-                if (isRunning) return; 
+                if (isRunning) return;
                 
                 // Reset logic state
                 snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
@@ -220,7 +220,7 @@
                     y: seg.y * gridSize + gridSize / 2
                 }));
                 
-                direction = { x: 0, y: 0 }; 
+                direction = { x: 0, y: 0 };
                 score = 0;
                 gameSpeed = BASE_SPEED;
                 scoreEl.textContent = 'Score: 0';
@@ -237,7 +237,7 @@
                 
                 // Stop/start intervals
                 if (logicInterval) clearInterval(logicInterval);
-                logicInterval = setInterval(gameTick, gameSpeed); 
+                logicInterval = setInterval(gameTick, gameSpeed);
             }
 
             // --- Game Loops ---
@@ -250,9 +250,9 @@
                 if (!isRunning) return;
                 
                 // 1. Calculate new logical head position
-                const head = { 
-                    x: snake[0].x + direction.x, 
-                    y: snake[0].y + direction.y 
+                const head = {
+                    x: snake[0].x + direction.x,
+                    y: snake[0].y + direction.y
                 };
 
                 // 2. Check Wall Collision
@@ -290,7 +290,7 @@
                 if (head.x === food.x && head.y === food.y) {
                     score++;
                     scoreEl.textContent = `Score: ${score}`;
-                    generateFood(); 
+                    generateFood();
                     
                     // Add new obstacle every 5 points
                     if (score % 5 === 0 && score > 0) {
@@ -303,7 +303,7 @@
                     }
                 } else {
                     snake.pop();
-                    visualSnake.pop(); 
+                    visualSnake.pop();
                 }
             }
             
@@ -312,7 +312,7 @@
              * Smoothly animates the visuals towards the logical state.
              */
             function renderLoop() {
-                if (!ctx) return; 
+                if (!ctx) return;
 
                 // Smoothly animate each visual segment to follow the one in front of it
                 for (let i = 0; i < visualSnake.length; i++) {
@@ -339,6 +339,23 @@
             // --- Drawing Functions ---
 
             /**
+             * Helper to draw a 3D-style sphere with a gradient.
+             */
+            function draw3DSphere(context, x, y, radius, lightColor, darkColor) {
+                const gradient = context.createRadialGradient(
+                    x - radius / 3, y - radius / 3, radius / 5,
+                    x, y, radius
+                );
+                gradient.addColorStop(0, lightColor);
+                gradient.addColorStop(1, darkColor);
+                
+                context.fillStyle = gradient;
+                context.beginPath();
+                context.arc(x, y, radius, 0, 2 * Math.PI);
+                context.fill();
+            }
+
+            /**
              * Draws the entire game scene onto the canvas.
              */
             function draw() {
@@ -354,7 +371,8 @@
             function drawFood() {
                 const foodX = food.x * gridSize + gridSize / 2;
                 const foodY = food.y * gridSize + gridSize / 2;
-                const foodRadius = gridSize / 2 - 1; 
+                const foodRadius = gridSize / 2 - 1;
+                // Keep food red and 3D
                 draw3DSphere(ctx, foodX, foodY, foodRadius, '#fc8181', '#f56565');
             }
 
@@ -363,7 +381,7 @@
                     const obsX = obs.x * gridSize + gridSize / 2;
                     const obsY = obs.y * gridSize + gridSize / 2;
                     const radius = gridSize / 2 - 1;
-                    // Draw as dark grey "rocks"
+                    // Draw obstacles as dark grey "rocks"
                     draw3DSphere(ctx, obsX, obsY, radius, '#718096', '#2d3748');
                 }
             }
@@ -389,78 +407,70 @@
                 draw3DSphere(ctx, powX, powY, pulse, lightColor, darkColor);
             }
 
+            // *** NEW drawSnake function for the cartoon look ***
             function drawSnake() {
-                if (visualSnake.length > 1) {
-                    const bodyGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                    bodyGradient.addColorStop(0, '#48bb78'); 
-                    bodyGradient.addColorStop(0.5, '#9ae6b4'); 
-                    bodyGradient.addColorStop(1, '#38a169'); 
-                    
-                    ctx.strokeStyle = bodyGradient;
-                    ctx.lineCap = 'round'; 
-                    ctx.lineJoin = 'round'; 
-
-                    ctx.beginPath();
-                    ctx.moveTo(visualSnake[visualSnake.length - 1].x, visualSnake[visualSnake.length - 1].y);
-                    
-                    for (let i = visualSnake.length - 2; i >= 0; i--) {
-                        const t = (i + 1) / visualSnake.length;
-                        ctx.lineWidth = 4 + (gridSize - 8) * t; 
-                        ctx.lineTo(visualSnake[i].x, visualSnake[i].y);
-                    }
-                    ctx.stroke();
-                }
-
                 const head = visualSnake[0];
                 const headRadius = (gridSize / 2) - 1;
-
-                const headGradient = ctx.createRadialGradient(
-                    head.x - headRadius / 3, head.y - headRadius / 3, headRadius / 5,
-                    head.x, head.y, headRadius
-                );
-                headGradient.addColorStop(0, '#68d391'); 
-                headGradient.addColorStop(1, '#38a169'); 
                 
-                ctx.fillStyle = headGradient;
-                ctx.beginPath();
-                ctx.arc(head.x, head.y, headRadius, 0, 2 * Math.PI);
+                // --- 1. Draw Body Segments (Segmented Cartoon Look) ---
+                for (let i = visualSnake.length - 1; i > 0; i--) {
+                    const segment = visualSnake[i];
+                    // Scale the body size: smaller at the tail, larger near the head
+                    const t = i / visualSnake.length; // Normalized distance from tail
+                    const radius = headRadius * (0.5 + 0.5 * (1 - t)); 
+                    
+                    // Colors: A bright, slightly yellowish-green for the cartoon look
+                    const bodyLight = '#90EE90'; // Light Green
+                    const bodyDark = '#3CB371'; // Medium Sea Green
+                    
+                    draw3DSphere(ctx, segment.x, segment.y, radius, bodyLight, bodyDark);
+                }
+
+                // --- 2. Draw Head (The brightest, largest segment) ---
+                const cartoonLightGreen = '#A3F7A3'; // Brighter green for highlights
+                const cartoonDarkGreen = '#48BB78'; // Base green
+                
+                // Draw the head slightly larger than the segments
+                draw3DSphere(ctx, head.x, head.y, headRadius + 1, cartoonLightGreen, cartoonDarkGreen);
+
+
+                // --- 3. Draw Cartoon Eyes (Larger, more expressive) ---
+                const eyeRadius = headRadius * 0.5; // Larger white area
+                const pupilRadius = headRadius * 0.2; // Smaller black pupil
+                
+                // Calculate eye positions relative to the direction of travel
+                const perpendicularX = -direction.y * (headRadius * 0.4);
+                const perpendicularY = direction.x * (headRadius * 0.4);
+                const forwardX = direction.x * (headRadius * 0.3);
+                const forwardY = direction.y * (headRadius * 0.3);
+
+                const eyeX1 = head.x + perpendicularX + forwardX;
+                const eyeY1 = head.y + perpendicularY + forwardY;
+                const eyeX2 = head.x - perpendicularX + forwardX;
+                const eyeY2 = head.y - perpendicularY + forwardY;
+                
+                // Draw white of the eyes
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); 
+                ctx.arc(eyeX1, eyeY1, eyeRadius, 0, 2 * Math.PI); 
+                ctx.fill();
+                ctx.beginPath(); 
+                ctx.arc(eyeX2, eyeY2, eyeRadius, 0, 2 * Math.PI); 
                 ctx.fill();
 
-                // Draw Cartoon Eyes
-                const eyeRadius = 3;
-                const eyeOffsetX = direction.y * (headRadius / 2);
-                const eyeOffsetY = -direction.x * (headRadius / 2);
-
-                const eyeX1 = head.x + eyeOffsetX + direction.x * (headRadius / 3);
-                const eyeY1 = head.y + eyeOffsetY + direction.y * (headRadius / 3);
-                const eyeX2 = head.x - eyeOffsetX + direction.x * (headRadius / 3);
-                const eyeY2 = head.y - eyeOffsetY + direction.y * (headRadius / 3);
-                
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(eyeX1, eyeY1, eyeRadius, 0, 2 * Math.PI); ctx.fill();
-                ctx.beginPath(); ctx.arc(eyeX2, eyeY2, eyeRadius, 0, 2 * Math.PI); ctx.fill();
+                // Draw black pupils (looking slightly in the direction of movement)
+                const pupilLookX = direction.x * (eyeRadius - pupilRadius);
+                const pupilLookY = direction.y * (eyeRadius - pupilRadius);
 
                 ctx.fillStyle = 'black';
-                ctx.beginPath(); ctx.arc(eyeX1 + direction.x * 1.5, eyeY1 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI); ctx.fill();
-                ctx.beginPath(); ctx.arc(eyeX2 + direction.x * 1.5, eyeY2 + direction.y * 1.5, eyeRadius / 2, 0, 2 * Math.PI); ctx.fill();
+                ctx.beginPath(); 
+                ctx.arc(eyeX1 + pupilLookX * 0.25, eyeY1 + pupilLookY * 0.25, pupilRadius, 0, 2 * Math.PI); 
+                ctx.fill();
+                ctx.beginPath(); 
+                ctx.arc(eyeX2 + pupilLookX * 0.25, eyeY2 + pupilLookY * 0.25, pupilRadius, 0, 2 * Math.PI); 
+                ctx.fill();
             }
-            
-            /**
-             * Helper to draw a 3D-style sphere with a gradient.
-             */
-            function draw3DSphere(context, x, y, radius, lightColor, darkColor) {
-                const gradient = context.createRadialGradient(
-                    x - radius / 3, y - radius / 3, radius / 5,
-                    x, y, radius
-                );
-                gradient.addColorStop(0, lightColor); 
-                gradient.addColorStop(1, darkColor); 
-                
-                context.fillStyle = gradient;
-                context.beginPath();
-                context.arc(x, y, radius, 0, 2 * Math.PI);
-                context.fill();
-            }
+            // *** END NEW drawSnake function ***
             
             // --- Generation Functions ---
             
@@ -488,7 +498,7 @@
                         x: Math.floor(Math.random() * tileCount),
                         y: Math.floor(Math.random() * tileCount)
                     };
-                } while (isOccupied(newFood.x, newFood.y)); 
+                } while (isOccupied(newFood.x, newFood.y));
                 food = newFood;
             }
             
@@ -501,8 +511,8 @@
                             y: Math.floor(Math.random() * tileCount)
                         };
                     // Don't spawn on the snake or too close to the head
-                    } while (isOccupied(newObs.x, newObs.y) || 
-                             (Math.abs(newObs.x - snake[0].x) < 3 && 
+                    } while (isOccupied(newObs.x, newObs.y) ||
+                             (Math.abs(newObs.x - snake[0].x) < 3 &&
                               Math.abs(newObs.y - snake[0].y) < 3)
                             );
                     obstacles.push(newObs);
@@ -573,7 +583,7 @@
 
             function gameOver() {
                 isRunning = false;
-                clearInterval(logicInterval); 
+                clearInterval(logicInterval);
                 if (powerUpTimer) clearTimeout(powerUpTimer);
                 isPowerUpActive = false;
                 
@@ -593,7 +603,7 @@
             // --- Event Listeners ---
             document.addEventListener('keydown', e => {
                 if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                    return; 
+                    return;
                 }
                 
                 if (!isRunning) {
@@ -608,7 +618,6 @@
                     case 'w':
                         if (direction.y === 0) direction = { x: 0, y: -1 };
                         break;
-                    // === BUG FIX: Removed stray 'S' ===
                     case 'ArrowDown':
                     case 's':
                         if (direction.y === 0) direction = { x: 0, y: 1 };
@@ -650,12 +659,12 @@
                 if (logicInterval) clearInterval(logicInterval);
                 if (renderLoopId) cancelAnimationFrame(renderLoopId);
                 
-                initializeGame(); 
-                startGame(); 
+                initializeGame();
+                startGame();
             });
 
             // --- Initial Game Load ---
-            initializeGame(); 
+            initializeGame();
         }
     </script>
     
