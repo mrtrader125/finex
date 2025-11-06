@@ -154,6 +154,10 @@
             let direction, score, gameSpeed, logicInterval, renderLoopId;
             let isRunning, isPowerUpActive, powerUpTimer;
             
+            // Variables for smooth movement (NEW)
+            let moveProgress = 0; // 0.0 to 1.0, progress between logical grid steps
+            let lastTime = 0; // Timestamp of the last frame
+
             // Linear interpolation function for smoothing
             const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -184,6 +188,8 @@
                 isRunning = false;
                 isPowerUpActive = false;
                 if (powerUpTimer) clearTimeout(powerUpTimer);
+                moveProgress = 0; // Reset smooth movement progress
+                lastTime = 0; // Reset timer
 
                 // --- UI State ---
                 scoreEl.textContent = 'Score: 0';
@@ -194,7 +200,6 @@
                 canvas.height = canvasSize;
 
                 // --- Generate Initial Game Objects ---
-                // Must be in this order to avoid overlaps
                 generateObstacles(INITIAL_OBSTACLES);
                 generateFood();
                 generatePowerUp();
@@ -203,7 +208,7 @@
                 showMessage('Press Any Key To Start');
                 
                 // Start the render loop (it will just draw a static scene)
-                renderLoop();
+                renderLoop(0);
             }
 
             /**
@@ -212,28 +217,20 @@
             function startGame() {
                 if (isRunning) return;
                 
-                // Reset logic state
+                // Re-initialize all state
+                initializeGame(); 
+
+                // Reset logic state (done in initialize, but explicitly here for clarity of start)
                 snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
-                // Reset visual state
                 visualSnake = snake.map(seg => ({
                     x: seg.x * gridSize + gridSize / 2,
                     y: seg.y * gridSize + gridSize / 2
                 }));
+                direction = { x: 0, y: 0 }; // Start with no movement until keypress
                 
-                direction = { x: 0, y: 0 };
-                score = 0;
-                gameSpeed = BASE_SPEED;
-                scoreEl.textContent = 'Score: 0';
                 isRunning = true;
                 startButton.textContent = 'In Progress';
                 hideMessage();
-                
-                // Clear any old obstacles/powerups and create new ones
-                obstacles = [];
-                powerUp = null;
-                generateObstacles(INITIAL_OBSTACLES);
-                generateFood();
-                generatePowerUp();
                 
                 // Stop/start intervals
                 if (logicInterval) clearInterval(logicInterval);
@@ -244,10 +241,13 @@
 
             /**
              * The main LOGIC loop. Runs on a timer (setInterval).
-             * Handles collisions, eating, and scoring.
+             * Handles collisions, eating, and scoring. Resets movement progress.
              */
             function gameTick() {
                 if (!isRunning) return;
+                
+                // Reset moveProgress to start visual movement to the new position
+                moveProgress = 0; 
                 
                 // 1. Calculate new logical head position
                 const head = {
@@ -276,14 +276,18 @@
 
                 // 5. Update LOGIC array
                 snake.unshift(head);
-                visualSnake.unshift({ x: visualSnake[0].x, y: visualSnake[0].y });
+                
+                // Add new visual segment that will immediately start moving
+                visualSnake.unshift({ x: visualSnake[0].x, y: visualSnake[0].y }); 
+
+                let ateSomething = false;
 
                 // 6. Check Power-up Collision
                 if (powerUp && head.x === powerUp.x && head.y === powerUp.y) {
                     applyPowerUp(powerUp.type);
                     powerUp = null;
-                    // Respawn a new one after a delay
                     setTimeout(generatePowerUp, 7000 + Math.random() * 5000);
+                    ateSomething = true;
                 }
 
                 // 7. Check Food Collision
@@ -292,44 +296,96 @@
                     scoreEl.textContent = `Score: ${score}`;
                     generateFood();
                     
-                    // Add new obstacle every 5 points
                     if (score % 5 === 0 && score > 0) {
                         generateObstacles(1);
                     }
                     
-                    // Update speed if no power-up is active
                     if (!isPowerUpActive) {
                         updateGameSpeed();
                     }
-                } else {
+                    ateSomething = true;
+                }
+                
+                // Only remove the tail if no food/powerup was eaten
+                if (!ateSomething) {
                     snake.pop();
-                    visualSnake.pop();
                 }
             }
             
             /**
-             * The main RENDER loop. Runs every frame.
-             * Smoothly animates the visuals towards the logical state.
+             * The main RENDER loop. Runs every frame (requestAnimationFrame).
+             * This handles the continuous visual movement (SMOOTHING).
              */
-            function renderLoop() {
-                if (!ctx) return;
+            function renderLoop(timestamp) {
+                if (!lastTime) lastTime = timestamp;
+                const deltaTime = timestamp - lastTime;
+                lastTime = timestamp;
+                
+                // Calculate the fractional distance moved since the last frame
+                const distanceToMove = deltaTime / gameSpeed;
+                
+                // Only increase progress if the game is running AND the snake is moving
+                if (isRunning && (direction.x !== 0 || direction.y !== 0)) {
+                    moveProgress += distanceToMove;
+                }
 
-                // Smoothly animate each visual segment to follow the one in front of it
-                for (let i = 0; i < visualSnake.length; i++) {
-                    let targetX, targetY;
-                    if (i === 0) {
-                        // The head follows the LOGICAL grid target
-                        targetX = snake[0].x * gridSize + gridSize / 2;
-                        targetY = snake[0].y * gridSize + gridSize / 2;
+                if (moveProgress > 1.0) {
+                    moveProgress = 1.0; 
+                }
+
+                // --- Smoothly Animate Snake Head ---
+                const head = visualSnake[0];
+                const logicalHead = snake[0];
+                // The previous logical position is now snake[1]
+                const logicalPrev = snake[1] || logicalHead; 
+
+                // Interpolate the head's visual position between the previous and current logical spot
+                const targetX = lerp(logicalPrev.x * gridSize + gridSize / 2, 
+                                     logicalHead.x * gridSize + gridSize / 2, 
+                                     moveProgress);
+                const targetY = lerp(logicalPrev.y * gridSize + gridSize / 2, 
+                                     logicalHead.y * gridSize + gridSize / 2, 
+                                     moveProgress);
+                
+                // Visually move the head to the interpolated target
+                head.x = targetX;
+                head.y = targetY;
+
+                // --- Smoothly Animate Snake Body ---
+                const SMOOTH_FACTOR = 0.6; 
+                for (let i = 1; i < visualSnake.length; i++) {
+                    let targetSegX, targetSegY;
+
+                    if (i === 1) {
+                         // Body segment 1 follows the visual head position
+                         targetSegX = visualSnake[0].x;
+                         targetSegY = visualSnake[0].y;
                     } else {
-                        // The body follows the VISUAL segment in front of it
-                        targetX = visualSnake[i - 1].x;
-                        targetY = visualSnake[i - 1].y;
+                        // All other body segments follow the visual segment in front of them
+                        targetSegX = visualSnake[i - 1].x;
+                        targetSegY = visualSnake[i - 1].y;
                     }
                     
-                    // The "0.25" is the smoothing factor.
-                    visualSnake[i].x = lerp(visualSnake[i].x, targetX, 0.25);
-                    visualSnake[i].y = lerp(visualSnake[i].y, targetY, 0.25);
+                    visualSnake[i].x = lerp(visualSnake[i].x, targetSegX, SMOOTH_FACTOR);
+                    visualSnake[i].y = lerp(visualSnake[i].y, targetSegY, SMOOTH_FACTOR);
+                }
+
+                // --- Handle Visual Tail Pop (Shrinking the visual snake) ---
+                if (visualSnake.length > snake.length) {
+                    // This means the logical snake shrunk, now we wait for the visual tail to catch up
+                    const tail = visualSnake[visualSnake.length - 1];
+                    const prevSeg = visualSnake[visualSnake.length - 2];
+                    
+                    // Measure distance between visual tail and visual segment before it
+                    const dx = tail.x - prevSeg.x;
+                    const dy = tail.y - prevSeg.y;
+                    const distSq = dx * dx + dy * dy;
+
+                    const GRID_SIZE_SQ = gridSize * gridSize * 0.05; 
+
+                    if (distSq < GRID_SIZE_SQ) {
+                         visualSnake.pop(); // Remove the segment
+                    }
                 }
                 
                 draw(); // Draw the smoothed visuals
@@ -407,7 +463,9 @@
                 draw3DSphere(ctx, powX, powY, pulse, lightColor, darkColor);
             }
 
-            // *** NEW drawSnake function for the cartoon look ***
+            /**
+             * NEW drawSnake function for the cartoon segmented look.
+             */
             function drawSnake() {
                 const head = visualSnake[0];
                 const headRadius = (gridSize / 2) - 1;
@@ -432,7 +490,6 @@
                 
                 // Draw the head slightly larger than the segments
                 draw3DSphere(ctx, head.x, head.y, headRadius + 1, cartoonLightGreen, cartoonDarkGreen);
-
 
                 // --- 3. Draw Cartoon Eyes (Larger, more expressive) ---
                 const eyeRadius = headRadius * 0.5; // Larger white area
@@ -470,7 +527,6 @@
                 ctx.arc(eyeX2 + pupilLookX * 0.25, eyeY2 + pupilLookY * 0.25, pupilRadius, 0, 2 * Math.PI); 
                 ctx.fill();
             }
-            // *** END NEW drawSnake function ***
             
             // --- Generation Functions ---
             
@@ -602,6 +658,7 @@
 
             // --- Event Listeners ---
             document.addEventListener('keydown', e => {
+                // Prevent scrolling when using arrow keys, but allow input fields to work
                 if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
                     return;
                 }
@@ -613,9 +670,11 @@
                     return; // Don't process movement if game isn't running
                 }
 
+                // Movement logic
                 switch (e.key) {
                     case 'ArrowUp':
                     case 'w':
+                        // Check if not moving down to prevent instant reversal
                         if (direction.y === 0) direction = { x: 0, y: -1 };
                         break;
                     case 'ArrowDown':
@@ -638,6 +697,7 @@
             });
             
             // --- Listeners for (now hidden) buttons ---
+            // These listeners remain important for touch/mobile compatibility
             document.getElementById('btn-up').addEventListener('click', () => {
                 if (!isRunning) startGame();
                 if (direction.y === 0) direction = { x: 0, y: -1 };
