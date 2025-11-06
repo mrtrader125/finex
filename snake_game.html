@@ -475,68 +475,172 @@
             /**
              * drawSnake function for the cartoon segmented look.
              */
+            // --- DRAW SNAKE FUNCTION (HEAVILY MODIFIED) ---
             function drawSnake() {
                 const head = visualSnake[0];
-                const headRadius = (gridSize / 2) - 1;
-                
-                // --- 1. Draw Body Segments (Segmented Cartoon Look) ---
+                const baseHeadRadius = (gridSize / 2) - 1; // Base size for segments
+                const headRadius = baseHeadRadius * 1.5; // Head is significantly larger
+
+                // --- 1. Draw Body Segments with Pattern ---
+                // We'll iterate from the tail to the neck to handle overlapping correctly
                 for (let i = visualSnake.length - 1; i > 0; i--) {
                     const segment = visualSnake[i];
+                    const prevSegment = visualSnake[i - 1]; // Segment in front of current one
+
                     // Scale the body size: smaller at the tail, larger near the head
                     const t = i / visualSnake.length; // Normalized distance from tail
-                    const radius = headRadius * (0.5 + 0.5 * (1 - t)); 
-                    
-                    // Colors: A bright, slightly yellowish-green for the cartoon look
-                    const bodyLight = '#90EE90'; // Light Green
-                    const bodyDark = '#3CB371'; // Medium Sea Green
-                    
-                    draw3DSphere(ctx, segment.x, segment.y, radius, bodyLight, bodyDark);
+                    const radius = baseHeadRadius * (0.6 + 0.4 * (1 - t)); // Slightly smaller segments
+
+                    // Define the two main colors for the pattern
+                    const patternLightGreen = '#8BC34A'; // A lighter, more yellow-green
+                    const patternDarkGreen = '#558B2F'; // A darker, more olive green
+
+                    // Calculate direction from previous segment to current one
+                    // This helps us orient the pattern correctly
+                    const dx = segment.x - prevSegment.x;
+                    const dy = segment.y - prevSegment.y;
+                    const angle = Math.atan2(dy, dx); // Angle of the segment's direction
+
+                    // Draw the base segment (darker green)
+                    draw3DSphere(ctx, segment.x, segment.y, radius, patternDarkGreen, patternDarkGreen);
+
+                    // Now, draw the "stripe" for the pattern (lighter green)
+                    ctx.save();
+                    ctx.translate(segment.x, segment.y);
+                    ctx.rotate(angle); // Rotate to align with the segment's direction
+
+                    // Draw a rounded rectangle for the stripe.
+                    // This is a simple approximation; a true texture would use images.
+                    const stripeWidth = radius * 1.4; // Wider than radius to extend out
+                    const stripeHeight = radius * 0.7; // Thinner
+                    const stripeRadius = stripeHeight / 2; // Rounded ends
+
+                    ctx.fillStyle = patternLightGreen;
+                    ctx.beginPath();
+                    ctx.moveTo(radius * 0.5 - stripeWidth / 2 + stripeRadius, -stripeHeight / 2);
+                    ctx.lineTo(radius * 0.5 + stripeWidth / 2 - stripeRadius, -stripeHeight / 2);
+                    ctx.arcTo(radius * 0.5 + stripeWidth / 2, -stripeHeight / 2, radius * 0.5 + stripeWidth / 2, 0, stripeRadius);
+                    ctx.lineTo(radius * 0.5 + stripeWidth / 2, stripeHeight / 2 - stripeRadius);
+                    ctx.arcTo(radius * 0.5 + stripeWidth / 2, stripeHeight / 2, radius * 0.5 + stripeWidth / 2 - stripeRadius, stripeHeight / 2, stripeRadius);
+                    ctx.lineTo(radius * 0.5 - stripeWidth / 2 + stripeRadius, stripeHeight / 2);
+                    ctx.arcTo(radius * 0.5 - stripeWidth / 2, stripeHeight / 2, radius * 0.5 - stripeWidth / 2, stripeHeight / 2 - stripeRadius, stripeRadius);
+                    ctx.lineTo(radius * 0.5 - stripeWidth / 2, -stripeHeight / 2 + stripeRadius);
+                    ctx.arcTo(radius * 0.5 - stripeWidth / 2, -stripeHeight / 2, radius * 0.5 - stripeWidth / 2 + stripeRadius, -stripeHeight / 2, stripeRadius);
+                    ctx.fill();
+                    ctx.restore();
                 }
 
-                // --- 2. Draw Head (The brightest, largest segment) ---
-                const cartoonLightGreen = '#A3F7A3'; // Brighter green for highlights
-                const cartoonDarkGreen = '#48BB78'; // Base green
-                
-                // Draw the head slightly larger than the segments
-                draw3DSphere(ctx, head.x, head.y, headRadius + 1, cartoonLightGreen, cartoonDarkGreen);
+                // --- 2. Draw Head (Much more detailed) ---
+                const headColorLight = '#8BC34A';
+                const headColorDark = '#558B2F';
 
-                // --- 3. Draw Cartoon Eyes (Larger, more expressive) ---
-                const eyeRadius = headRadius * 0.5; // Larger white area
-                const pupilRadius = headRadius * 0.2; // Smaller black pupil
-                
-                // Calculate eye positions relative to the direction of travel
-                const perpendicularX = -direction.y * (headRadius * 0.4);
-                const perpendicularY = direction.x * (headRadius * 0.4);
-                const forwardX = direction.x * (headRadius * 0.3);
-                const forwardY = direction.y * (headRadius * 0.3);
+                // Base head shape (large green sphere)
+                draw3DSphere(ctx, head.x, head.y, headRadius, headColorLight, headColorDark);
 
-                const eyeX1 = head.x + perpendicularX + forwardX;
-                const eyeY1 = head.y + perpendicularY + forwardY;
-                const eyeX2 = head.x - perpendicularX + forwardX;
-                const eyeY2 = head.y - perpendicularY + forwardY;
-                
-                // Draw white of the eyes
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); 
-                ctx.arc(eyeX1, eyeY1, eyeRadius, 0, 2 * Math.PI); 
-                ctx.fill();
-                ctx.beginPath(); 
-                ctx.arc(eyeX2, eyeY2, eyeRadius, 0, 2 * Math.PI); 
+                // --- Eyes ---
+                const eyeOuterRadius = headRadius * 0.4;
+                const eyeInnerRadius = headRadius * 0.2;
+                const pupilRadius = headRadius * 0.12;
+                const highlightRadius = pupilRadius * 0.3;
+
+                // Eye positions are relative to head and direction
+                const eyeOffsetX = direction.x * headRadius * 0.4; // Eyes slightly forward
+                const eyeOffsetY = direction.y * headRadius * 0.4;
+                const eyePerpX = -direction.y * headRadius * 0.3; // Eyes spread apart
+                const eyePerpY = direction.x * headRadius * 0.3;
+
+                const leftEyePos = { x: head.x + eyePerpX + eyeOffsetX, y: head.y + eyePerpY + eyeOffsetY };
+                const rightEyePos = { x: head.x - eyePerpX + eyeOffsetX, y: head.y - eyePerpY + eyeOffsetY };
+
+                // Outer white of the eye (slightly off-white for cartoon look)
+                ctx.fillStyle = '#F0F0F0';
+                ctx.beginPath();
+                ctx.arc(leftEyePos.x, leftEyePos.y, eyeOuterRadius, 0, Math.PI * 2);
+                ctx.arc(rightEyePos.x, rightEyePos.y, eyeOuterRadius, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Draw black pupils (looking slightly in the direction of movement)
-                const pupilLookX = direction.x * (eyeRadius - pupilRadius);
-                const pupilLookY = direction.y * (eyeRadius - pupilRadius);
+                // Inner part of the eye (iris, typically lighter) - using green like your reference
+                const irisColor = '#A3F7A3'; // Brighter green for iris
+                ctx.fillStyle = irisColor;
+                ctx.beginPath();
+                ctx.arc(leftEyePos.x, leftEyePos.y, eyeInnerRadius, 0, Math.PI * 2);
+                ctx.arc(rightEyePos.x, rightEyePos.y, eyeInnerRadius, 0, Math.PI * 2);
+                ctx.fill();
 
+                // Pupils (black, slightly off-center for expression)
+                const pupilLookX = direction.x * eyeInnerRadius * 0.2;
+                const pupilLookY = direction.y * eyeInnerRadius * 0.2;
                 ctx.fillStyle = 'black';
-                ctx.beginPath(); 
-                ctx.arc(eyeX1 + pupilLookX * 0.25, eyeY1 + pupilLookY * 0.25, pupilRadius, 0, 2 * Math.PI); 
+                ctx.beginPath();
+                ctx.arc(leftEyePos.x + pupilLookX, leftEyePos.y + pupilLookY, pupilRadius, 0, Math.PI * 2);
+                ctx.arc(rightEyePos.x + pupilLookX, rightEyePos.y + pupilLookY, pupilRadius, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.beginPath(); 
-                ctx.arc(eyeX2 + pupilLookX * 0.25, eyeY2 + pupilLookY * 0.25, pupilRadius, 0, 2 * Math.PI); 
+
+                // Eye Highlights (white, small, for shine)
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(leftEyePos.x + pupilLookX - highlightRadius * 0.8, leftEyePos.y + pupilLookY - highlightRadius * 0.8, highlightRadius, 0, Math.PI * 2);
+                ctx.arc(rightEyePos.x + pupilLookX - highlightRadius * 0.8, rightEyePos.y + pupilLookY - highlightRadius * 0.8, highlightRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // --- Mouth (Open, with teeth and tongue) ---
+                const mouthWidth = headRadius * 1.0;
+                const mouthHeight = headRadius * 0.7;
+                const mouthYOffset = headRadius * 0.2; // Mouth slightly below center
+                const mouthXOffset = direction.x * headRadius * 0.4; // Mouth slightly forward
+                const mouthYCenter = head.y + mouthYOffset + direction.y * headRadius * 0.4;
+                const mouthXCenter = head.x + mouthXOffset;
+
+                // Mouth opening (darker orange/brown inside)
+                const mouthInnerColor = '#D84315'; // Darker orange
+                ctx.fillStyle = mouthInnerColor;
+                ctx.beginPath();
+                // Arc for the upper lip
+                ctx.arc(mouthXCenter, mouthYCenter, mouthWidth / 2, Math.PI * 0.1, Math.PI * 0.9);
+                // Arc for the lower lip
+                ctx.arc(mouthXCenter, mouthYCenter + mouthHeight * 0.3, mouthWidth / 2, Math.PI * 1.1, Math.PI * 1.9, true);
+                ctx.closePath();
+                ctx.fill();
+
+                // Tongue (red)
+                const tongueWidth = mouthWidth * 0.3;
+                const tongueHeight = mouthHeight * 0.7;
+                const tongueY = mouthYCenter + mouthHeight * 0.2;
+                ctx.fillStyle = '#E53935'; // Bright red
+                ctx.beginPath();
+                ctx.ellipse(mouthXCenter, tongueY, tongueWidth / 2, tongueHeight / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Teeth (white) - simplified triangles or small rectangles
+                const toothWidth = headRadius * 0.15;
+                const toothHeight = headRadius * 0.2;
+                ctx.fillStyle = 'white';
+                
+                // Upper teeth
+                ctx.beginPath();
+                ctx.moveTo(mouthXCenter - toothWidth * 1.5, mouthYCenter - toothHeight * 0.5);
+                ctx.lineTo(mouthXCenter - toothWidth * 1.5 - toothWidth / 2, mouthYCenter - toothHeight * 1.5);
+                ctx.lineTo(mouthXCenter - toothWidth * 1.5 + toothWidth / 2, mouthYCenter - toothHeight * 1.5);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(mouthXCenter + toothWidth * 1.5, mouthYCenter - toothHeight * 0.5);
+                ctx.lineTo(mouthXCenter + toothWidth * 1.5 - toothWidth / 2, mouthYCenter - toothHeight * 1.5);
+                ctx.lineTo(mouthXCenter + toothWidth * 1.5 + toothWidth / 2, mouthYCenter - toothHeight * 1.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Lower teeth (smaller)
+                const lowerToothHeight = toothHeight * 0.7;
+                ctx.beginPath();
+                ctx.moveTo(mouthXCenter, mouthYCenter + mouthHeight * 0.4 - lowerToothHeight);
+                ctx.lineTo(mouthXCenter - toothWidth / 2, mouthYCenter + mouthHeight * 0.4);
+                ctx.lineTo(mouthXCenter + toothWidth / 2, mouthYCenter + mouthHeight * 0.4);
+                ctx.closePath();
                 ctx.fill();
             }
-            
+            // --- END drawSnake function ---
             // --- Generation Functions ---
             
             /**
