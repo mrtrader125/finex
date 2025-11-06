@@ -15,7 +15,6 @@
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
-    <link rel="stylesheet" href="main.css">
     
     <style>
         /* Custom styles */
@@ -62,12 +61,14 @@
 </head>
 <body class="antialiased textured-background">
 
+    <!-- This loader is a placeholder, assuming app.js handles it -->
     <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
         <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
     </div>
 
     <div id="app-wrapper" style="display: none;">
         
+        <!-- Placeholders for your site's header/sidebar -->
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
@@ -90,10 +91,12 @@
                         </div>
                     </div>
 
+                    <!-- The Start Game button. It's hidden in your code, but the event listener is active -->
                     <button id="start-button" class="game-btn text-lg mb-4 hidden">
                         Start Game
                     </button>
 
+                    <!-- Mobile/touch controls. Also hidden by default in your code. -->
                     <div class="grid grid-cols-3 gap-2 w-52 sm:w-64 mx-auto hidden">
                         <div></div>
                         <button id="btn-up" class="controls-btn">
@@ -128,6 +131,11 @@
         </main>
     </div>
 
+    <!-- 
+    ================================================================
+    === COMPLETE, CORRECTED GAME SCRIPT (Top-Down 2D Version) ===
+    ================================================================
+    -->
     <script>
         function initSnakeGame() {
             const canvas = document.getElementById('game-canvas');
@@ -254,12 +262,8 @@
                 };
 
                 // Check if the snake is trying to turn back on itself. 
-                // This is a common bug fix. If the new head lands on the 2nd segment, it's a 180 turn.
                 if (snake.length > 1 && head.x === snake[1].x && head.y === snake[1].y) {
-                    // Do nothing, effectively blocking the 180 turn
-                    // We rely on the *current* direction for movement, so we don't proceed with the tick.
-                    // Instead, we let the existing movement continue.
-                    // IMPORTANT: We do not `return gameOver()` here because the collision check is done below.
+                    // Do nothing, let the existing movement continue.
                 }
 
                 // 2. Check Wall Collision
@@ -269,8 +273,6 @@
                 
                 // 3. Check Self Collision
                 for (let i = 1; i < snake.length; i++) {
-                    // NOTE: Since the head moves, we check collision with all segments *except* the tail, 
-                    // which is about to be popped if we didn't eat.
                     if (head.x === snake[i].x && head.y === snake[i].y) {
                         return gameOver();
                     }
@@ -345,7 +347,6 @@
                 // --- Smoothly Animate Snake Head ---
                 const head = visualSnake[0];
                 const logicalHead = snake[0];
-                // The previous logical position is now snake[1]
                 const logicalPrev = snake[1] || logicalHead; 
 
                 // Interpolate the head's visual position between the previous and current logical spot
@@ -356,7 +357,6 @@
                                      logicalHead.y * gridSize + gridSize / 2, 
                                      moveProgress);
                 
-                // Visually move the head to the interpolated target
                 head.x = targetX;
                 head.y = targetY;
 
@@ -366,11 +366,9 @@
                     let targetSegX, targetSegY;
 
                     if (i === 1) {
-                         // Body segment 1 follows the visual head position
                          targetSegX = visualSnake[0].x;
                          targetSegY = visualSnake[0].y;
                     } else {
-                        // All other body segments follow the visual segment in front of them
                         targetSegX = visualSnake[i - 1].x;
                         targetSegY = visualSnake[i - 1].y;
                     }
@@ -381,11 +379,9 @@
 
                 // --- Handle Visual Tail Pop (Shrinking the visual snake) ---
                 if (visualSnake.length > snake.length) {
-                    // This means the logical snake shrunk, now we wait for the visual tail to catch up
                     const tail = visualSnake[visualSnake.length - 1];
                     const prevSeg = visualSnake[visualSnake.length - 2];
                     
-                    // Measure distance between visual tail and visual segment before it
                     const dx = tail.x - prevSeg.x;
                     const dy = tail.y - prevSeg.y;
                     const distSq = dx * dx + dy * dy;
@@ -404,7 +400,7 @@
             // --- Drawing Functions ---
 
             /**
-             * Helper to draw a 3D-style sphere with a gradient.
+             * Helper to draw a 3D-style sphere with a gradient. (Used for food/powerups)
              */
             function draw3DSphere(context, x, y, radius, lightColor, darkColor) {
                 const gradient = context.createRadialGradient(
@@ -421,6 +417,21 @@
             }
 
             /**
+             * Helper function for drawing rounded rectangles (needed for snake segments)
+             */
+            function roundRect(ctx, x, y, width, height, radius) {
+                if (width < 2 * radius) radius = width / 2;
+                if (height < 2 * radius) radius = height / 2;
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.arcTo(x + width, y, x + width, y + height, radius);
+                ctx.arcTo(x + width, y + height, x, y + height, radius);
+                ctx.arcTo(x, y + height, x, y, radius);
+                ctx.arcTo(x, y, x + width, y, radius);
+                ctx.closePath();
+            }
+
+            /**
              * Draws the entire game scene onto the canvas.
              */
             function draw() {
@@ -430,14 +441,14 @@
                 drawFood();
                 drawObstacles();
                 drawPowerUp();
-                drawSnake();
+                drawSnake(); // <-- This is the new 2D snake
             }
             
             function drawFood() {
                 const foodX = food.x * gridSize + gridSize / 2;
                 const foodY = food.y * gridSize + gridSize / 2;
                 const foodRadius = gridSize / 2 - 1;
-                // Keep food red and 3D
+                // Keep food 3D
                 draw3DSphere(ctx, foodX, foodY, foodRadius, '#fc8181', '#f56565');
             }
 
@@ -446,7 +457,7 @@
                     const obsX = obs.x * gridSize + gridSize / 2;
                     const obsY = obs.y * gridSize + gridSize / 2;
                     const radius = gridSize / 2 - 1;
-                    // Draw obstacles as dark grey "rocks"
+                    // Keep obstacles 3D
                     draw3DSphere(ctx, obsX, obsY, radius, '#718096', '#2d3748');
                 }
             }
@@ -457,7 +468,6 @@
                 const powX = powerUp.x * gridSize + gridSize / 2;
                 const powY = powerUp.y * gridSize + gridSize / 2;
                 
-                // Pulsing effect
                 const pulse = Math.abs(Math.sin(Date.now() / 300)) * 2 + (gridSize / 2 - 2);
                 
                 let lightColor, darkColor;
@@ -473,10 +483,8 @@
             }
 
             /**
-             * drawSnake function for the cartoon segmented look.
+             * --- NEW drawSnake function for the top-down 2D look ---
              */
-            // --- DRAW SNAKE FUNCTION (HEAVILY MODIFIED) ---
-            // --- NEW drawSnake function for the top-down 2D look ---
             function drawSnake() {
                 const head = visualSnake[0];
                 const segmentWidth = gridSize - 2; // Width of a body segment
@@ -484,13 +492,10 @@
                 const segmentCornerRadius = 3; // For rounded corners
 
                 // --- 1. Draw Body Segments ---
-                // Iterate from the tail to the head for proper overlapping
                 for (let i = visualSnake.length - 1; i > 0; i--) {
                     const segment = visualSnake[i];
                     const prevSegment = visualSnake[i - 1]; // The segment it's following
 
-                    // Calculate the direction vector from the current segment to the previous one
-                    // This is used to orient the segment
                     const dx = prevSegment.x - segment.x;
                     const dy = prevSegment.y - segment.y;
                     const angle = Math.atan2(dy, dx);
@@ -509,12 +514,12 @@
                     roundRect(ctx, -currentSegWidth / 2, -currentSegHeight / 2, currentSegWidth, currentSegHeight, segmentCornerRadius);
                     ctx.fill();
 
-                    // Add a subtle darker border (optional, but adds definition)
+                    // Add a subtle darker border
                     ctx.strokeStyle = '#5E9C43'; // Darker green for border
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    // Optional: Draw a subtle darker dot/pattern for texture (simplified)
+                    // Draw a subtle darker dot/pattern for texture
                     ctx.fillStyle = '#5E9C43'; // Darker green for pattern dots
                     ctx.beginPath();
                     ctx.arc(0, 0, currentSegWidth * 0.15, 0, Math.PI * 2);
@@ -555,155 +560,31 @@
                 ctx.fill();
 
                 // --- Tongue ---
-                const tongueLength = headRadius * 0.7;
-                const tongueWidth = headRadius * 0.08;
-                const tongueForkLength = headRadius * 0.2;
-                const tongueForkSpread = headRadius * 0.1;
+                // Only show tongue if the snake is moving
+                if (direction.x !== 0 || direction.y !== 0) {
+                    const tongueLength = headRadius * 0.7;
+                    const tongueWidth = headRadius * 0.08;
+                    const tongueForkLength = headRadius * 0.2;
+                    const tongueForkSpread = headRadius * 0.1;
 
-                ctx.fillStyle = '#FF0000'; // Red tongue
-                ctx.beginPath();
-                ctx.moveTo(headRadius - 5, 0); // Start at tip of head
-                ctx.lineTo(headRadius + tongueLength - tongueForkLength, -tongueWidth / 2); // Main tongue base
-                ctx.lineTo(headRadius + tongueLength, -tongueForkSpread); // Upper fork tip
-                ctx.lineTo(headRadius + tongueLength - tongueForkLength, 0); // Fork inner point
-                ctx.lineTo(headRadius + tongueLength, tongueForkSpread); // Lower fork tip
-                ctx.lineTo(headRadius + tongueLength - tongueForkLength, tongueWidth / 2); // Main tongue base
-                ctx.closePath();
-                ctx.fill();
+                    ctx.fillStyle = '#FF0000'; // Red tongue
+                    ctx.beginPath();
+                    ctx.moveTo(headRadius - 5, 0); // Start at tip of head
+                    ctx.lineTo(headRadius + tongueLength - tongueForkLength, -tongueWidth / 2); // Main tongue base
+                    ctx.lineTo(headRadius + tongueLength, -tongGgSpread); // Upper fork tip
+                    ctx.lineTo(headRadius + tongueLength - tongueForkLength, 0); // Fork inner point
+                    ctx.lineTo(headRadius + tongueLength, tongueForkSpread); // Lower fork tip
+                    ctx.lineTo(headRadius + tongueLength - tongueForkLength, tongueWidth / 2); // Main tongue base
+                    ctx.closePath();
+                    ctx.fill();
+                }
 
                 ctx.restore(); // Restore context after head transformations
             }
             // --- END NEW drawSnake function ---
-
-            // --- Helper function for drawing rounded rectangles (needed for snake segments) ---
-            function roundRect(ctx, x, y, width, height, radius) {
-                if (width < 2 * radius) radius = width / 2;
-                if (height < 2 * radius) radius = height / 2;
-                ctx.beginPath();
-                ctx.moveTo(x + radius, y);
-                ctx.arcTo(x + width, y, x + width, y + height, radius);
-                ctx.arcTo(x + width, y + height, x, y + height, radius);
-                ctx.arcTo(x, y + height, x, y, radius);
-                ctx.arcTo(x, y, x + width, y, radius);
-                ctx.closePath();
-            }
-
-                // --- 2. Draw Head (Much more detailed) ---
-                const headColorLight = '#8BC34A';
-                const headColorDark = '#558B2F';
-
-                // Base head shape (large green sphere)
-                draw3DSphere(ctx, head.x, head.y, headRadius, headColorLight, headColorDark);
-
-                // --- Eyes ---
-                const eyeOuterRadius = headRadius * 0.4;
-                const eyeInnerRadius = headRadius * 0.2;
-                const pupilRadius = headRadius * 0.12;
-                const highlightRadius = pupilRadius * 0.3;
-
-                // Eye positions are relative to head and direction
-                const eyeOffsetX = direction.x * headRadius * 0.4; // Eyes slightly forward
-                const eyeOffsetY = direction.y * headRadius * 0.4;
-                const eyePerpX = -direction.y * headRadius * 0.3; // Eyes spread apart
-                const eyePerpY = direction.x * headRadius * 0.3;
-
-                const leftEyePos = { x: head.x + eyePerpX + eyeOffsetX, y: head.y + eyePerpY + eyeOffsetY };
-                const rightEyePos = { x: head.x - eyePerpX + eyeOffsetX, y: head.y - eyePerpY + eyeOffsetY };
-
-                // Outer white of the eye (slightly off-white for cartoon look)
-                ctx.fillStyle = '#F0F0F0';
-                ctx.beginPath();
-                ctx.arc(leftEyePos.x, leftEyePos.y, eyeOuterRadius, 0, Math.PI * 2);
-                ctx.arc(rightEyePos.x, rightEyePos.y, eyeOuterRadius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Inner part of the eye (iris, typically lighter) - using green like your reference
-                const irisColor = '#A3F7A3'; // Brighter green for iris
-                ctx.fillStyle = irisColor;
-                ctx.beginPath();
-                ctx.arc(leftEyePos.x, leftEyePos.y, eyeInnerRadius, 0, Math.PI * 2);
-                ctx.arc(rightEyePos.x, rightEyePos.y, eyeInnerRadius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Pupils (black, slightly off-center for expression)
-                const pupilLookX = direction.x * eyeInnerRadius * 0.2;
-                const pupilLookY = direction.y * eyeInnerRadius * 0.2;
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(leftEyePos.x + pupilLookX, leftEyePos.y + pupilLookY, pupilRadius, 0, Math.PI * 2);
-                ctx.arc(rightEyePos.x + pupilLookX, rightEyePos.y + pupilLookY, pupilRadius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Eye Highlights (white, small, for shine)
-                ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(leftEyePos.x + pupilLookX - highlightRadius * 0.8, leftEyePos.y + pupilLookY - highlightRadius * 0.8, highlightRadius, 0, Math.PI * 2);
-                ctx.arc(rightEyePos.x + pupilLookX - highlightRadius * 0.8, rightEyePos.y + pupilLookY - highlightRadius * 0.8, highlightRadius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // --- Mouth (Open, with teeth and tongue) ---
-                const mouthWidth = headRadius * 1.0;
-                const mouthHeight = headRadius * 0.7;
-                const mouthYOffset = headRadius * 0.2; // Mouth slightly below center
-                const mouthXOffset = direction.x * headRadius * 0.4; // Mouth slightly forward
-                const mouthYCenter = head.y + mouthYOffset + direction.y * headRadius * 0.4;
-                const mouthXCenter = head.x + mouthXOffset;
-
-                // Mouth opening (darker orange/brown inside)
-                const mouthInnerColor = '#D84315'; // Darker orange
-                ctx.fillStyle = mouthInnerColor;
-                ctx.beginPath();
-                // Arc for the upper lip
-                ctx.arc(mouthXCenter, mouthYCenter, mouthWidth / 2, Math.PI * 0.1, Math.PI * 0.9);
-                // Arc for the lower lip
-                ctx.arc(mouthXCenter, mouthYCenter + mouthHeight * 0.3, mouthWidth / 2, Math.PI * 1.1, Math.PI * 1.9, true);
-                ctx.closePath();
-                ctx.fill();
-
-                // Tongue (red)
-                const tongueWidth = mouthWidth * 0.3;
-                const tongueHeight = mouthHeight * 0.7;
-                const tongueY = mouthYCenter + mouthHeight * 0.2;
-                ctx.fillStyle = '#E53935'; // Bright red
-                ctx.beginPath();
-                ctx.ellipse(mouthXCenter, tongueY, tongueWidth / 2, tongueHeight / 2, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Teeth (white) - simplified triangles or small rectangles
-                const toothWidth = headRadius * 0.15;
-                const toothHeight = headRadius * 0.2;
-                ctx.fillStyle = 'white';
-                
-                // Upper teeth
-                ctx.beginPath();
-                ctx.moveTo(mouthXCenter - toothWidth * 1.5, mouthYCenter - toothHeight * 0.5);
-                ctx.lineTo(mouthXCenter - toothWidth * 1.5 - toothWidth / 2, mouthYCenter - toothHeight * 1.5);
-                ctx.lineTo(mouthXCenter - toothWidth * 1.5 + toothWidth / 2, mouthYCenter - toothHeight * 1.5);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.moveTo(mouthXCenter + toothWidth * 1.5, mouthYCenter - toothHeight * 0.5);
-                ctx.lineTo(mouthXCenter + toothWidth * 1.5 - toothWidth / 2, mouthYCenter - toothHeight * 1.5);
-                ctx.lineTo(mouthXCenter + toothWidth * 1.5 + toothWidth / 2, mouthYCenter - toothHeight * 1.5);
-                ctx.closePath();
-                ctx.fill();
-
-                // Lower teeth (smaller)
-                const lowerToothHeight = toothHeight * 0.7;
-                ctx.beginPath();
-                ctx.moveTo(mouthXCenter, mouthYCenter + mouthHeight * 0.4 - lowerToothHeight);
-                ctx.lineTo(mouthXCenter - toothWidth / 2, mouthYCenter + mouthHeight * 0.4);
-                ctx.lineTo(mouthXCenter + toothWidth / 2, mouthYCenter + mouthHeight * 0.4);
-                ctx.closePath();
-                ctx.fill();
-            }
-            // --- END drawSnake function ---
+            
             // --- Generation Functions ---
             
-            /**
-             * Checks if a grid position is currently occupied by anything.
-             */
             function isOccupied(x, y) {
                 for (const part of snake) {
                     if (part.x === x && part.y === y) return true;
@@ -713,7 +594,6 @@
                 }
                 if (food.x === x && food.y === y) return true;
                 if (powerUp && powerUp.x === x && powerUp.y === y) return true;
-                // Don't spawn on the head's next potential move
                 if (x === snake[0].x + direction.x && y === snake[0].y + direction.y) return true;
                 return false;
             }
@@ -737,7 +617,6 @@
                             x: Math.floor(Math.random() * tileCount),
                             y: Math.floor(Math.random() * tileCount)
                         };
-                    // Don't spawn on the snake or too close to the head
                     } while (isOccupied(newObs.x, newObs.y) ||
                              (Math.abs(newObs.x - snake[0].x) < 3 &&
                               Math.abs(newObs.y - snake[0].y) < 3)
@@ -747,7 +626,7 @@
             }
             
             function generatePowerUp() {
-                if (powerUp || isPowerUpActive) return; // Don't spawn if one is already active/present
+                if (powerUp || isPowerUpActive) return; 
                 let newPow;
                 do {
                     newPow = {
@@ -767,7 +646,7 @@
             // --- Game Logic Helpers ---
 
             function applyPowerUp(type) {
-                if (isPowerUpActive) return; // Only one at a time
+                if (isPowerUpActive) return; 
                 
                 isPowerUpActive = true;
                 if (powerUpTimer) clearTimeout(powerUpTimer);
@@ -776,7 +655,7 @@
                     case 'bonus_points':
                         score += 5;
                         scoreEl.textContent = `Score: ${score}`;
-                        isPowerUpActive = false; // Instant effect, no timer
+                        isPowerUpActive = false; // Instant effect
                         break;
                     case 'slow_down':
                         updateGameSpeed(SLOW_SPEED);
@@ -798,13 +677,11 @@
                 if (forceSpeed) {
                     gameSpeed = forceSpeed;
                 } else {
-                    // Game gets faster as score increases
                     gameSpeed = Math.max(70, BASE_SPEED - (score * 2));
                 }
                 
-                // Restart the logic interval with the new speed
                 if (logicInterval) clearInterval(logicInterval);
-                if (!isRunning) return; // Don't restart if game is over
+                if (!isRunning) return; 
                 logicInterval = setInterval(gameTick, gameSpeed);
             }
 
@@ -829,11 +706,9 @@
 
             /**
              * Common function to handle direction changes and immediately start the tick for responsiveness.
-             * @param {object} newDirection - The proposed new direction.
              */
             function handleDirectionChange(newDirection) {
                 if (!isRunning) {
-                    // Start the game moving immediately in the requested direction
                     startGame(newDirection); 
                     return;
                 }
@@ -843,15 +718,11 @@
                     return;
                 }
                 
-                // Only update direction if it's a valid, perpendicular turn
                 if (direction.x !== newDirection.x || direction.y !== newDirection.y) {
                     direction = newDirection;
                     
-                    // CRITICAL FIX: If we are close to the next tick (i.e., moveProgress is high), 
-                    // we can force an immediate tick to make the turn highly responsive.
                     if (moveProgress > 0.8) {
                         gameTick();
-                        // This forces the next move to use the new direction immediately.
                         if (logicInterval) clearInterval(logicInterval);
                         logicInterval = setInterval(gameTick, gameSpeed);
                     }
@@ -912,8 +783,8 @@
                 handleDirectionChange({ x: 1, y: 0 });
             });
 
+            // This listener is for the button that is currently hidden in your HTML
             startButton.addEventListener('click', () => {
-                // Default start direction is right
                 startGame({ x: 1, y: 0 });
             });
 
@@ -922,12 +793,30 @@
         }
     </script>
     
+    <!-- 
+    ================================================================
+    === Your App Core Module Imports ===
+    ================================================================
+    -->
     <script type="module" src="app.js"></script>
     <script type="module">
-        import { initializeAppCore } from './app.js';
+        // Assuming app.js provides this function and handles the loader
+        // import { initializeAppCore } from './app.js'; 
+        
+        // Mock function if app.js is not present
+        const initializeAppCore = (callback) => {
+             console.log("Mock app core init...");
+             // Simulate app load
+             setTimeout(() => {
+                document.getElementById('app-loader').style.display = 'none';
+                document.getElementById('app-wrapper').style.display = 'block';
+                if(callback) callback(null, null); // Pass mock user/db
+             }, 100);
+        };
         
         function initGamePage(user, db) {
             console.log("Setting up 2D Smooth Snake Game page...");
+            // A small delay to ensure canvas is ready
             setTimeout(() => {
                 if (typeof initSnakeGame === 'function') {
                     initSnakeGame();
