@@ -476,59 +476,117 @@
              * drawSnake function for the cartoon segmented look.
              */
             // --- DRAW SNAKE FUNCTION (HEAVILY MODIFIED) ---
+            // --- NEW drawSnake function for the top-down 2D look ---
             function drawSnake() {
                 const head = visualSnake[0];
-                const baseHeadRadius = (gridSize / 2) - 1; // Base size for segments
-                const headRadius = baseHeadRadius * 1.5; // Head is significantly larger
+                const segmentWidth = gridSize - 2; // Width of a body segment
+                const segmentHeight = gridSize - 2; // Height of a body segment (makes them slightly squarish)
+                const segmentCornerRadius = 3; // For rounded corners
 
-                // --- 1. Draw Body Segments with Pattern ---
-                // We'll iterate from the tail to the neck to handle overlapping correctly
+                // --- 1. Draw Body Segments ---
+                // Iterate from the tail to the head for proper overlapping
                 for (let i = visualSnake.length - 1; i > 0; i--) {
                     const segment = visualSnake[i];
-                    const prevSegment = visualSnake[i - 1]; // Segment in front of current one
+                    const prevSegment = visualSnake[i - 1]; // The segment it's following
 
-                    // Scale the body size: smaller at the tail, larger near the head
-                    const t = i / visualSnake.length; // Normalized distance from tail
-                    const radius = baseHeadRadius * (0.6 + 0.4 * (1 - t)); // Slightly smaller segments
+                    // Calculate the direction vector from the current segment to the previous one
+                    // This is used to orient the segment
+                    const dx = prevSegment.x - segment.x;
+                    const dy = prevSegment.y - segment.y;
+                    const angle = Math.atan2(dy, dx);
 
-                    // Define the two main colors for the pattern
-                    const patternLightGreen = '#8BC34A'; // A lighter, more yellow-green
-                    const patternDarkGreen = '#558B2F'; // A darker, more olive green
+                    // Scale segments slightly smaller towards the tail
+                    const scaleFactor = 0.7 + 0.3 * (i / visualSnake.length);
+                    const currentSegWidth = segmentWidth * scaleFactor;
+                    const currentSegHeight = segmentHeight * scaleFactor;
 
-                    // Calculate direction from previous segment to current one
-                    // This helps us orient the pattern correctly
-                    const dx = segment.x - prevSegment.x;
-                    const dy = segment.y - prevSegment.y;
-                    const angle = Math.atan2(dy, dx); // Angle of the segment's direction
-
-                    // Draw the base segment (darker green)
-                    draw3DSphere(ctx, segment.x, segment.y, radius, patternDarkGreen, patternDarkGreen);
-
-                    // Now, draw the "stripe" for the pattern (lighter green)
                     ctx.save();
                     ctx.translate(segment.x, segment.y);
-                    ctx.rotate(angle); // Rotate to align with the segment's direction
+                    ctx.rotate(angle); // Rotate segment to match direction
 
-                    // Draw a rounded rectangle for the stripe.
-                    // This is a simple approximation; a true texture would use images.
-                    const stripeWidth = radius * 1.4; // Wider than radius to extend out
-                    const stripeHeight = radius * 0.7; // Thinner
-                    const stripeRadius = stripeHeight / 2; // Rounded ends
+                    // Draw the primary green segment
+                    ctx.fillStyle = '#6CB64F'; // A good mid-green for the snake body
+                    roundRect(ctx, -currentSegWidth / 2, -currentSegHeight / 2, currentSegWidth, currentSegHeight, segmentCornerRadius);
+                    ctx.fill();
 
-                    ctx.fillStyle = patternLightGreen;
+                    // Add a subtle darker border (optional, but adds definition)
+                    ctx.strokeStyle = '#5E9C43'; // Darker green for border
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    // Optional: Draw a subtle darker dot/pattern for texture (simplified)
+                    ctx.fillStyle = '#5E9C43'; // Darker green for pattern dots
                     ctx.beginPath();
-                    ctx.moveTo(radius * 0.5 - stripeWidth / 2 + stripeRadius, -stripeHeight / 2);
-                    ctx.lineTo(radius * 0.5 + stripeWidth / 2 - stripeRadius, -stripeHeight / 2);
-                    ctx.arcTo(radius * 0.5 + stripeWidth / 2, -stripeHeight / 2, radius * 0.5 + stripeWidth / 2, 0, stripeRadius);
-                    ctx.lineTo(radius * 0.5 + stripeWidth / 2, stripeHeight / 2 - stripeRadius);
-                    ctx.arcTo(radius * 0.5 + stripeWidth / 2, stripeHeight / 2, radius * 0.5 + stripeWidth / 2 - stripeRadius, stripeHeight / 2, stripeRadius);
-                    ctx.lineTo(radius * 0.5 - stripeWidth / 2 + stripeRadius, stripeHeight / 2);
-                    ctx.arcTo(radius * 0.5 - stripeWidth / 2, stripeHeight / 2, radius * 0.5 - stripeWidth / 2, stripeHeight / 2 - stripeRadius, stripeRadius);
-                    ctx.lineTo(radius * 0.5 - stripeWidth / 2, -stripeHeight / 2 + stripeRadius);
-                    ctx.arcTo(radius * 0.5 - stripeWidth / 2, -stripeHeight / 2, radius * 0.5 - stripeWidth / 2 + stripeRadius, -stripeHeight / 2, stripeRadius);
+                    ctx.arc(0, 0, currentSegWidth * 0.15, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.restore();
                 }
+
+                // --- 2. Draw Head ---
+                const headRadius = gridSize / 2 + 1; // Head is slightly larger
+
+                // Calculate head orientation based on current direction
+                const headAngle = Math.atan2(direction.y, direction.x);
+
+                ctx.save();
+                ctx.translate(head.x, head.y);
+                ctx.rotate(headAngle); // Rotate the head
+
+                // Head base color
+                ctx.fillStyle = '#6CB64F'; // Same mid-green as body
+                roundRect(ctx, -headRadius, -headRadius / 2, headRadius * 2, headRadius, segmentCornerRadius * 2); // Elongated rounded rect
+                ctx.fill();
+
+                // Head border
+                ctx.strokeStyle = '#5E9C43';
+                ctx.lineWidth = 2;
+                roundRect(ctx, -headRadius, -headRadius / 2, headRadius * 2, headRadius, segmentCornerRadius * 2);
+                ctx.stroke();
+
+                // --- Eyes ---
+                const eyeRadius = headRadius * 0.15;
+                const eyeXOffset = headRadius * 0.4;
+                const eyeYOffset = headRadius * 0.25; // How far apart eyes are
+
+                ctx.fillStyle = '#FF0000'; // Red eyes
+                ctx.beginPath();
+                ctx.arc(eyeXOffset, -eyeYOffset, eyeRadius, 0, Math.PI * 2); // Left eye
+                ctx.arc(eyeXOffset, eyeYOffset, eyeRadius, 0, Math.PI * 2);  // Right eye
+                ctx.fill();
+
+                // --- Tongue ---
+                const tongueLength = headRadius * 0.7;
+                const tongueWidth = headRadius * 0.08;
+                const tongueForkLength = headRadius * 0.2;
+                const tongueForkSpread = headRadius * 0.1;
+
+                ctx.fillStyle = '#FF0000'; // Red tongue
+                ctx.beginPath();
+                ctx.moveTo(headRadius - 5, 0); // Start at tip of head
+                ctx.lineTo(headRadius + tongueLength - tongueForkLength, -tongueWidth / 2); // Main tongue base
+                ctx.lineTo(headRadius + tongueLength, -tongueForkSpread); // Upper fork tip
+                ctx.lineTo(headRadius + tongueLength - tongueForkLength, 0); // Fork inner point
+                ctx.lineTo(headRadius + tongueLength, tongueForkSpread); // Lower fork tip
+                ctx.lineTo(headRadius + tongueLength - tongueForkLength, tongueWidth / 2); // Main tongue base
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore(); // Restore context after head transformations
+            }
+            // --- END NEW drawSnake function ---
+
+            // --- Helper function for drawing rounded rectangles (needed for snake segments) ---
+            function roundRect(ctx, x, y, width, height, radius) {
+                if (width < 2 * radius) radius = width / 2;
+                if (height < 2 * radius) radius = height / 2;
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.arcTo(x + width, y, x + width, y + height, radius);
+                ctx.arcTo(x + width, y + height, x, y + height, radius);
+                ctx.arcTo(x, y + height, x, y, radius);
+                ctx.arcTo(x, y, x + width, y, radius);
+                ctx.closePath();
+            }
 
                 // --- 2. Draw Head (Much more detailed) ---
                 const headColorLight = '#8BC34A';
