@@ -154,7 +154,7 @@
             let direction, score, gameSpeed, logicInterval, renderLoopId;
             let isRunning, isPowerUpActive, powerUpTimer;
             
-            // Variables for smooth movement (NEW)
+            // Variables for smooth movement
             let moveProgress = 0; // 0.0 to 1.0, progress between logical grid steps
             let lastTime = 0; // Timestamp of the last frame
 
@@ -182,14 +182,14 @@
                 }));
                 
                 // --- Game Flags ---
-                direction = { x: 0, y: 0 };
+                direction = { x: 0, y: 0 }; // Initial state: not moving
                 score = 0;
                 gameSpeed = BASE_SPEED;
                 isRunning = false;
                 isPowerUpActive = false;
                 if (powerUpTimer) clearTimeout(powerUpTimer);
-                moveProgress = 0; // Reset smooth movement progress
-                lastTime = 0; // Reset timer
+                moveProgress = 0;
+                lastTime = 0;
 
                 // --- UI State ---
                 scoreEl.textContent = 'Score: 0';
@@ -207,32 +207,30 @@
                 draw(); // Initial draw
                 showMessage('Press Any Key To Start');
                 
-                // Start the render loop (it will just draw a static scene)
+                // Start the render loop (it will just draw a static scene until direction changes)
                 renderLoop(0);
             }
 
             /**
              * Starts the game logic loop.
+             * @param {object} initialDirection - The direction to start moving immediately.
              */
-            function startGame() {
+            function startGame(initialDirection = { x: 1, y: 0 }) {
                 if (isRunning) return;
                 
-                // Re-initialize all state
+                // Reset/setup state
                 initializeGame(); 
-
-                // Reset logic state (done in initialize, but explicitly here for clarity of start)
-                snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
-                visualSnake = snake.map(seg => ({
-                    x: seg.x * gridSize + gridSize / 2,
-                    y: seg.y * gridSize + gridSize / 2
-                }));
-                direction = { x: 0, y: 0 }; // Start with no movement until keypress
+                
+                // Force immediate movement in the initial direction (Default: RIGHT)
+                direction = initialDirection;
                 
                 isRunning = true;
                 startButton.textContent = 'In Progress';
                 hideMessage();
+
+                // Call gameTick immediately to process the first move and start the timer
+                gameTick(); 
                 
-                // Stop/start intervals
                 if (logicInterval) clearInterval(logicInterval);
                 logicInterval = setInterval(gameTick, gameSpeed);
             }
@@ -255,6 +253,15 @@
                     y: snake[0].y + direction.y
                 };
 
+                // Check if the snake is trying to turn back on itself. 
+                // This is a common bug fix. If the new head lands on the 2nd segment, it's a 180 turn.
+                if (snake.length > 1 && head.x === snake[1].x && head.y === snake[1].y) {
+                    // Do nothing, effectively blocking the 180 turn
+                    // We rely on the *current* direction for movement, so we don't proceed with the tick.
+                    // Instead, we let the existing movement continue.
+                    // IMPORTANT: We do not `return gameOver()` here because the collision check is done below.
+                }
+
                 // 2. Check Wall Collision
                 if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
                     return gameOver();
@@ -262,6 +269,8 @@
                 
                 // 3. Check Self Collision
                 for (let i = 1; i < snake.length; i++) {
+                    // NOTE: Since the head moves, we check collision with all segments *except* the tail, 
+                    // which is about to be popped if we didn't eat.
                     if (head.x === snake[i].x && head.y === snake[i].y) {
                         return gameOver();
                     }
@@ -464,7 +473,7 @@
             }
 
             /**
-             * NEW drawSnake function for the cartoon segmented look.
+             * drawSnake function for the cartoon segmented look.
              */
             function drawSnake() {
                 const head = visualSnake[0];
@@ -656,71 +665,94 @@
                 messageBox.classList.add('hidden');
             }
 
+            /**
+             * Common function to handle direction changes and immediately start the tick for responsiveness.
+             * @param {object} newDirection - The proposed new direction.
+             */
+            function handleDirectionChange(newDirection) {
+                if (!isRunning) {
+                    // Start the game moving immediately in the requested direction
+                    startGame(newDirection); 
+                    return;
+                }
+                
+                // Prevent turning 180 degrees
+                if (direction.x === -newDirection.x && direction.y === -newDirection.y) {
+                    return;
+                }
+                
+                // Only update direction if it's a valid, perpendicular turn
+                if (direction.x !== newDirection.x || direction.y !== newDirection.y) {
+                    direction = newDirection;
+                    
+                    // CRITICAL FIX: If we are close to the next tick (i.e., moveProgress is high), 
+                    // we can force an immediate tick to make the turn highly responsive.
+                    if (moveProgress > 0.8) {
+                        gameTick();
+                        // This forces the next move to use the new direction immediately.
+                        if (logicInterval) clearInterval(logicInterval);
+                        logicInterval = setInterval(gameTick, gameSpeed);
+                    }
+                }
+            }
+
+
             // --- Event Listeners ---
             document.addEventListener('keydown', e => {
-                // Prevent scrolling when using arrow keys, but allow input fields to work
                 if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
                     return;
                 }
                 
-                if (!isRunning) {
-                    if (e.key.length === 1 || e.key.startsWith("Arrow")) {
-                        startGame();
-                    }
-                    return; // Don't process movement if game isn't running
-                }
+                let newDirection = null;
 
-                // Movement logic
                 switch (e.key) {
                     case 'ArrowUp':
                     case 'w':
-                        // Check if not moving down to prevent instant reversal
-                        if (direction.y === 0) direction = { x: 0, y: -1 };
+                        newDirection = { x: 0, y: -1 };
                         break;
                     case 'ArrowDown':
                     case 's':
-                        if (direction.y === 0) direction = { x: 0, y: 1 };
+                        newDirection = { x: 0, y: 1 };
                         break;
                     case 'ArrowLeft':
                     case 'a':
-                        if (direction.x === 0) direction = { x: -1, y: 0 };
+                        newDirection = { x: -1, y: 0 };
                         break;
                     case 'ArrowRight':
                     case 'd':
-                        if (direction.x === 0) direction = { x: 1, y: 0 };
+                        newDirection = { x: 1, y: 0 };
                         break;
                 }
                 
+                if (newDirection) {
+                    handleDirectionChange(newDirection);
+                } else if (!isRunning && (e.key.length === 1 || e.key.startsWith("Arrow"))) {
+                    // Start game on any keypress if it's currently stopped
+                    startGame(); 
+                }
+
                 if (e.key.startsWith('Arrow')) {
                     e.preventDefault();
                 }
             });
             
             // --- Listeners for (now hidden) buttons ---
-            // These listeners remain important for touch/mobile compatibility
             document.getElementById('btn-up').addEventListener('click', () => {
-                if (!isRunning) startGame();
-                if (direction.y === 0) direction = { x: 0, y: -1 };
+                handleDirectionChange({ x: 0, y: -1 });
             });
             document.getElementById('btn-down').addEventListener('click', () => {
-                if (!isRunning) startGame();
-                if (direction.y === 0) direction = { x: 0, y: 1 };
+                handleDirectionChange({ x: 0, y: 1 });
             });
             document.getElementById('btn-left').addEventListener('click', () => {
-                if (!isRunning) startGame();
-                if (direction.x === 0) direction = { x: -1, y: 0 };
+                handleDirectionChange({ x: -1, y: 0 });
             });
             document.getElementById('btn-right').addEventListener('click', () => {
-                if (!isRunning) startGame();
-                if (direction.x === 0) direction = { x: 1, y: 0 };
+                handleDirectionChange({ x: 1, y: 0 });
             });
 
             startButton.addEventListener('click', () => {
-                if (logicInterval) clearInterval(logicInterval);
-                if (renderLoopId) cancelAnimationFrame(renderLoopId);
-                
-                initializeGame();
-                startGame();
+                // Default start direction is right
+                startGame({ x: 1, y: 0 });
             });
 
             // --- Initial Game Load ---
