@@ -71,6 +71,7 @@ function getDefaultSidebarVisibility() {
 }
 
 
+// --- Main App Initialization --- (MODIFIED)
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
