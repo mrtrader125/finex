@@ -136,28 +136,31 @@ async function loadCommonComponents() {
  }
 
 // --- === MODIFIED: This function is now simpler and secure === ---
+// It NO LONGER reads from siteSettings
 async function loadPreferences(settingsDocRef) {
     try {
         // 1. Start with the hard-coded defaults (all items visible)
         let defaultItems = getDefaultSidebarVisibility();
         
-        // 2. Load the INDIVIDUAL user's settings (which are set by admin AND user)
+        // 2. Load the INDIVIDUAL user's settings
         const userDocSnap = await getDoc(settingsDocRef);
         let userPrefs = { theme: 'dark', sidebarItems: {} };
          if (userDocSnap.exists()) {
-            userPrefs = { ...userDocSnap.data() };
+            // Merge saved prefs over defaults
+            userPrefs = { ...userPrefs, ...userDocSnap.data() };
         }
 
-        // 4. Final Calculation
+        // 3. Final Calculation
         // Theme: User's choice OR hard-coded 'dark'
         userPreferences.theme = userPrefs.theme || 'dark';
 
         // Sidebar:
         const finalSidebar = {};
         Object.keys(defaultItems).forEach(key => {
+            // Get the user's setting (which the admin controls)
             const userVal = userPrefs.sidebarItems ? userPrefs.sidebarItems[key] : undefined;
             
-            // Rule 1: User's setting (which admin can control) wins
+            // Rule 1: User's setting (true/false) wins
             if (userVal !== undefined) {
                 finalSidebar[key] = userVal;
             }
