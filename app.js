@@ -71,7 +71,6 @@ function getDefaultSidebarVisibility() {
 }
 
 
-// --- Main App Initialization --- (MODIFIED)
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -90,27 +89,24 @@ export async function initializeAppCore(pageSpecificInit) {
             const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
 
             try {
-                // === THIS IS THE FIX ===
-                // 1. Wait for components AND preferences to load FIRST
+                // === THIS IS THE FIX: Wait for prefs to load ===
                 await Promise.all([
                     loadCommonComponents(),
                     loadPreferences(settingsDocRef) 
                 ]);
                 
-                // 2. NOW that preferences are loaded, call the page-specific logic
+                // === THEN call the page script ===
                 if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                    pageSpecificInit(user, db, userProfile); // <-- MOVED HERE
+                    pageSpecificInit(user, db, userProfile); 
                 }
-                // === END OF FIX ===
 
-                // 3. Apply theme, render sidebar, etc.
                 applyTheme(userPreferences.theme);
                 renderSidebar(); 
+                
                 attachCoreEventListeners();
                 const userEmailSpan = document.getElementById('user-email');
                 if (userEmailSpan) userEmailSpan.textContent = userProfile.email; 
 
-                // 4. FINALLY, hide the loader and show the fully-ready page
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) appLoader.style.display = 'none';
                 
@@ -129,7 +125,6 @@ export async function initializeAppCore(pageSpecificInit) {
     });
 }
 
-// --- HTML Component Loader ---
 async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
@@ -142,45 +137,55 @@ async function loadCommonComponents() {
     } catch (error) { console.error("Error loading common components:", error); }
  }
 
-// --- Preference Management ---
+// --- === MODIFIED: This function is now simple and secure === ---
+// It NO LONGER reads from siteSettings
 async function loadPreferences(settingsDocRef) {
     try {
+        // 1. Start with the hard-coded defaults (all items visible)
         let defaultItems = getDefaultSidebarVisibility();
         
+        // 2. Load the INDIVIDUAL user's settings
         const userDocSnap = await getDoc(settingsDocRef);
         let userPrefs = { theme: 'dark', sidebarItems: {} };
          if (userDocSnap.exists()) {
+            // Merge saved prefs over defaults
             userPrefs = { ...userDocSnap.data() };
         }
 
+        // 3. Final Calculation
+        // Theme: User's choice OR hard-coded 'dark'
         userPreferences.theme = userPrefs.theme || 'dark';
 
+        // Sidebar:
         const finalSidebar = {};
         Object.keys(defaultItems).forEach(key => {
+            // Get the user's setting (which the admin controls)
             const userVal = userPrefs.sidebarItems ? userPrefs.sidebarItems[key] : undefined;
             
+            // Rule 1: User's setting (true/false) wins
             if (userVal !== undefined) {
                 finalSidebar[key] = userVal;
             }
+            // Rule 2: Otherwise, the hard-coded default (true) is the fallback.
             else {
-                finalSidebar[key] = true; // Default to true if not specified
+                finalSidebar[key] = true;
             }
         });
         userPreferences.sidebarItems = finalSidebar;
 
      } catch (error) { 
+         // This can still fail if Firestore rules are wrong
          console.error("Error loading preferences:", error);
          userPreferences = { theme: 'dark', sidebarItems: getDefaultSidebarVisibility() }; 
      }
 }
+// --- === END MODIFICATION === ---
 
-// --- Theme Application ---
 export function applyTheme(theme) {
     if (theme === 'light') { document.documentElement.classList.remove('dark'); } else { document.documentElement.classList.add('dark'); }
     const themeToggle = document.getElementById('theme-toggle'); if (themeToggle) { themeToggle.checked = (theme === 'dark'); }
 }
 
-// --- Sidebar Rendering & Page Title Setting ---
 export function renderSidebar() {
     const sidebarNav=document.getElementById('sidebar-nav'); const pageTitleEl=document.getElementById('page-title'); if(!sidebarNav){console.error("Sidebar nav element not found!"); return;} const currentPage=window.location.pathname.split('/').pop()||'member_dashboard.html'; let currentPageTitle="Dashboard"; let isSubItemActive=false; sidebarNav.innerHTML=''; allSidebarItems.forEach(item=>{if(!userPreferences.sidebarItems[item.id]){return;} if(item.subItems&&Array.isArray(item.subItems)){const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; item.subItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; isSubItemActive=true; currentPageTitle=subItem.text;}}); if(parentIsActive){toggleButton.classList.add('active-parent');} toggleButton.innerHTML=`<span class="flex items-center gap-4"><i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span></span><i class="fas fa-chevron-down text-xs transition-transform duration-200 chevron-icon"></i>`; dropdownContainer.appendChild(toggleButton); const subMenu=document.createElement('div'); subMenu.id=`submenu-${item.id}`; subMenu.className='pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out sidebar-submenu'; item.subItems.forEach(subItem=>{const link=document.createElement('a'); link.href=subItem.href; link.className=`sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; if(subItem.href===currentPage){link.classList.add('active');} link.innerHTML=`<i class="fas ${subItem.icon} fa-fw w-5"></i> <span>${subItem.text}</span>`; subMenu.appendChild(link);}); dropdownContainer.appendChild(subMenu); sidebarNav.appendChild(dropdownContainer);}else{const link=document.createElement('a'); link.href=item.href; link.className=`sidebar-link flex items-center gap-4 p-3 rounded-lg`; if(item.href===currentPage&&!isSubItemActive){link.classList.add('active'); currentPageTitle=item.text;} link.innerHTML=`<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`; sidebarNav.appendChild(link);}});
     
@@ -195,7 +200,6 @@ export function renderSidebar() {
     }
  }
 
-// --- Core Event Listeners Attachment ---
 function attachCoreEventListeners() {
     const openSidebarBtn=document.getElementById('open-sidebar-btn'); const closeSidebarBtn=document.getElementById('close-sidebar-btn'); const sidebar=document.getElementById('sidebar'); const sidebarOverlay=document.getElementById('sidebar-overlay'); const sidebarNav=document.getElementById('sidebar-nav'); const logoutBtn=document.getElementById('logout-btn'); function openSidebar(){if(sidebar)sidebar.classList.remove('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.remove('hidden'); setTimeout(()=>sidebarOverlay.classList.remove('opacity-0'),10);}} function closeSidebar(){if(sidebar)sidebar.classList.add('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.add('opacity-0'); setTimeout(()=>sidebarOverlay.classList.add('hidden'),300);}} if(openSidebarBtn)openSidebarBtn.addEventListener('click',openSidebar); if(closeSidebarBtn)closeSidebarBtn.addEventListener('click',closeSidebar); if(sidebarOverlay)sidebarOverlay.addEventListener('click',closeSidebar); if(logoutBtn)logoutBtn.addEventListener('click',(e)=>{e.preventDefault(); signOut(auth).then(()=>{window.location.href='index.html';}).catch((error)=>{console.error('Sign out error',error);});}); if(sidebarNav){sidebarNav.addEventListener('click',(e)=>{const link=e.target.closest('a'); const toggle=e.target.closest('button[data-toggle]'); if(link&&!link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}else if(toggle){const subMenuId=`submenu-${toggle.dataset.toggle}`; const subMenu=document.getElementById(subMenuId); const chevron=toggle.querySelector('.chevron-icon'); if(subMenu){if(subMenu.style.maxHeight&&subMenu.style.maxHeight!=='0px'){subMenu.style.maxHeight='0px'; toggle.classList.remove('active-parent'); if(chevron)chevron.classList.remove('rotate-180');}else{subMenu.style.maxHeight=subMenu.scrollHeight+"px"; toggle.classList.add('active-parent'); if(chevron)chevron.classList.add('rotate-180');}}}else if(link&&link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}});}
 }
