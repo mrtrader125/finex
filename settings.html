@@ -117,7 +117,7 @@
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === THIS IS THE FIX: The function signature is now correct ===
+        // === THIS IS THE FIX. IT NOW ACCEPTS 'userProfile' ===
         function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
@@ -180,7 +180,6 @@
                 const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
                 elements.themeToggle.checked = (finalTheme === 'dark');
                 
-                // This will now be called correctly
                 populateSidebarOptions();
             }
             
@@ -204,7 +203,6 @@
                     });
                     showProfileMessage("Profile Saved!", false);
                     
-                    // Update dashboard welcome message if user is on that page
                     const pageTitle = document.getElementById('page-title');
                     if (pageTitle && pageTitle.textContent === 'Finex') {
                         const memberNameEl = document.getElementById('member-name');
@@ -275,7 +273,6 @@
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return; 
 
-                    // This is the admin panel logic you wanted:
                     if (globalPreferences.sidebarItems[item.id] === false) {
                         return; // Admin hid this, so don't show the toggle
                     }
