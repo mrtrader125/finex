@@ -77,14 +77,11 @@ export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
 
-            // --- THIS IS THE MOVED BLOCK ---
-            // Check for the reload flag *after* we know a user is logged in
             if (sessionStorage.getItem('profileUpdated') === 'true') {
                 sessionStorage.removeItem('profileUpdated');
                 location.reload(true); 
                 return; 
             }
-            // --- END MOVED BLOCK ---
             
             const userDocRef = doc(db, 'users', user.uid);
             let userProfile = { email: user.email, displayName: user.email.split('@')[0] }; 
@@ -109,6 +106,7 @@ export async function initializeAppCore(pageSpecificInit) {
                     loadPreferences(settingsDocRef) 
                 ]);
 
+                // This function now also saves to localStorage
                 applyTheme(userPreferences.theme);
                 renderSidebar(); 
                 
@@ -165,6 +163,7 @@ async function loadPreferences(settingsDocRef) {
             userPrefs = { ...userPrefs, ...userDocSnap.data() };
         }
 
+        // Firestore theme (or default) is the source of truth on initial load
         userPreferences.theme = userPrefs.theme || globalPrefs.theme || 'dark';
 
         const finalSidebar = {};
@@ -193,10 +192,27 @@ async function loadPreferences(settingsDocRef) {
      }
 }
 
-// --- Theme Application ---
+// --- MODIFIED FUNCTION ---
 export function applyTheme(theme) {
-    if (theme === 'light') { document.documentElement.classList.remove('dark'); } else { document.documentElement.classList.add('dark'); }
-    const themeToggle = document.getElementById('theme-toggle'); if (themeToggle) { themeToggle.checked = (theme === 'dark'); }
+    // 1. Apply the theme to the <html> tag
+    if (theme === 'light') { 
+        document.documentElement.classList.remove('dark'); 
+    } else { 
+        document.documentElement.classList.add('dark'); 
+    }
+    
+    // 2. Save the choice to localStorage for instant loading on next page
+    try {
+        localStorage.setItem('theme', theme);
+    } catch (e) {
+        console.error("Could not save theme to localStorage", e);
+    }
+
+    // 3. Update the theme toggle (if it exists on the page)
+    const themeToggle = document.getElementById('theme-toggle'); 
+    if (themeToggle) { 
+        themeToggle.checked = (theme === 'dark'); 
+    }
 }
 
 // --- Sidebar Rendering & Page Title Setting ---
