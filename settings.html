@@ -114,10 +114,11 @@
 
     <script type="module" src="app.js"></script>
     <script type="module">
+        // === MODIFIED: Imported appUserPreferences from app.js ===
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems, userPreferences as appUserPreferences } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === This function signature is correct ===
+        // === MODIFIED: The function signature is now correct ===
         function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
@@ -155,6 +156,7 @@
             
             let debounceTimer = null;
 
+            // === MODIFIED: This function is now simple and safe ===
             function loadSettingsPage() {
                 try {
                     elements.displayNameInput.value = userProfile.displayName;
