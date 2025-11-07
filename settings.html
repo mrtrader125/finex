@@ -117,7 +117,7 @@
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === MODIFIED: Function signature now correctly accepts userProfile ===
+        // === BUG FIX: The function signature is now correct ===
         function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
@@ -152,7 +152,6 @@
 
             let debounceTimer = null;
 
-            // === MODIFIED: This function now uses the pre-fetched userProfile ===
             async function loadPreferencesForSettings() {
                 try {
                     // --- Load Preferences ---
@@ -171,21 +170,18 @@
                         userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
                     }
                     
-                    // --- Load Profile (No more fetching, just use userProfile) ---
+                    // --- Load Profile (using the passed-in userProfile) ---
                     elements.displayNameInput.value = userProfile.displayName;
 
                 } catch (error) { console.error("Error loading data:", error); }
                 
-                // Use userProfile for email
                 elements.accountEmailSpan.textContent = userProfile.email;
                 
                 const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
                 elements.themeToggle.checked = (finalTheme === 'dark');
                 
-                // This will now be called correctly
                 populateSidebarOptions();
             }
-            // === END MODIFICATION ===
             
             async function saveProfile(e) {
                 e.preventDefault();
@@ -206,8 +202,8 @@
                         displayName: newName
                     });
                     showProfileMessage("Profile Saved!", false);
-                    // --- NEW: Update the dashboard title in real-time ---
-                    // This is a small bonus. If on dashboard, update welcome.
+                    
+                    // Update dashboard welcome message if user is on that page
                     const pageTitle = document.getElementById('page-title');
                     if (pageTitle && pageTitle.textContent === 'Finex') {
                         const memberNameEl = document.getElementById('member-name');
@@ -256,7 +252,6 @@
                      });
                      
                      try {
-                        // This import is how we update the main app's state
                         const app = await import('./app.js');
                         app.userPreferences.sidebarItems = finalMergedPrefs;
                         app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
@@ -277,7 +272,7 @@
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
                 allSidebarItems.forEach(item => {
-                    if (item.id === 'settings') return; // Skip settings itself
+                    if (item.id === 'settings') return; 
 
                     if (globalPreferences.sidebarItems[item.id] === false) {
                         return; 
