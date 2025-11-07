@@ -1,7 +1,6 @@
 // app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-// === MODIFIED: Added getDoc and doc ===
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
 // --- Firebase Config ---
@@ -38,8 +37,7 @@ export const allSidebarItems = [
     { id: 'analysis', href: 'analysis.html', icon: 'fa-image', text: 'Analysis' },
     { id: 'planning', icon: 'fa-clipboard-list', text: 'Plan & Journal', subItems: [
             { id: 'checklist', href: 'weekly_checklist.html', icon: 'fa-clipboard-check', text: 'Weekly Checklist' },
-            { id:CHOOSE_A_TOOL, in_progress: 10
-            id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
+            { id: 'journal', href: 'trading_journal.html', icon: 'fa-book', text: 'Trading Journal' },
             { id: 'monthlyReview', href: 'monthly_review.html', icon: 'fa-calendar-check', text: 'Monthly Review' }
         ] },
     { id: 'results', href: 'real_results.html', icon: 'fa-chart-line', text: 'Real-World Results' },
@@ -59,10 +57,8 @@ export const allSidebarItems = [
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-// === MODIFIED: This is now 'export let' so it can be modified ===
 export let userPreferences = { theme: 'dark', sidebarItems: {} };
 
-// Helper function to create a default visibility map from allSidebarItems
 function getDefaultSidebarVisibility() {
     const visibility = {};
     allSidebarItems.forEach(item => {
@@ -78,27 +74,20 @@ function getDefaultSidebarVisibility() {
 // --- Main App Initialization --- (MODIFIED)
 export async function initializeAppCore(pageSpecificInit) {
     
-    // --- THIS IS THE NEW BLOCK ---
-    // Check if a profile update triggered a reload request
-    if (sessionStorage.getItem('profileUpdated') === 'true') {
-        // Clear the flag immediately
-        sessionStorage.removeItem('profileUpdated');
-        
-        // Force a hard reload from the server to get the new user data
-        // This ensures the header and dashboard greet the user with the new name
-        location.reload(true); 
-        
-        // Stop any further script execution on this 'old' page
-        return; 
-    }
-    // --- END NEW BLOCK ---
-
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+
+            // --- THIS IS THE MOVED BLOCK ---
+            // Check for the reload flag *after* we know a user is logged in
+            if (sessionStorage.getItem('profileUpdated') === 'true') {
+                sessionStorage.removeItem('profileUpdated');
+                location.reload(true); 
+                return; 
+            }
+            // --- END MOVED BLOCK ---
             
-            // --- MODIFICATION: Load user profile first ---
             const userDocRef = doc(db, 'users', user.uid);
-            let userProfile = { email: user.email, displayName: user.email.split('@')[0] }; // Default
+            let userProfile = { email: user.email, displayName: user.email.split('@')[0] }; 
             try {
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists()) {
@@ -107,35 +96,26 @@ export async function initializeAppCore(pageSpecificInit) {
             } catch (e) {
                 console.error("Error fetching user profile:", e);
             }
-            // --- END MODIFICATION ---
             
-            // 1. Start page-specific logic (like loading articles) immediately.
-            //    Pass the loaded user profile to it.
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                pageSpecificInit(user, db, userProfile); // <-- MODIFIED: Pass userProfile
+                pageSpecificInit(user, db, userProfile); 
             }
 
             const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
 
             try {
-                // 2. Wait for *both* components and preferences to finish
                 await Promise.all([
                     loadCommonComponents(),
                     loadPreferences(settingsDocRef) 
                 ]);
 
-                // 3. Now that we have all data, apply it *before* showing the page
                 applyTheme(userPreferences.theme);
-                renderSidebar(); // Renders sidebar with correct items
+                renderSidebar(); 
                 
-                // 4. Attach event listeners (to the now-loaded components)
                 attachCoreEventListeners();
                 const userEmailSpan = document.getElementById('user-email');
-                // --- MODIFICATION: Use userProfile.email ---
                 if (userEmailSpan) userEmailSpan.textContent = userProfile.email; 
-                // --- END MODIFICATION ---
 
-                // 5. FINALLY, hide the loader and show the fully-ready page
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) appLoader.style.display = 'none';
                 
@@ -144,7 +124,6 @@ export async function initializeAppCore(pageSpecificInit) {
 
             } catch (error) {
                 console.error("Failed to initialize app components:", error);
-                // Handle error, maybe show a message in the loader
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) appLoader.textContent = "Error loading application.";
             }
