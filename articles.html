@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script> 
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -110,39 +111,7 @@
         #toc-list a.level-2 { @apply font-semibold text-color-base; }
         #toc-list a.level-3 { @apply pl-4; }
 
-        /* === CUSTOM DROPDOWN STYLES === */
-        .custom-select-wrapper { 
-            position: relative; 
-        }
-        .custom-select-trigger {
-            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-            padding: 0.75rem; border-radius: 0.5rem; width: 100%;
-            background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-        html.dark .custom-select-trigger {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
-        }
-        .custom-select-trigger .fa-chevron-down {
-            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem;
-        }
-        html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
-        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
-        .custom-select-options {
-            position: absolute; z-index: 50; width: 100%;
-            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
-            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            display: none;
-        }
-        html.dark .custom-select-options { background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1); }
-        .custom-select-wrapper.open .custom-select-options { display: block; }
-        .custom-option { padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937; }
-        html.dark .custom-option { color: #f4f6f9; }
-        .custom-option:hover { background-color: #dbeafe; }
-        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
-        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
-        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
+        /* === DUPLICATE STYLES REMOVED FROM HERE === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -424,7 +393,7 @@
                     ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
                 `;
                 const contentEl = document.getElementById('article-content-full');
-                contentEl.innerHTML = article.content;
+                contentEl.innerHTML = DOMPurify.sanitize(article.content); // Use DOMPurify
                 articlesListView.classList.remove('active');
                 fullArticleView.classList.add('active');
                 const url = new URL(window.location);
