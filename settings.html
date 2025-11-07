@@ -69,7 +69,6 @@
                             </div>
                         </form>
                     </div>
-
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Appearance</h2>
                         <div class="flex items-center justify-between">
@@ -115,12 +114,13 @@
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
+        // === MODIFIED: Added updateDoc ===
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === THIS IS THE FIX. IT NOW ACCEPTS 'userProfile' ===
-        function initSettingsPage(user, db, userProfile) {
+        function initSettingsPage(user, db) {
             console.log("Setting up Settings page specific logic...");
             
+            // === MODIFIED: Added new elements ===
             const elements = {
                 accountEmailSpan: document.getElementById('account-email'),
                 themeToggle: document.getElementById('theme-toggle'),
@@ -131,6 +131,7 @@
                 saveProfileBtn: document.getElementById('save-profile-btn'),
                 profileSaveStatus: document.getElementById('profile-save-status')
             };
+            // === END MODIFICATION ===
 
             if (!elements.accountEmailSpan || !elements.themeToggle || !elements.sidebarOptionsContainer || !elements.saveStatus || !elements.profileForm) {
                 console.error("Critical settings elements missing!");
@@ -139,6 +140,7 @@
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
+            // === NEW: Add ref to main user doc ===
             let userDocRef = doc(db, "users", currentUserId);
             
             let globalPreferences = { theme: 'dark', sidebarItems: {} };
@@ -152,6 +154,7 @@
 
             let debounceTimer = null;
 
+            // === MODIFIED: This function now also loads the user's profile ===
             async function loadPreferencesForSettings() {
                 try {
                     // --- Load Preferences ---
@@ -170,19 +173,29 @@
                         userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
                     }
                     
-                    // --- Load Profile (using the passed-in userProfile) ---
-                    elements.displayNameInput.value = userProfile.displayName;
+                    // --- Load Profile ---
+                    const mainUserDocSnap = await getDoc(userDocRef);
+                    if (mainUserDocSnap.exists()) {
+                        const userData = mainUserDocSnap.data();
+                        // Set display name or fall back to email prefix
+                        elements.displayNameInput.value = userData.displayName || user.email.split('@')[0];
+                    } else {
+                        // Fallback if user doc somehow doesn't exist
+                        elements.displayNameInput.value = user.email.split('@')[0];
+                    }
 
                 } catch (error) { console.error("Error loading data:", error); }
                 
-                elements.accountEmailSpan.textContent = userProfile.email;
+                elements.accountEmailSpan.textContent = user.email;
                 
                 const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
                 elements.themeToggle.checked = (finalTheme === 'dark');
                 
                 populateSidebarOptions();
             }
+            // === END MODIFICATION ===
             
+            // === NEW: Function to save profile changes ===
             async function saveProfile(e) {
                 e.preventDefault();
                 if (!userDocRef) return;
@@ -202,14 +215,6 @@
                         displayName: newName
                     });
                     showProfileMessage("Profile Saved!", false);
-                    
-                    const pageTitle = document.getElementById('page-title');
-                    if (pageTitle && pageTitle.textContent === 'Finex') {
-                        const memberNameEl = document.getElementById('member-name');
-                        if (memberNameEl) {
-                             memberNameEl.textContent = newName.charAt(0).toUpperCase() + newName.slice(1);
-                        }
-                    }
                 } catch (error) {
                     console.error("Error saving profile:", error);
                     showProfileMessage("Error saving profile.", true);
@@ -224,6 +229,8 @@
                  elements.profileSaveStatus.className = `text-sm h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
                  setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
             }
+            // === END NEW FUNCTIONS ===
+
 
             async function savePreferences(type = 'all') {
                 if (!settingsDocRef) return; 
@@ -271,10 +278,10 @@
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
                 allSidebarItems.forEach(item => {
-                    if (item.id === 'settings') return; 
+                    if (item.id === 'settings') return; // Skip settings itself
 
                     if (globalPreferences.sidebarItems[item.id] === false) {
-                        return; // Admin hid this, so don't show the toggle
+                        return; 
                     }
                     
                     const createCheckbox = (itemData, isSubItem = false) => {
@@ -299,7 +306,7 @@
                         }
 
                         const icon = document.createElement('i');
-                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`;
+                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`; // w-4 for alignment
                         
                         const text = document.createElement('span');
                         text.className = 'text-color-base'; 
@@ -320,7 +327,7 @@
                         summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
                         
                         const chevron = document.createElement('i');
-                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted';
+                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted'; // Use nested class
                         
                         const parentLabel = createCheckbox(item, false);
                         parentLabel.classList.add('flex-grow'); 
@@ -387,6 +394,7 @@
                 savePreferences('theme'); 
             });
             
+            // === NEW: Add listener for profile form ===
             elements.profileForm.addEventListener('submit', saveProfile);
 
             loadPreferencesForSettings();
