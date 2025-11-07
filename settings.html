@@ -69,7 +69,6 @@
                             </div>
                         </form>
                     </div>
-
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Appearance</h2>
                         <div class="flex items-center justify-between">
@@ -114,14 +113,14 @@
 
     <script type="module" src="app.js"></script>
     <script type="module">
-        // === MODIFIED: Imported appUserPreferences from app.js ===
-        import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems, userPreferences as appUserPreferences } from './app.js';
+        import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
+        // === MODIFIED: Added updateDoc ===
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === MODIFIED: The function signature is now correct ===
-        function initSettingsPage(user, db, userProfile) {
+        function initSettingsPage(user, db) {
             console.log("Setting up Settings page specific logic...");
             
+            // === MODIFIED: Added new elements ===
             const elements = {
                 accountEmailSpan: document.getElementById('account-email'),
                 themeToggle: document.getElementById('theme-toggle'),
@@ -132,43 +131,71 @@
                 saveProfileBtn: document.getElementById('save-profile-btn'),
                 profileSaveStatus: document.getElementById('profile-save-status')
             };
+            // === END MODIFICATION ===
 
-            // Check for missing elements
-            let missingElement = false;
-            for (const key in elements) {
-                if (!elements[key]) {
-                    console.error(`Critical settings element missing: ${key}`);
-                    missingElement = true;
-                }
-            }
-            if (missingElement) {
-                const main = document.querySelector('main'); 
-                if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; 
-                return;
+            if (!elements.accountEmailSpan || !elements.themeToggle || !elements.sidebarOptionsContainer || !elements.saveStatus || !elements.profileForm) {
+                console.error("Critical settings elements missing!");
+                 const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; return;
             }
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
+            // === NEW: Add ref to main user doc ===
             let userDocRef = doc(db, "users", currentUserId);
             
-            // This is the user's *current* preferences, loaded by app.js
-            let currentPreferences = { ...appUserPreferences.sidebarItems }; // Clone preferences
+            let globalPreferences = { theme: 'dark', sidebarItems: {} };
+            let userPreferences = { theme: 'dark', sidebarItems: {} };   
             
+            let defaultSidebarItems = {};
+            allSidebarItems.forEach(item => {
+                defaultSidebarItems[item.id] = true; 
+                if(item.subItems) { item.subItems.forEach(sub => defaultSidebarItems[sub.id] = true); } 
+            });
+
             let debounceTimer = null;
 
-            // === MODIFIED: This function is now simple and safe ===
-            function loadSettingsPage() {
+            // === MODIFIED: This function now also loads the user's profile ===
+            async function loadPreferencesForSettings() {
                 try {
-                    elements.displayNameInput.value = userProfile.displayName;
-                    elements.accountEmailSpan.textContent = userProfile.email;
-                    elements.themeToggle.checked = (appUserPreferences.theme === 'dark');
-                    populateSidebarOptions();
-                } catch (error) { 
-                    console.error("Error loading data:", error); 
-                    elements.sidebarOptionsContainer.innerHTML = "<p class='text-red-500 text-center'>Error loading toggles.</p>";
-                }
+                    // --- Load Preferences ---
+                    const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
+                    const [globalDocSnap, userDocSnap] = await Promise.all([
+                        getDoc(globalSettingsRef),
+                        getDoc(settingsDocRef)
+                    ]);
+                    
+                    if (globalDocSnap.exists()) {
+                        globalPreferences = { ...globalPreferences, ...globalDocSnap.data() };
+                    }
+                    if (userDocSnap.exists()) {
+                        const loadedPrefs = userDocSnap.data();
+                        userPreferences.theme = loadedPrefs.theme; 
+                        userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
+                    }
+                    
+                    // --- Load Profile ---
+                    const mainUserDocSnap = await getDoc(userDocRef);
+                    if (mainUserDocSnap.exists()) {
+                        const userData = mainUserDocSnap.data();
+                        // Set display name or fall back to email prefix
+                        elements.displayNameInput.value = userData.displayName || user.email.split('@')[0];
+                    } else {
+                        // Fallback if user doc somehow doesn't exist
+                        elements.displayNameInput.value = user.email.split('@')[0];
+                    }
+
+                } catch (error) { console.error("Error loading data:", error); }
+                
+                elements.accountEmailSpan.textContent = user.email;
+                
+                const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
+                elements.themeToggle.checked = (finalTheme === 'dark');
+                
+                populateSidebarOptions();
             }
+            // === END MODIFICATION ===
             
+            // === NEW: Function to save profile changes ===
             async function saveProfile(e) {
                 e.preventDefault();
                 if (!userDocRef) return;
@@ -189,17 +216,13 @@
                     });
                     showProfileMessage("Profile Saved!", false);
                     
-                    const pageTitle = document.getElementById('page-title');
-                    if (pageTitle && pageTitle.textContent === 'Finex') {
-                        const memberNameEl = document.getElementById('member-name');
-                        if (memberNameEl) {
-                             memberNameEl.textContent = newName.charAt(0).toUpperCase() + newName.slice(1);
-                        }
-                    }
+                    // --- THIS IS THE NEW LINE ---
+                    // Force a reload to fetch the new name into the app state
+                    setTimeout(() => location.reload(), 1000); 
+                    
                 } catch (error) {
                     console.error("Error saving profile:", error);
                     showProfileMessage("Error saving profile.", true);
-                } finally {
                     elements.saveProfileBtn.disabled = false;
                     elements.saveProfileBtn.textContent = 'Save Profile';
                 }
@@ -208,61 +231,70 @@
             function showProfileMessage(message, isError = false) {
                  elements.profileSaveStatus.textContent = message;
                  elements.profileSaveStatus.className = `text-sm h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
-                 setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
+                 // Remove the timeout so the "Profile Saved!" message stays
+                 if (isError) {
+                    setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
+                 }
             }
+            // === END NEW FUNCTIONS ===
 
-            async function savePreferences(type, value) {
+
+            async function savePreferences(type = 'all') {
                 if (!settingsDocRef) return; 
                 saveStatus.textContent = 'Saving...';
                 
-                let dataToSave = {
+                const dataToSave = {
+                    theme: userPreferences.theme, 
+                    sidebarItems: userPreferences.sidebarItems, 
                     lastUpdated: serverTimestamp()
                 };
 
-                if (type === 'theme') {
-                    dataToSave.theme = value;
-                } else if (type === 'sidebar') {
-                    dataToSave.sidebarItems = value;
-                }
-
                  try { 
-                     await setDoc(settingsDocRef, dataToSave, { merge: true }); 
+                     await setDoc(settingsDocRef, dataToSave, { merge: true });
                      saveStatus.textContent = 'Preferences Saved.'; 
                      setTimeout(() => saveStatus.textContent = '', 2000);
                      
-                     // Now, update the global state in app.js so it's instant
-                     if (type === 'theme') {
-                         appUserPreferences.theme = value;
-                     } else if (type === 'sidebar') {
-                         appUserPreferences.sidebarItems = value;
+                     let finalMergedPrefs = {};
+                     Object.keys(defaultSidebarItems).forEach(key => {
+                        const globalVal = globalPreferences.sidebarItems[key];
+                        const userVal = userPreferences.sidebarItems[key];
+                        if (globalVal === false) { finalMergedPrefs[key] = false; }
+                        else if (userVal !== undefined) { finalMergedPrefs[key] = userVal; }
+                        else if (globalVal !== undefined) { finalMergedPrefs[key] = globalVal; }
+                        else { finalMergedPrefs[key] = true; }
+                     });
+                     
+                     try {
+                        const app = await import('./app.js');
+                        app.userPreferences.sidebarItems = finalMergedPrefs;
+                        app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
+                        renderSidebar(); 
+                     } catch(e) {
+                         console.error("Could not update app.js state", e);
+                         renderSidebar();
                      }
-                     renderSidebar(); // Re-render the sidebar with new state
 
                  } catch (error) { 
                      console.error("Error saving preferences:", error); 
                      saveStatus.textContent = 'Error Saving.'; 
                  }
             }
-            function debouncedSaveSidebarPreferences(sidebarState) { 
-                clearTimeout(debounceTimer); 
-                saveStatus.textContent = 'Saving...'; 
-                debounceTimer = setTimeout(() => savePreferences('sidebar', sidebarState), 1000); 
-            }
+            function debouncedSavePreferences() { clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...'; debounceTimer = setTimeout(() => savePreferences('sidebar'), 1000); }
 
             function populateSidebarOptions() {
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
                 allSidebarItems.forEach(item => {
-                    if (item.id === 'settings') return; 
+                    if (item.id === 'settings') return; // Skip settings itself
 
-                    // This is the admin panel logic you wanted:
-                    // If the admin hid this item, it will be 'false' here.
-                    if (appUserPreferences.sidebarItems[item.id] === false) {
-                        return; // Admin hid this, so don't show the toggle
+                    if (globalPreferences.sidebarItems[item.id] === false) {
+                        return; 
                     }
                     
                     const createCheckbox = (itemData, isSubItem = false) => {
-                        const isChecked = currentPreferences[itemData.id];
+                        const userValue = userPreferences.sidebarItems[itemData.id];
+                        const globalValue = globalPreferences.sidebarItems[itemData.id];
+                        const isChecked = (userValue !== undefined) ? userValue : (globalValue !== undefined ? globalValue : true);
 
                         const label = document.createElement('label');
                         label.className = `flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label ${isSubItem ? 'pl-10' : ''}`;
@@ -281,7 +313,7 @@
                         }
 
                         const icon = document.createElement('i');
-                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`;
+                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`; // w-4 for alignment
                         
                         const text = document.createElement('span');
                         text.className = 'text-color-base'; 
@@ -293,16 +325,7 @@
                         return label;
                     };
 
-                    // Create dropdowns
                     if (item.subItems) {
-                        // Only show the parent dropdown if at least one child is visible
-                        const visibleSubItems = item.subItems.filter(sub => appUserPreferences.sidebarItems[sub.id] !== false);
-                        
-                        // We also must check if the parent itself was hidden
-                        if (visibleSubItems.length === 0 && appUserPreferences.sidebarItems[item.id] === false) {
-                            return; // Admin hid parent AND all children
-                        }
-
                         const details = document.createElement('details');
                         details.className = 'sidebar-option-item';
                         details.open = true;
@@ -311,7 +334,7 @@
                         summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
                         
                         const chevron = document.createElement('i');
-                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted';
+                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted'; // Use nested class
                         
                         const parentLabel = createCheckbox(item, false);
                         parentLabel.classList.add('flex-grow'); 
@@ -323,9 +346,10 @@
                         const subItemsContainer = document.createElement('div');
                         subItemsContainer.className = 'space-y-1';
                         
-                        // Only create toggles for the sub-items the admin left visible
-                        visibleSubItems.forEach(sub => {
-                            subItemsContainer.appendChild(createCheckbox(sub, true));
+                        item.subItems.forEach(sub => {
+                            if (globalPreferences.sidebarItems[sub.id] !== false) {
+                                subItemsContainer.appendChild(createCheckbox(sub, true));
+                            }
                         });
                         
                         details.appendChild(summary);
@@ -337,7 +361,6 @@
                     }
                 });
                 
-                // --- Event listener for all checkboxes ---
                 sidebarOptionsContainer.addEventListener('change', (e) => {
                     if (e.target.type !== 'checkbox') return;
                     
@@ -345,15 +368,14 @@
                     const itemId = checkbox.dataset.itemId;
                     const isChecked = checkbox.checked;
 
-                    // Update the *local* state first
-                    currentPreferences[itemId] = isChecked;
+                    userPreferences.sidebarItems[itemId] = isChecked;
 
                     if (checkbox.dataset.isParent) {
                         if (!isChecked) {
                             const children = sidebarOptionsContainer.querySelectorAll(`[data-parent-id="${itemId}"]`);
                             children.forEach(childCheckbox => {
                                 childCheckbox.checked = false;
-                                currentPreferences[childCheckbox.dataset.itemId] = false;
+                                userPreferences.sidebarItems[childCheckbox.dataset.itemId] = false;
                             });
                         }
                     }
@@ -363,29 +385,27 @@
                             const parentCheckbox = sidebarOptionsContainer.querySelector(`[data-item-id="${checkbox.dataset.parentId}"]`);
                             if (parentCheckbox && !parentCheckbox.checked) {
                                 parentCheckbox.checked = true;
-                                currentPreferences[parentCheckbox.dataset.itemId] = true;
+                                userPreferences.sidebarItems[parentCheckbox.dataset.itemId] = true;
                             }
                         }
                     }
-                    
-                    // Save the entire sidebar state
-                    debouncedSaveSidebarPreferences(currentPreferences);
+
+                    debouncedSavePreferences();
                 });
             }
 
 
             elements.themeToggle.addEventListener('change', () => {
-                const newTheme = elements.themeToggle.checked ? 'dark' : 'light';
-                applyTheme(newTheme);
-                savePreferences('theme', newTheme); 
+                userPreferences.theme = elements.themeToggle.checked ? 'dark' : 'light';
+                applyTheme(userPreferences.theme);
+                savePreferences('theme'); 
             });
             
+            // === NEW: Add listener for profile form ===
             elements.profileForm.addEventListener('submit', saveProfile);
 
-            // This is the initial call that starts the page logic
-            loadSettingsPage();
+            loadPreferencesForSettings();
         }
-        
         initializeAppCore(initSettingsPage);
     </script>
 </body>
