@@ -114,7 +114,6 @@
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
-        // --- THIS IS THE KEY CHANGE ---
         import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initSettingsPage(user, db) {
@@ -173,10 +172,8 @@
                     const mainUserDocSnap = await getDoc(userDocRef);
                     if (mainUserDocSnap.exists()) {
                         const userData = mainUserDocSnap.data();
-                        // Set display name or fall back to email prefix
                         elements.displayNameInput.value = userData.displayName || user.email.split('@')[0];
                     } else {
-                        // Fallback if user doc somehow doesn't exist
                         elements.displayNameInput.value = user.email.split('@')[0];
                     }
 
@@ -206,17 +203,15 @@
                 showProfileMessage("Saving profile...", false);
 
                 try {
-                    // --- THIS IS THE FIX ---
-                    // Use setDoc with merge:true. This will CREATE the document
-                    // if it's missing, or UPDATE it if it already exists.
                     await setDoc(userDocRef, {
                         displayName: newName
-                    }, { merge: true }); // <-- This is the new part
+                    }, { merge: true }); 
                     
                     showProfileMessage("Profile Saved!", false);
                     
-                    // Force a reload to fetch the new name into the app state
-                    setTimeout(() => location.reload(), 1000); 
+                    // --- THIS IS THE CHANGED LINE ---
+                    // Set a flag for the app to reload on the next tab switch
+                    sessionStorage.setItem('profileUpdated', 'true'); 
                     
                 } catch (error) {
                     console.error("Error saving profile:", error);
@@ -226,15 +221,18 @@
                 }
             }
             
+            // === MODIFIED FUNCTION ===
             function showProfileMessage(message, isError = false) {
                  elements.profileSaveStatus.textContent = message;
                  elements.profileSaveStatus.className = `text-sm h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
-                 // Remove the timeout so the "Profile Saved!" message stays
+                 
+                 // --- THIS LOGIC IS CHANGED ---
+                 // Only add a timeout for error messages
                  if (isError) {
                     setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
                  }
+                 // The "Profile Saved!" message will now stay
             }
-            // === END MODIFICATION ===
 
 
             async function savePreferences(type = 'all') {
