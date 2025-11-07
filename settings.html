@@ -253,7 +253,9 @@
                      try {
                         const app = await import('./app.js');
                         app.userPreferences.sidebarItems = finalMergedPrefs;
-                        app.userPreferences.theme = userPreferences.theme; // <-- THIS IS THE FIX
+                        // === THIS IS THE THEME FIX ===
+                        // It now correctly saves the user's specific theme choice to the global state
+                        app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
                         renderSidebar(); 
                      } catch(e) {
                          console.error("Could not update app.js state", e);
