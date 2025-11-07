@@ -150,10 +150,12 @@
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
             let userDocRef = doc(db, "users", currentUserId);
             
+            // This is the user's *current* preferences, loaded by app.js
             let currentPreferences = { ...appUserPreferences.sidebarItems }; // Clone preferences
             
             let debounceTimer = null;
 
+            // === This function is now simple and safe ===
             function loadSettingsPage() {
                 try {
                     elements.displayNameInput.value = userProfile.displayName;
@@ -162,7 +164,7 @@
                     populateSidebarOptions();
                 } catch (error) { 
                     console.error("Error loading data:", error); 
-                    elements.sidebarOptionsContainer.innerHTML = "<p class='text-red-500'>Error loading toggles.</p>";
+                    elements.sidebarOptionsContainer.innerHTML = "<p class='text-red-500 text-center'>Error loading toggles.</p>";
                 }
             }
             
@@ -229,7 +231,7 @@
                      
                      // Now, update the global state in app.js so it's instant
                      if (type === 'theme') {
-                         appUserPreferences.theme = value; // <-- THIS IS THE FIX
+                         appUserPreferences.theme = value;
                      } else if (type === 'sidebar') {
                          appUserPreferences.sidebarItems = value;
                      }
@@ -253,6 +255,7 @@
                     if (item.id === 'settings') return; 
 
                     // This is the admin panel logic you wanted:
+                    // If the admin hid this item, it will be 'false' here.
                     if (appUserPreferences.sidebarItems[item.id] === false) {
                         return; // Admin hid this, so don't show the toggle
                     }
@@ -289,9 +292,15 @@
                         return label;
                     };
 
+                    // Create dropdowns
                     if (item.subItems) {
+                        // Only show the parent dropdown if at least one child is visible
                         const visibleSubItems = item.subItems.filter(sub => appUserPreferences.sidebarItems[sub.id] !== false);
-                        if (visibleSubItems.length === 0 && appUserPreferences.sidebarItems[item.id] === false) return; // Hide parent if all children are hidden by admin
+                        
+                        // We also must check if the parent itself was hidden
+                        if (visibleSubItems.length === 0 && appUserPreferences.sidebarItems[item.id] === false) {
+                            return; // Admin hid parent AND all children
+                        }
 
                         const details = document.createElement('details');
                         details.className = 'sidebar-option-item';
@@ -313,6 +322,7 @@
                         const subItemsContainer = document.createElement('div');
                         subItemsContainer.className = 'space-y-1';
                         
+                        // Only create toggles for the sub-items the admin left visible
                         visibleSubItems.forEach(sub => {
                             subItemsContainer.appendChild(createCheckbox(sub, true));
                         });
@@ -334,6 +344,7 @@
                     const itemId = checkbox.dataset.itemId;
                     const isChecked = checkbox.checked;
 
+                    // Update the *local* state first
                     currentPreferences[itemId] = isChecked;
 
                     if (checkbox.dataset.isParent) {
@@ -356,6 +367,7 @@
                         }
                     }
                     
+                    // Save the entire sidebar state
                     debouncedSaveSidebarPreferences(currentPreferences);
                 });
             }
@@ -369,6 +381,7 @@
             
             elements.profileForm.addEventListener('submit', saveProfile);
 
+            // This is the initial call that starts the page logic
             loadSettingsPage();
         }
         
