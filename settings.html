@@ -114,6 +114,7 @@
 
     <script type="module" src="app.js"></script>
     <script type="module">
+        // === MODIFIED: Imported appUserPreferences from app.js ===
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems, userPreferences as appUserPreferences } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
@@ -132,9 +133,18 @@
                 profileSaveStatus: document.getElementById('profile-save-status')
             };
 
-            if (!elements.accountEmailSpan || !elements.themeToggle || !elements.sidebarOptionsContainer || !elements.saveStatus || !elements.profileForm) {
-                console.error("Critical settings elements missing!");
-                 const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; return;
+            // Check for missing elements
+            let missingElement = false;
+            for (const key in elements) {
+                if (!elements[key]) {
+                    console.error(`Critical settings element missing: ${key}`);
+                    missingElement = true;
+                }
+            }
+            if (missingElement) {
+                const main = document.querySelector('main'); 
+                if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; 
+                return;
             }
 
             let currentUserId = user.uid;
@@ -142,14 +152,8 @@
             let userDocRef = doc(db, "users", currentUserId);
             
             // This is the user's *current* preferences, loaded by app.js
-            let currentPreferences = appUserPreferences.sidebarItems;
+            let currentPreferences = { ...appUserPreferences.sidebarItems }; // Clone
             
-            let defaultSidebarItems = {};
-            allSidebarItems.forEach(item => {
-                defaultSidebarItems[item.id] = true; 
-                if(item.subItems) { item.subItems.forEach(sub => defaultSidebarItems[sub.id] = true); } 
-            });
-
             let debounceTimer = null;
 
             // === MODIFIED: This function is now much simpler ===
@@ -185,6 +189,7 @@
                     });
                     showProfileMessage("Profile Saved!", false);
                     
+                    // Update dashboard welcome message if user is on that page
                     const pageTitle = document.getElementById('page-title');
                     if (pageTitle && pageTitle.textContent === 'Finex') {
                         const memberNameEl = document.getElementById('member-name');
@@ -250,16 +255,15 @@
             function populateSidebarOptions() {
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
-                // Use the loaded and merged preferences from app.js
-                currentPreferences = appUserPreferences.sidebarItems;
-                
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return; 
 
-                    // This logic is now correct: if the item doesn't exist in the list
-                    // (meaning admin hid it), don't show the toggle.
-                    if (currentPreferences[item.id] === undefined) {
-                        return; 
+                    // This is the admin panel logic you wanted:
+                    // If the admin hid this item (by setting it to false in their panel),
+                    // it will NOT be in the userPreferences.sidebarItems object as 'true'.
+                    // We only show items that are 'true' in the final merged preferences.
+                    if (!appUserPreferences.sidebarItems[item.id]) {
+                        return; // Admin hid this, so don't show the toggle
                     }
                     
                     const createCheckbox = (itemData, isSubItem = false) => {
@@ -297,6 +301,10 @@
 
                     // Create dropdowns
                     if (item.subItems) {
+                        // Only show the parent dropdown if at least one child is visible
+                        const visibleSubItems = item.subItems.filter(sub => appUserPreferences.sidebarItems[sub.id]);
+                        if (visibleSubItems.length === 0) return; // Admin hid all sub-items
+
                         const details = document.createElement('details');
                         details.className = 'sidebar-option-item';
                         details.open = true;
@@ -317,10 +325,9 @@
                         const subItemsContainer = document.createElement('div');
                         subItemsContainer.className = 'space-y-1';
                         
-                        item.subItems.forEach(sub => {
-                            if (currentPreferences[sub.id] !== undefined) {
-                                subItemsContainer.appendChild(createCheckbox(sub, true));
-                            }
+                        // Only create toggles for the sub-items the admin left visible
+                        visibleSubItems.forEach(sub => {
+                            subItemsContainer.appendChild(createCheckbox(sub, true));
                         });
                         
                         details.appendChild(summary);
