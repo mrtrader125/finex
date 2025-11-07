@@ -69,6 +69,7 @@
                             </div>
                         </form>
                     </div>
+
                     <div class="glass-card p-6 md:p-8">
                         <h2 class="text-2xl font-bold mb-6 border-b border-color-base pb-3">Appearance</h2>
                         <div class="flex items-center justify-between">
@@ -114,13 +115,12 @@
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
-        // === MODIFIED: Added updateDoc ===
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        function initSettingsPage(user, db) {
+        // === MODIFIED: Function signature now correctly accepts userProfile ===
+        function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
-            // === MODIFIED: Added new elements ===
             const elements = {
                 accountEmailSpan: document.getElementById('account-email'),
                 themeToggle: document.getElementById('theme-toggle'),
@@ -131,7 +131,6 @@
                 saveProfileBtn: document.getElementById('save-profile-btn'),
                 profileSaveStatus: document.getElementById('profile-save-status')
             };
-            // === END MODIFICATION ===
 
             if (!elements.accountEmailSpan || !elements.themeToggle || !elements.sidebarOptionsContainer || !elements.saveStatus || !elements.profileForm) {
                 console.error("Critical settings elements missing!");
@@ -140,7 +139,6 @@
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
-            // === NEW: Add ref to main user doc ===
             let userDocRef = doc(db, "users", currentUserId);
             
             let globalPreferences = { theme: 'dark', sidebarItems: {} };
@@ -154,7 +152,7 @@
 
             let debounceTimer = null;
 
-            // === MODIFIED: This function now also loads the user's profile ===
+            // === MODIFIED: This function now uses the pre-fetched userProfile ===
             async function loadPreferencesForSettings() {
                 try {
                     // --- Load Preferences ---
@@ -173,29 +171,22 @@
                         userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
                     }
                     
-                    // --- Load Profile ---
-                    const mainUserDocSnap = await getDoc(userDocRef);
-                    if (mainUserDocSnap.exists()) {
-                        const userData = mainUserDocSnap.data();
-                        // Set display name or fall back to email prefix
-                        elements.displayNameInput.value = userData.displayName || user.email.split('@')[0];
-                    } else {
-                        // Fallback if user doc somehow doesn't exist
-                        elements.displayNameInput.value = user.email.split('@')[0];
-                    }
+                    // --- Load Profile (No more fetching, just use userProfile) ---
+                    elements.displayNameInput.value = userProfile.displayName;
 
                 } catch (error) { console.error("Error loading data:", error); }
                 
-                elements.accountEmailSpan.textContent = user.email;
+                // Use userProfile for email
+                elements.accountEmailSpan.textContent = userProfile.email;
                 
                 const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
                 elements.themeToggle.checked = (finalTheme === 'dark');
                 
+                // This will now be called correctly
                 populateSidebarOptions();
             }
             // === END MODIFICATION ===
             
-            // === NEW: Function to save profile changes ===
             async function saveProfile(e) {
                 e.preventDefault();
                 if (!userDocRef) return;
@@ -215,6 +206,15 @@
                         displayName: newName
                     });
                     showProfileMessage("Profile Saved!", false);
+                    // --- NEW: Update the dashboard title in real-time ---
+                    // This is a small bonus. If on dashboard, update welcome.
+                    const pageTitle = document.getElementById('page-title');
+                    if (pageTitle && pageTitle.textContent === 'Finex') {
+                        const memberNameEl = document.getElementById('member-name');
+                        if (memberNameEl) {
+                             memberNameEl.textContent = newName.charAt(0).toUpperCase() + newName.slice(1);
+                        }
+                    }
                 } catch (error) {
                     console.error("Error saving profile:", error);
                     showProfileMessage("Error saving profile.", true);
@@ -229,8 +229,6 @@
                  elements.profileSaveStatus.className = `text-sm h-4 ${isError ? 'text-red-400' : 'text-green-400'}`;
                  setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
             }
-            // === END NEW FUNCTIONS ===
-
 
             async function savePreferences(type = 'all') {
                 if (!settingsDocRef) return; 
@@ -258,6 +256,7 @@
                      });
                      
                      try {
+                        // This import is how we update the main app's state
                         const app = await import('./app.js');
                         app.userPreferences.sidebarItems = finalMergedPrefs;
                         app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
@@ -306,7 +305,7 @@
                         }
 
                         const icon = document.createElement('i');
-                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`; // w-4 for alignment
+                        icon.className = `fas ${itemData.icon} fa-fw text-color-muted w-4 text-center`;
                         
                         const text = document.createElement('span');
                         text.className = 'text-color-base'; 
@@ -327,7 +326,7 @@
                         summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
                         
                         const chevron = document.createElement('i');
-                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted'; // Use nested class
+                        chevron.className = 'fas fa-chevron-right chevron-icon-nested text-color-muted';
                         
                         const parentLabel = createCheckbox(item, false);
                         parentLabel.classList.add('flex-grow'); 
@@ -394,7 +393,6 @@
                 savePreferences('theme'); 
             });
             
-            // === NEW: Add listener for profile form ===
             elements.profileForm.addEventListener('submit', saveProfile);
 
             loadPreferencesForSettings();
