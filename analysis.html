@@ -26,39 +26,7 @@
         details[open] > summary .chevron-icon { transform: rotate(180deg); }
         summary .chevron-icon { transition: transform 0.2s ease-in-out; }
 
-        /* === CUSTOM DROPDOWN STYLES === */
-        .custom-select-wrapper { 
-            position: relative; 
-        }
-        .custom-select-trigger {
-            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-            padding: 0.75rem; border-radius: 0.5rem; width: 100%;
-            background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1f2937;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-        html.dark .custom-select-trigger {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f6f9;
-        }
-        .custom-select-trigger .fa-chevron-down {
-            color: #4b5563; font-size: 0.75rem; transition: transform 0.2s ease-in-out; margin-left: 0.5rem;
-        }
-        html.dark .custom-select-trigger .fa-chevron-down { color: #a9a9b3; }
-        .custom-select-wrapper.open .custom-select-trigger .fa-chevron-down { transform: rotate(180deg); }
-        .custom-select-options {
-            position: absolute; z-index: 50; width: 100%;
-            background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
-            overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            display: none;
-        }
-        html.dark .custom-select-options { background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1); }
-        .custom-select-wrapper.open .custom-select-options { display: block; }
-        .custom-option { padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937; }
-        html.dark .custom-option { color: #f4f6f9; }
-        .custom-option:hover { background-color: #dbeafe; }
-        html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
-        .custom-option.selected { background-color: #dbeafe; font-weight: 600; }
-        html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
+        /* === DUPLICATE STYLES REMOVED FROM HERE === */
     </style>
 </head>
 <body class="antialiased textured-background">
@@ -136,7 +104,7 @@
                     <h2 id="modal-title" class="text-2xl font-bold text-color-base mb-2"></h2>
                     <div id="modal-meta" class="text-sm text-color-muted mb-4"></div>
                     <div id="modal-tags" class="flex flex-wrap gap-2 mb-6"></div>
-                    <div class="prose prose-sm dark:prose-invert"><p id="modal-description" class="text-color-muted leading-relaxed"></p></div>
+                    <div class="prose prose-sm dark:prose-invert"><p id="modal-description" class="text-color-muted leading-relaxed whitespace-pre-wrap"></p></div>
                 </div>
             </div>
         </div>
@@ -335,7 +303,7 @@
                  elements.modalImage.src = item.imageUrl || placeholderImage(1200, 800, 'Analysis');
                  elements.modalImage.alt = item.title || 'Analysis Image';
                  elements.modalTitle.textContent = item.title || 'Untitled Analysis';
-                 elements.modalDescription.innerHTML = item.description ? item.description.replace(/\n/g, '<br>') : 'No description provided.';
+                 elements.modalDescription.textContent = item.description ? item.description : 'No description provided.';
                  
                  const formattedDate = item.createdAt?.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || '';
                  const analystDisplay = item.isUserPost && item.userId === currentUserId ? 'You' : (item.analyst || 'Finex Team'); 
