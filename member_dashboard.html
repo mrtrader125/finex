@@ -1,7 +1,20 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // --- THIS SCRIPT PREVENTS THEME FLICKER ---
+        try {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {
+            document.documentElement.classList.add('dark'); // Default to dark
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Dashboard | Finex - Financial Clarity</title>
     
@@ -29,7 +42,6 @@
     </script>
 
     <style>
-        /* CSS Snippets from Original Code */
         .strength-bar-bg {
             @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800;
         }
@@ -83,13 +95,13 @@
 
     <div id="app-wrapper" style="display: none;">
     
-        <div id="header-placeholder"></div>
+        <header id="header-placeholder"></header>
         
         <div id="sidebar-placeholder"></div>
 
         <main class="pt-[68px]">
             
-            <section class="container mx-auto min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+            <section class="container mx-auto min-h-screen flex flex-col items-center justify-center text-center p-4 relative">
                 <div class="max-w-3xl">
                     <h1 class="text-4xl md:text-6xl font-bold text-color-base">Welcome back, <span id="member-name">Member</span>.</h1>
                     <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">Your journey to financial clarity continues. What will you master today?</p>
@@ -215,18 +227,22 @@
 
         const rssFeedCache = new Map();
 
+        // === MODIFIED: Function now accepts userProfile ===
         function initDashboardPage(user, db, userProfile) {
             console.log("Setting up Dashboard specific logic...");
             
+            // === MODIFIED: Use the new userProfile object ===
             const memberNameEl = document.getElementById('member-name');
             if (memberNameEl && userProfile && userProfile.displayName) {
+                // Capitalize the first letter of the name
                 const name = userProfile.displayName;
                 memberNameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
             }
+            // === END MODIFICATION ===
 
             loadLatestArticles(db);
             loadLatestAnalysis(db);
-            loadLiveNewsTabs();  
+            loadLiveNewsTabs(); 
             loadLiveCurrencyRates();
         }
 
@@ -235,7 +251,7 @@
             if (!container) return;
             const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
             onSnapshot(q, (snapshot) => {
-                container.innerHTML = '';  
+                container.innerHTML = ''; 
                 if (snapshot.empty) {
                     container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
                     return;
@@ -261,7 +277,7 @@
             if (!container) return;
             const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
             onSnapshot(q, (snapshot) => {
-                container.innerHTML = '';  
+                container.innerHTML = ''; 
                 if (snapshot.empty) {
                     container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
                     return;
@@ -327,7 +343,7 @@
 
         function renderRSSFeed(items, sourceName, container) {
             if (!container) return;
-            container.innerHTML = '';  
+            container.innerHTML = ''; 
 
             if (!items || items.length === 0) {
                 container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
@@ -459,8 +475,8 @@
                     const change = ((currentRate - oldRate) / oldRate) * 100;
 
                     const changeStyle = change > 0.01 ? { class: 'change-green', icon: '▲' } :
-                                         change < -0.01 ? { class: 'change-red', icon: '▼' } :
-                                         { class: 'change-gray', icon: '■' };
+                                        change < -0.01 ? { class: 'change-red', icon: '▼' } :
+                                        { class: 'change-gray', icon: '■' };
                     
                     let rateString;
                     if (currency === "JPY") {
