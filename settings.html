@@ -114,10 +114,10 @@
 
     <script type="module" src="app.js"></script>
     <script type="module">
-        import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
+        import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems, userPreferences as appUserPreferences } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === THIS IS THE FIX: The function signature is now correct ===
+        // === MODIFIED: The function signature is now correct ===
         function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
@@ -141,8 +141,8 @@
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
             let userDocRef = doc(db, "users", currentUserId);
             
-            let globalPreferences = { theme: 'dark', sidebarItems: {} };
-            let userPreferences = { theme: 'dark', sidebarItems: {} };   
+            // This is the user's *current* preferences, loaded by app.js
+            let currentPreferences = appUserPreferences.sidebarItems;
             
             let defaultSidebarItems = {};
             allSidebarItems.forEach(item => {
@@ -152,35 +152,17 @@
 
             let debounceTimer = null;
 
-            async function loadPreferencesForSettings() {
+            // === MODIFIED: This function is now much simpler ===
+            function loadSettingsPage() {
                 try {
-                    // --- Load Preferences ---
-                    const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
-                    const [globalDocSnap, userDocSnap] = await Promise.all([
-                        getDoc(globalSettingsRef),
-                        getDoc(settingsDocRef)
-                    ]);
-                    
-                    if (globalDocSnap.exists()) {
-                        globalPreferences = { ...globalPreferences, ...globalDocSnap.data() };
-                    }
-                    if (userDocSnap.exists()) {
-                        const loadedPrefs = userDocSnap.data();
-                        userPreferences.theme = loadedPrefs.theme; 
-                        userPreferences.sidebarItems = loadedPrefs.sidebarItems || {};
-                    }
-                    
-                    // --- Load Profile (using the passed-in userProfile) ---
                     elements.displayNameInput.value = userProfile.displayName;
-
-                } catch (error) { console.error("Error loading data:", error); }
-                
-                elements.accountEmailSpan.textContent = userProfile.email;
-                
-                const finalTheme = userPreferences.theme || globalPreferences.theme || 'dark';
-                elements.themeToggle.checked = (finalTheme === 'dark');
-                
-                populateSidebarOptions();
+                    elements.accountEmailSpan.textContent = userProfile.email;
+                    elements.themeToggle.checked = (appUserPreferences.theme === 'dark');
+                    populateSidebarOptions();
+                } catch (error) { 
+                    console.error("Error loading data:", error); 
+                    elements.sidebarOptionsContainer.innerHTML = "<p class='text-red-500'>Error loading toggles.</p>";
+                }
             }
             
             async function saveProfile(e) {
@@ -225,64 +207,64 @@
                  setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
             }
 
-            async function savePreferences(type = 'all') {
+            // === MODIFIED: This function now saves to the correct doc ===
+            async function savePreferences(type, value) {
                 if (!settingsDocRef) return; 
                 saveStatus.textContent = 'Saving...';
                 
-                const dataToSave = {
-                    theme: userPreferences.theme, 
-                    sidebarItems: userPreferences.sidebarItems, 
+                let dataToSave = {
                     lastUpdated: serverTimestamp()
                 };
 
+                if (type === 'theme') {
+                    dataToSave.theme = value;
+                } else if (type === 'sidebar') {
+                    dataToSave.sidebarItems = value;
+                }
+
                  try { 
-                     await setDoc(settingsDocRef, dataToSave, { merge: true });
+                     await setDoc(settingsDocRef, dataToSave, { merge: true }); // Use merge: true
                      saveStatus.textContent = 'Preferences Saved.'; 
                      setTimeout(() => saveStatus.textContent = '', 2000);
                      
-                     let finalMergedPrefs = {};
-                     Object.keys(defaultSidebarItems).forEach(key => {
-                        const globalVal = globalPreferences.sidebarItems[key];
-                        const userVal = userPreferences.sidebarItems[key];
-                        if (globalVal === false) { finalMergedPrefs[key] = false; }
-                        else if (userVal !== undefined) { finalMergedPrefs[key] = userVal; }
-                        else if (globalVal !== undefined) { finalMergedPrefs[key] = globalVal; }
-                        else { finalMergedPrefs[key] = true; }
-                     });
-                     
-                     try {
-                        const app = await import('./app.js');
-                        app.userPreferences.sidebarItems = finalMergedPrefs;
-                        // === THIS IS THE THEME FIX ===
-                        // It now correctly saves the user's specific theme choice to the global state
-                        app.userPreferences.theme = userPreferences.theme || globalPreferences.theme || 'dark';
-                        renderSidebar(); 
-                     } catch(e) {
-                         console.error("Could not update app.js state", e);
-                         renderSidebar();
+                     // Now, update the global state in app.js so it's instant
+                     if (type === 'theme') {
+                         appUserPreferences.theme = value;
+                     } else if (type === 'sidebar') {
+                         appUserPreferences.sidebarItems = value;
                      }
+                     renderSidebar(); // Re-render the sidebar with new state
 
                  } catch (error) { 
                      console.error("Error saving preferences:", error); 
                      saveStatus.textContent = 'Error Saving.'; 
                  }
             }
-            function debouncedSavePreferences() { clearTimeout(debounceTimer); saveStatus.textContent = 'Saving...'; debounceTimer = setTimeout(() => savePreferences('sidebar'), 1000); }
+            function debouncedSaveSidebarPreferences(sidebarState) { 
+                clearTimeout(debounceTimer); 
+                saveStatus.textContent = 'Saving...'; 
+                debounceTimer = setTimeout(() => savePreferences('sidebar', sidebarState), 1000); 
+            }
 
+            // === MODIFIED: This function now reads from the app.js state ===
             function populateSidebarOptions() {
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
+                
+                // Use the loaded and merged preferences from app.js
+                currentPreferences = appUserPreferences.sidebarItems;
                 
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return; 
 
-                    if (globalPreferences.sidebarItems[item.id] === false) {
-                        return; // Admin hid this, so don't show the toggle
+                    // This logic is now correct: if the item doesn't exist in the list
+                    // (meaning admin hid it), don't show the toggle.
+                    if (currentPreferences[item.id] === undefined) {
+                        return; 
                     }
                     
                     const createCheckbox = (itemData, isSubItem = false) => {
-                        const userValue = userPreferences.sidebarItems[itemData.id];
-                        const globalValue = globalPreferences.sidebarItems[itemData.id];
-                        const isChecked = (userValue !== undefined) ? userValue : (globalValue !== undefined ? globalValue : true);
+                        // The 'checked' state is simple: just read from currentPreferences
+                        const isChecked = currentPreferences[itemData.id];
 
                         const label = document.createElement('label');
                         label.className = `flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label ${isSubItem ? 'pl-10' : ''}`;
@@ -313,6 +295,7 @@
                         return label;
                     };
 
+                    // Create dropdowns
                     if (item.subItems) {
                         const details = document.createElement('details');
                         details.className = 'sidebar-option-item';
@@ -335,7 +318,7 @@
                         subItemsContainer.className = 'space-y-1';
                         
                         item.subItems.forEach(sub => {
-                            if (globalPreferences.sidebarItems[sub.id] !== false) {
+                            if (currentPreferences[sub.id] !== undefined) {
                                 subItemsContainer.appendChild(createCheckbox(sub, true));
                             }
                         });
@@ -349,6 +332,7 @@
                     }
                 });
                 
+                // --- Event listener for all checkboxes ---
                 sidebarOptionsContainer.addEventListener('change', (e) => {
                     if (e.target.type !== 'checkbox') return;
                     
@@ -356,14 +340,15 @@
                     const itemId = checkbox.dataset.itemId;
                     const isChecked = checkbox.checked;
 
-                    userPreferences.sidebarItems[itemId] = isChecked;
+                    // Update the *local* state first
+                    currentPreferences[itemId] = isChecked;
 
                     if (checkbox.dataset.isParent) {
                         if (!isChecked) {
                             const children = sidebarOptionsContainer.querySelectorAll(`[data-parent-id="${itemId}"]`);
                             children.forEach(childCheckbox => {
                                 childCheckbox.checked = false;
-                                userPreferences.sidebarItems[childCheckbox.dataset.itemId] = false;
+                                currentPreferences[childCheckbox.dataset.itemId] = false;
                             });
                         }
                     }
@@ -373,26 +358,30 @@
                             const parentCheckbox = sidebarOptionsContainer.querySelector(`[data-item-id="${checkbox.dataset.parentId}"]`);
                             if (parentCheckbox && !parentCheckbox.checked) {
                                 parentCheckbox.checked = true;
-                                userPreferences.sidebarItems[parentCheckbox.dataset.itemId] = true;
+                                currentPreferences[parentCheckbox.dataset.itemId] = true;
                             }
                         }
                     }
-
-                    debouncedSavePreferences();
+                    
+                    // Save the entire sidebar state
+                    debouncedSaveSidebarPreferences(currentPreferences);
                 });
             }
 
 
             elements.themeToggle.addEventListener('change', () => {
-                userPreferences.theme = elements.themeToggle.checked ? 'dark' : 'light';
-                applyTheme(userPreferences.theme);
-                savePreferences('theme'); 
+                const newTheme = elements.themeToggle.checked ? 'dark' : 'light';
+                applyTheme(newTheme);
+                savePreferences('theme', newTheme); 
             });
             
             elements.profileForm.addEventListener('submit', saveProfile);
 
-            loadPreferencesForSettings();
+            // This is the initial call that starts the page logic
+            loadSettingsPage();
         }
+        
+        // This is the line that was breaking. It's now correct.
         initializeAppCore(initSettingsPage);
     </script>
 </body>
