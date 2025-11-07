@@ -114,13 +114,12 @@
     <script type="module" src="app.js"></script>
     <script type="module">
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
-        // === MODIFIED: Added updateDoc ===
-        import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // --- THIS IS THE KEY CHANGE ---
+        import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
         function initSettingsPage(user, db) {
             console.log("Setting up Settings page specific logic...");
             
-            // === MODIFIED: Added new elements ===
             const elements = {
                 accountEmailSpan: document.getElementById('account-email'),
                 themeToggle: document.getElementById('theme-toggle'),
@@ -131,7 +130,6 @@
                 saveProfileBtn: document.getElementById('save-profile-btn'),
                 profileSaveStatus: document.getElementById('profile-save-status')
             };
-            // === END MODIFICATION ===
 
             if (!elements.accountEmailSpan || !elements.themeToggle || !elements.sidebarOptionsContainer || !elements.saveStatus || !elements.profileForm) {
                 console.error("Critical settings elements missing!");
@@ -140,7 +138,6 @@
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
-            // === NEW: Add ref to main user doc ===
             let userDocRef = doc(db, "users", currentUserId);
             
             let globalPreferences = { theme: 'dark', sidebarItems: {} };
@@ -154,7 +151,6 @@
 
             let debounceTimer = null;
 
-            // === MODIFIED: This function now also loads the user's profile ===
             async function loadPreferencesForSettings() {
                 try {
                     // --- Load Preferences ---
@@ -193,9 +189,8 @@
                 
                 populateSidebarOptions();
             }
-            // === END MODIFICATION ===
             
-            // === NEW: Function to save profile changes ===
+            // === MODIFIED FUNCTION ===
             async function saveProfile(e) {
                 e.preventDefault();
                 if (!userDocRef) return;
@@ -211,12 +206,15 @@
                 showProfileMessage("Saving profile...", false);
 
                 try {
-                    await updateDoc(userDocRef, {
+                    // --- THIS IS THE FIX ---
+                    // Use setDoc with merge:true. This will CREATE the document
+                    // if it's missing, or UPDATE it if it already exists.
+                    await setDoc(userDocRef, {
                         displayName: newName
-                    });
+                    }, { merge: true }); // <-- This is the new part
+                    
                     showProfileMessage("Profile Saved!", false);
                     
-                    // --- THIS IS THE NEW LINE ---
                     // Force a reload to fetch the new name into the app state
                     setTimeout(() => location.reload(), 1000); 
                     
@@ -236,7 +234,7 @@
                     setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
                  }
             }
-            // === END NEW FUNCTIONS ===
+            // === END MODIFICATION ===
 
 
             async function savePreferences(type = 'all') {
@@ -401,7 +399,6 @@
                 savePreferences('theme'); 
             });
             
-            // === NEW: Add listener for profile form ===
             elements.profileForm.addEventListener('submit', saveProfile);
 
             loadPreferencesForSettings();
