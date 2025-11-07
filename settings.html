@@ -117,7 +117,7 @@
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === BUG FIX: The function signature is now correct ===
+        // === THIS IS THE FIX: The function signature is now correct ===
         function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
