@@ -114,11 +114,10 @@
 
     <script type="module" src="app.js"></script>
     <script type="module">
-        // === MODIFIED: Imported appUserPreferences from app.js ===
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems, userPreferences as appUserPreferences } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // === MODIFIED: The function signature is now correct ===
+        // === This function signature is correct ===
         function initSettingsPage(user, db, userProfile) {
             console.log("Setting up Settings page specific logic...");
             
@@ -151,12 +150,10 @@
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
             let userDocRef = doc(db, "users", currentUserId);
             
-            // This is the user's *current* preferences, loaded by app.js
-            let currentPreferences = { ...appUserPreferences.sidebarItems }; // Clone
+            let currentPreferences = { ...appUserPreferences.sidebarItems }; // Clone preferences
             
             let debounceTimer = null;
 
-            // === MODIFIED: This function is now much simpler ===
             function loadSettingsPage() {
                 try {
                     elements.displayNameInput.value = userProfile.displayName;
@@ -189,7 +186,6 @@
                     });
                     showProfileMessage("Profile Saved!", false);
                     
-                    // Update dashboard welcome message if user is on that page
                     const pageTitle = document.getElementById('page-title');
                     if (pageTitle && pageTitle.textContent === 'Finex') {
                         const memberNameEl = document.getElementById('member-name');
@@ -212,7 +208,6 @@
                  setTimeout(() => { elements.profileSaveStatus.textContent = ''; }, 3000);
             }
 
-            // === MODIFIED: This function now saves to the correct doc ===
             async function savePreferences(type, value) {
                 if (!settingsDocRef) return; 
                 saveStatus.textContent = 'Saving...';
@@ -228,13 +223,13 @@
                 }
 
                  try { 
-                     await setDoc(settingsDocRef, dataToSave, { merge: true }); // Use merge: true
+                     await setDoc(settingsDocRef, dataToSave, { merge: true }); 
                      saveStatus.textContent = 'Preferences Saved.'; 
                      setTimeout(() => saveStatus.textContent = '', 2000);
                      
                      // Now, update the global state in app.js so it's instant
                      if (type === 'theme') {
-                         appUserPreferences.theme = value;
+                         appUserPreferences.theme = value; // <-- THIS IS THE FIX
                      } else if (type === 'sidebar') {
                          appUserPreferences.sidebarItems = value;
                      }
@@ -251,7 +246,6 @@
                 debounceTimer = setTimeout(() => savePreferences('sidebar', sidebarState), 1000); 
             }
 
-            // === MODIFIED: This function now reads from the app.js state ===
             function populateSidebarOptions() {
                 sidebarOptionsContainer.innerHTML = ''; // Clear loading message
                 
@@ -259,15 +253,11 @@
                     if (item.id === 'settings') return; 
 
                     // This is the admin panel logic you wanted:
-                    // If the admin hid this item (by setting it to false in their panel),
-                    // it will NOT be in the userPreferences.sidebarItems object as 'true'.
-                    // We only show items that are 'true' in the final merged preferences.
-                    if (!appUserPreferences.sidebarItems[item.id]) {
+                    if (appUserPreferences.sidebarItems[item.id] === false) {
                         return; // Admin hid this, so don't show the toggle
                     }
                     
                     const createCheckbox = (itemData, isSubItem = false) => {
-                        // The 'checked' state is simple: just read from currentPreferences
                         const isChecked = currentPreferences[itemData.id];
 
                         const label = document.createElement('label');
@@ -299,11 +289,9 @@
                         return label;
                     };
 
-                    // Create dropdowns
                     if (item.subItems) {
-                        // Only show the parent dropdown if at least one child is visible
-                        const visibleSubItems = item.subItems.filter(sub => appUserPreferences.sidebarItems[sub.id]);
-                        if (visibleSubItems.length === 0) return; // Admin hid all sub-items
+                        const visibleSubItems = item.subItems.filter(sub => appUserPreferences.sidebarItems[sub.id] !== false);
+                        if (visibleSubItems.length === 0 && appUserPreferences.sidebarItems[item.id] === false) return; // Hide parent if all children are hidden by admin
 
                         const details = document.createElement('details');
                         details.className = 'sidebar-option-item';
@@ -325,7 +313,6 @@
                         const subItemsContainer = document.createElement('div');
                         subItemsContainer.className = 'space-y-1';
                         
-                        // Only create toggles for the sub-items the admin left visible
                         visibleSubItems.forEach(sub => {
                             subItemsContainer.appendChild(createCheckbox(sub, true));
                         });
@@ -347,7 +334,6 @@
                     const itemId = checkbox.dataset.itemId;
                     const isChecked = checkbox.checked;
 
-                    // Update the *local* state first
                     currentPreferences[itemId] = isChecked;
 
                     if (checkbox.dataset.isParent) {
@@ -370,7 +356,6 @@
                         }
                     }
                     
-                    // Save the entire sidebar state
                     debouncedSaveSidebarPreferences(currentPreferences);
                 });
             }
@@ -384,11 +369,9 @@
             
             elements.profileForm.addEventListener('submit', saveProfile);
 
-            // This is the initial call that starts the page logic
             loadSettingsPage();
         }
         
-        // This is the line that was breaking. It's now correct.
         initializeAppCore(initSettingsPage);
     </script>
 </body>
