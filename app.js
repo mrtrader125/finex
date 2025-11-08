@@ -170,8 +170,6 @@ async function loadPreferences(settingsDocRef) {
         let userPrefs = userDocSnap.exists() ? { ...{ theme: null, sidebarItems: {} }, ...userDocSnap.data() } : { theme: null, sidebarItems: {} };
 
         // Priority: LocalStorage (for speed) -> User DB -> Global DB -> Default
-        // We prefer LocalStorage for theme to avoid FOUC, but DB for sidebar to retain across devices if changed.
-        // Actually, let's trust DB for theme IF it exists, otherwise fallback to local.
         userPreferences.theme = userPrefs.theme || localStorage.getItem('finex_theme') || globalPrefs.theme || 'dark';
 
         const finalSidebar = {};
