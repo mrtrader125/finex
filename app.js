@@ -29,7 +29,7 @@ export function getWeekDateRange(date) {
     return { startDate: mondayUTC, endDate: sundayUTC, startString: startString, endString: endString };
 }
 
-// --- Available Sidebar Items (UPDATED STRUCTURE) ---
+// --- Available Sidebar Items ---
 export const allSidebarItems = [
     { id: 'dashboard', href: 'member_dashboard.html', icon: 'fa-tachometer-alt', text: 'Dashboard' },
     { id: 'portfolio', href: 'portfolio.html', icon: 'fa-wallet', text: 'Portfolio' },
@@ -52,12 +52,27 @@ export const allSidebarItems = [
         ]
     },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
-    { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' },
+    // { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' }, // Commented out until page is ready
     { id: 'snake', href: 'snake_game.html', icon: 'fa-gamepad', text: 'Snake Game' },
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-export let userPreferences = { theme: 'dark', sidebarItems: {} };
+// Initialize preferences, trying LocalStorage first for speed
+export let userPreferences = { 
+    theme: localStorage.getItem('finex_theme') || 'dark', 
+    sidebarItems: {} 
+};
+
+// Apply theme immediately on module load to minimize FOUC (Flash of Unstyled Content)
+// This works because 'app.js' is imported as a module in the <head> or early <body>
+if (typeof window !== 'undefined') {
+    const savedTheme = localStorage.getItem('finex_theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+    }
+}
 
 function getDefaultSidebarVisibility() {
     const visibility = {};
@@ -70,21 +85,15 @@ function getDefaultSidebarVisibility() {
     return visibility;
 }
 
-
-// --- Main App Initialization --- (MODIFIED)
+// --- Main App Initialization ---
 export async function initializeAppCore(pageSpecificInit) {
-    
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            // 1. Apply theme immediately from local preference if available
+            applyTheme(userPreferences.theme);
 
-            if (sessionStorage.getItem('profileUpdated') === 'true') {
-                sessionStorage.removeItem('profileUpdated');
-                location.reload(true); 
-                return; 
-            }
-            
             const userDocRef = doc(db, 'users', user.uid);
-            let userProfile = { email: user.email, displayName: user.email.split('@')[0] }; 
+            let userProfile = { email: user.email, displayName: user.email.split('@')[0] };
             try {
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists()) {
@@ -93,9 +102,9 @@ export async function initializeAppCore(pageSpecificInit) {
             } catch (e) {
                 console.error("Error fetching user profile:", e);
             }
-            
+
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                pageSpecificInit(user, db, userProfile); 
+                pageSpecificInit(user, db, userProfile);
             }
 
             const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
@@ -106,13 +115,13 @@ export async function initializeAppCore(pageSpecificInit) {
                     loadPreferences(settingsDocRef) 
                 ]);
 
-                // This function now also saves to localStorage
+                // Re-apply theme after fetching from DB (in case DB has a newer/different setting)
                 applyTheme(userPreferences.theme);
-                renderSidebar(); 
-                
+                renderSidebar();
                 attachCoreEventListeners();
+                
                 const userEmailSpan = document.getElementById('user-email');
-                if (userEmailSpan) userEmailSpan.textContent = userProfile.email; 
+                if (userEmailSpan) userEmailSpan.textContent = userProfile.email;
 
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) appLoader.style.display = 'none';
@@ -132,106 +141,79 @@ export async function initializeAppCore(pageSpecificInit) {
     });
 }
 
-// --- HTML Component Loader ---
 async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
+    // Only fetch if the placeholders exist on this page
+    if (!headerPlaceholder && !sidebarPlaceholder) return;
+
     try {
         const [headerRes, sidebarRes] = await Promise.all([ fetch('_header.html'), fetch('_sidebar.html') ]);
-        if (!headerRes.ok) throw new Error(`Failed to load _header.html: ${headerRes.statusText}`);
-        if (!sidebarRes.ok) throw new Error(`Failed to load _sidebar.html: ${sidebarRes.statusText}`);
+        if (!headerRes.ok) throw new Error(`Failed to load _header.html`);
+        if (!sidebarRes.ok) throw new Error(`Failed to load _sidebar.html`);
         if (headerPlaceholder) headerPlaceholder.innerHTML = await headerRes.text();
         if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = await sidebarRes.text();
-    } catch (error) { console.error("Error loading common components:", error); /* ... error display ... */ }
+    } catch (error) { console.error("Error loading common components:", error); }
  }
 
-// --- Preference Management ---
 async function loadPreferences(settingsDocRef) {
     try {
         let defaultItems = getDefaultSidebarVisibility();
-        
         const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
-        const globalDocSnap = await getDoc(globalSettingsRef);
-        let globalPrefs = { theme: 'dark', sidebarItems: {} };
-        if (globalDocSnap.exists()) {
-            globalPrefs = { ...globalPrefs, ...globalDocSnap.data() };
-        }
+        const [globalDocSnap, userDocSnap] = await Promise.all([
+            getDoc(globalSettingsRef),
+            getDoc(settingsDocRef)
+        ]);
 
-        const userDocSnap = await getDoc(settingsDocRef);
-        let userPrefs = { theme: null, sidebarItems: {} };
-         if (userDocSnap.exists()) {
-            userPrefs = { ...userPrefs, ...userDocSnap.data() };
-        }
+        let globalPrefs = globalDocSnap.exists() ? { ...{ theme: 'dark', sidebarItems: {} }, ...globalDocSnap.data() } : { theme: 'dark', sidebarItems: {} };
+        let userPrefs = userDocSnap.exists() ? { ...{ theme: null, sidebarItems: {} }, ...userDocSnap.data() } : { theme: null, sidebarItems: {} };
 
-        // Firestore theme (or default) is the source of truth on initial load
-        userPreferences.theme = userPrefs.theme || globalPrefs.theme || 'dark';
+        // Priority: User DB > LocalStorage > Global DB > Default 'dark'
+        userPreferences.theme = userPrefs.theme || localStorage.getItem('finex_theme') || globalPrefs.theme || 'dark';
 
         const finalSidebar = {};
         Object.keys(defaultItems).forEach(key => {
             const globalVal = globalPrefs.sidebarItems[key];
             const userVal = userPrefs.sidebarItems[key];
-
-            if (globalVal === false) {
-                finalSidebar[key] = false;
-            }
-            else if (userVal !== undefined) {
-                finalSidebar[key] = userVal;
-            }
-            else if (globalVal !== undefined) {
-                finalSidebar[key] = globalVal;
-            }
-            else {
-                finalSidebar[key] = true;
-            }
+            if (globalVal === false) finalSidebar[key] = false;
+            else if (userVal !== undefined) finalSidebar[key] = userVal;
+            else if (globalVal !== undefined) finalSidebar[key] = globalVal;
+            else finalSidebar[key] = true;
         });
         userPreferences.sidebarItems = finalSidebar;
-
      } catch (error) { 
          console.error("Error loading preferences:", error);
-         userPreferences = { theme: 'dark', sidebarItems: getDefaultSidebarVisibility() }; 
+         // Fallback to local storage or default if DB fails
+         userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
+         userPreferences.sidebarItems = getDefaultSidebarVisibility(); 
      }
 }
 
-// --- MODIFIED FUNCTION ---
+// --- Theme Application (Enhanced) ---
 export function applyTheme(theme) {
-    // 1. Apply the theme to the <html> tag
-    if (theme === 'light') { 
-        document.documentElement.classList.remove('dark'); 
-    } else { 
-        document.documentElement.classList.add('dark'); 
-    }
-    
-    // 2. Save the choice to localStorage for instant loading on next page
-    try {
-        localStorage.setItem('theme', theme);
-    } catch (e) {
-        console.error("Could not save theme to localStorage", e);
+    // 1. Save to LocalStorage for instant future loads
+    localStorage.setItem('finex_theme', theme);
+    userPreferences.theme = theme;
+
+    // 2. Apply class to DOM
+    if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+    } else {
+        document.documentElement.classList.add('dark');
     }
 
-    // 3. Update the theme toggle (if it exists on the page)
-    const themeToggle = document.getElementById('theme-toggle'); 
-    if (themeToggle) { 
-        themeToggle.checked = (theme === 'dark'); 
+    // 3. Sync any toggle switches on the page
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.checked = (theme === 'dark');
     }
 }
 
-// --- Sidebar Rendering & Page Title Setting ---
 export function renderSidebar() {
-    const sidebarNav=document.getElementById('sidebar-nav'); const pageTitleEl=document.getElementById('page-title'); if(!sidebarNav){console.error("Sidebar nav element not found!"); return;} const currentPage=window.location.pathname.split('/').pop()||'member_dashboard.html'; let currentPageTitle="Dashboard"; let isSubItemActive=false; sidebarNav.innerHTML=''; allSidebarItems.forEach(item=>{if(!userPreferences.sidebarItems[item.id]){return;} if(item.subItems&&Array.isArray(item.subItems)){const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; item.subItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; isSubItemActive=true; currentPageTitle=subItem.text;}}); if(parentIsActive){toggleButton.classList.add('active-parent');} toggleButton.innerHTML=`<span class="flex items-center gap-4"><i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span></span><i class="fas fa-chevron-down text-xs transition-transform duration-200 chevron-icon"></i>`; dropdownContainer.appendChild(toggleButton); const subMenu=document.createElement('div'); subMenu.id=`submenu-${item.id}`; subMenu.className='pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out sidebar-submenu'; item.subItems.forEach(subItem=>{const link=document.createElement('a'); link.href=subItem.href; link.className=`sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; if(subItem.href===currentPage){link.classList.add('active');} link.innerHTML=`<i class="fas ${subItem.icon} fa-fw w-5"></i> <span>${subItem.text}</span>`; subMenu.appendChild(link);}); dropdownContainer.appendChild(subMenu); sidebarNav.appendChild(dropdownContainer);}else{const link=document.createElement('a'); link.href=item.href; link.className=`sidebar-link flex items-center gap-4 p-3 rounded-lg`; if(item.href===currentPage&&!isSubItemActive){link.classList.add('active'); currentPageTitle=item.text;} link.innerHTML=`<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`; sidebarNav.appendChild(link);}});
-    
-    // Set Page Title (with "Finex" for dashboard)
-    if(pageTitleEl){
-        if (currentPageTitle === 'Dashboard') {
-            pageTitleEl.textContent = 'Finex';
-        } else {
-            pageTitleEl.textContent = currentPageTitle;
-        }
-    }else{
-        console.warn("Element with ID 'page-title' not found.");
-    }
+    const sidebarNav=document.getElementById('sidebar-nav'); const pageTitleEl=document.getElementById('page-title'); if(!sidebarNav){ return;} const currentPage=window.location.pathname.split('/').pop()||'member_dashboard.html'; let currentPageTitle="Dashboard"; let isSubItemActive=false; sidebarNav.innerHTML=''; allSidebarItems.forEach(item=>{if(!userPreferences.sidebarItems[item.id]){return;} if(item.subItems&&Array.isArray(item.subItems)){const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; item.subItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; isSubItemActive=true; currentPageTitle=subItem.text;}}); if(parentIsActive){toggleButton.classList.add('active-parent');} toggleButton.innerHTML=`<span class="flex items-center gap-4"><i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span></span><i class="fas fa-chevron-down text-xs transition-transform duration-200 chevron-icon"></i>`; dropdownContainer.appendChild(toggleButton); const subMenu=document.createElement('div'); subMenu.id=`submenu-${item.id}`; subMenu.className='pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out sidebar-submenu'; item.subItems.forEach(subItem=>{const link=document.createElement('a'); link.href=subItem.href; link.className=`sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; if(subItem.href===currentPage){link.classList.add('active');} link.innerHTML=`<i class="fas ${subItem.icon} fa-fw w-5"></i> <span>${subItem.text}</span>`; subMenu.appendChild(link);}); dropdownContainer.appendChild(subMenu); sidebarNav.appendChild(dropdownContainer);}else{const link=document.createElement('a'); link.href=item.href; link.className=`sidebar-link flex items-center gap-4 p-3 rounded-lg`; if(item.href===currentPage&&!isSubItemActive){link.classList.add('active'); currentPageTitle=item.text;} link.innerHTML=`<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`; sidebarNav.appendChild(link);}});
+    if(pageTitleEl){ if (currentPageTitle === 'Dashboard') { pageTitleEl.textContent = 'Finex'; } else { pageTitleEl.textContent = currentPageTitle; } }
  }
 
-// --- Core Event Listeners Attachment ---
 function attachCoreEventListeners() {
     const openSidebarBtn=document.getElementById('open-sidebar-btn'); const closeSidebarBtn=document.getElementById('close-sidebar-btn'); const sidebar=document.getElementById('sidebar'); const sidebarOverlay=document.getElementById('sidebar-overlay'); const sidebarNav=document.getElementById('sidebar-nav'); const logoutBtn=document.getElementById('logout-btn'); function openSidebar(){if(sidebar)sidebar.classList.remove('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.remove('hidden'); setTimeout(()=>sidebarOverlay.classList.remove('opacity-0'),10);}} function closeSidebar(){if(sidebar)sidebar.classList.add('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.add('opacity-0'); setTimeout(()=>sidebarOverlay.classList.add('hidden'),300);}} if(openSidebarBtn)openSidebarBtn.addEventListener('click',openSidebar); if(closeSidebarBtn)closeSidebarBtn.addEventListener('click',closeSidebar); if(sidebarOverlay)sidebarOverlay.addEventListener('click',closeSidebar); if(logoutBtn)logoutBtn.addEventListener('click',(e)=>{e.preventDefault(); signOut(auth).then(()=>{window.location.href='index.html';}).catch((error)=>{console.error('Sign out error',error);});}); if(sidebarNav){sidebarNav.addEventListener('click',(e)=>{const link=e.target.closest('a'); const toggle=e.target.closest('button[data-toggle]'); if(link&&!link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}else if(toggle){const subMenuId=`submenu-${toggle.dataset.toggle}`; const subMenu=document.getElementById(subMenuId); const chevron=toggle.querySelector('.chevron-icon'); if(subMenu){if(subMenu.style.maxHeight&&subMenu.style.maxHeight!=='0px'){subMenu.style.maxHeight='0px'; toggle.classList.remove('active-parent'); if(chevron)chevron.classList.remove('rotate-180');}else{subMenu.style.maxHeight=subMenu.scrollHeight+"px"; toggle.classList.add('active-parent'); if(chevron)chevron.classList.add('rotate-180');}}}else if(link&&link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}});}
 }
