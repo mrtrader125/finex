@@ -4,90 +4,130 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Live News Feed | Finex</title>
+
+  <!-- Tailwind + fonts + icons -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <script>tailwind.config = { darkMode: 'class' }</script>
   <link rel="stylesheet" href="main.css">
+
   <style>
-    .news-badge { @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold; }
-    .card-collapsed { max-height: 5.25rem; overflow: hidden; }
+    /* small UI tweaks */
+    body { font-family: "Source Sans Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
     .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
+    .badge-alert { background: rgba(254, 226, 226, 0.9); color: #7f1d1d; border: 1px solid rgba(239,68,68,0.12); }
+    .badge-info { background: rgba(235, 247, 255, 0.95); color: #0c4a6e; border: 1px solid rgba(6, 182, 212, 0.08); }
+    .card-truncate { max-height: 5.25rem; overflow: hidden; }
+    .fade-in { animation: fadeIn .22s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
     .time-small { font-variant-numeric: tabular-nums; }
+    .conf-pill { padding: 0.25rem 0.5rem; border-radius: 999px; font-weight:600; font-size:0.75rem; }
+    .link-muted { color: rgba(148,163,184,1); text-decoration: underline; text-underline-offset: 3px; }
   </style>
 </head>
+
 <body class="antialiased textured-background">
-  <!-- App wrapper is hidden until initializeAppCore finishes auth/load -->
+  <!-- App wrapper is shown after initializeAppCore attaches page logic -->
   <div id="app-wrapper" style="display:none;">
     <div id="sidebar-placeholder"></div>
     <div id="header-placeholder"></div>
 
     <main class="container mx-auto p-4 md:p-8">
-      <div class="flex items-start justify-between mb-6 gap-4">
+      <div class="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-3xl font-bold text-color-base">📡 Live Market News Feed</h1>
-          <p class="text-sm text-color-muted mt-1">Auto-updating stream of headlines, full content, and market impact signals (USD / XAUUSD).</p>
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-color-base">📡 Live Market News Feed</h1>
+          <p class="text-sm text-color-muted mt-1">Headlines + processed signals (USD / XAUUSD) — auto-updating. Click a headline to view full processed text.</p>
         </div>
-        <div class="text-right space-y-1">
+
+        <div class="text-right">
           <div class="text-xs text-color-muted">Last update</div>
           <div id="last-updated" class="text-sm font-medium time-small">—</div>
         </div>
       </div>
 
+      <!-- Controls -->
       <section class="mb-6">
-        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-          <input id="search" type="search" placeholder="Search headline, reason, or source..." class="flex-1 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 focus:outline-none" />
-          <select id="impact" class="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
-            <option value="">All USD impacts</option>
-            <option value="up">USD ↑ (Bullish USD)</option>
-            <option value="down">USD ↓ (Dovish USD)</option>
-            <option value="neutral">Neutral</option>
-          </select>
-          <select id="goldImpact" class="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
-            <option value="">All XAUUSD impacts</option>
-            <option value="up">XAUUSD ↑ (Gold bullish)</option>
-            <option value="down">XAUUSD ↓ (Gold bearish)</option>
-            <option value="neutral">Neutral</option>
-          </select>
-          <select id="sortBy" class="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
-            <option value="recent">Sort: Newest</option>
-            <option value="confidence">Sort: Confidence</option>
-            <option value="alert_first">Sort: Alerts first</option>
-          </select>
-          <button id="refreshBtn" class="px-4 py-2 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">Refresh</button>
+        <div class="grid grid-cols-1 md:grid-cols-8 gap-3">
+          <div class="md:col-span-4">
+            <input id="search" placeholder="Search headline, source or reason..." class="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div class="md:col-span-1">
+            <select id="impact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <option value="">All USD</option>
+              <option value="up">USD ↑</option>
+              <option value="down">USD ↓</option>
+              <option value="neutral">Neutral</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-1">
+            <select id="goldImpact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <option value="">All XAUUSD</option>
+              <option value="up">XAUUSD ↑</option>
+              <option value="down">XAUUSD ↓</option>
+              <option value="neutral">Neutral</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-1">
+            <select id="sortBy" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <option value="recent">Newest</option>
+              <option value="confidence">Confidence</option>
+              <option value="alert_first">Alerts first</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-1 flex items-center gap-2">
+            <button id="refreshBtn" class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow">Refresh</button>
+            <button id="exportBtn" title="Download feed JSON" class="px-3 py-3 border rounded-2xl border-gray-200 dark:border-gray-700"><i class="fa fa-download"></i></button>
+          </div>
         </div>
       </section>
 
+      <!-- Feed -->
       <section id="feed" class="grid gap-4"></section>
 
-      <div id="emptyState" class="hidden text-center text-gray-500 mt-6">
-        No news items found.
+      <div id="emptyState" class="hidden text-center text-gray-500 mt-8">
+        No news items found. Try refreshing.
       </div>
     </main>
 
     <footer class="fixed bottom-0 left-0 right-0">
-      <div class="glass-card py-2 mx-4 mb-4 rounded-lg">
-        <div class="container mx-auto text-center text-xs text-color-muted">Finex • Live News Feed</div>
-      </div>
+      <div class="glass-card py-2 mx-4 mb-4 rounded-lg text-center text-xs text-color-muted">Finex • Live News Feed</div>
     </footer>
   </div>
 
-  <!-- app.js initialization (keeps your auth + dynamic header/sidebar behavior) -->
+  <!-- Modal for full processed text -->
+  <div id="modalRoot" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40" id="modalBackdrop"></div>
+    <div class="relative max-w-3xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-auto" style="max-height:85vh;">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div class="font-semibold">Processed content</div>
+        <div class="flex items-center gap-3">
+          <a id="modalOpenOriginal" class="link-muted mr-2" target="_blank" rel="noopener">Open original</a>
+          <button id="modalClose" class="px-3 py-1 rounded-lg border">Close</button>
+        </div>
+      </div>
+      <div id="modalContent" class="p-5 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap"></div>
+    </div>
+  </div>
+
+  <!-- app core (keeps your header/sidebar/auth behavior) -->
   <script type="module" src="app.js"></script>
 
+  <!-- Page logic (replaceable) -->
   <script type="module">
     import { initializeAppCore } from './app.js';
 
     function initNewsPage(user, db) {
-      // page config
+      // Config
       const DATA_PATH = '/data/website_feed.json';
-      const POLL_INTERVAL_MS = 30 * 1000; // 30s default; tune as needed
-      let feedData = [];
-      let lastFetch = 0;
-      let pollTimer = null;
-
+      const POLL_INTERVAL_MS = 30 * 1000; // 30s
       const feedEl = document.getElementById('feed');
       const lastUpdatedEl = document.getElementById('last-updated');
       const searchInput = document.getElementById('search');
@@ -95,9 +135,26 @@
       const goldSelect = document.getElementById('goldImpact');
       const sortBy = document.getElementById('sortBy');
       const refreshBtn = document.getElementById('refreshBtn');
+      const exportBtn = document.getElementById('exportBtn');
       const emptyState = document.getElementById('emptyState');
+      const modalRoot = document.getElementById('modalRoot');
+      const modalContent = document.getElementById('modalContent');
+      const modalClose = document.getElementById('modalClose');
+      const modalOpenOriginal = document.getElementById('modalOpenOriginal');
+      let feedData = [];
+      let lastFetch = 0;
+      let pollTimer = null;
 
-      function timeAgo(iso) {
+      // Helpers
+      const esc = s => {
+        if (!s) return '';
+        const d = document.createElement('div');
+        d.innerText = s;
+        return d.innerHTML;
+      };
+
+      const timeAgo = iso => {
+        if (!iso) return '';
         try {
           const d = new Date(iso);
           const s = Math.floor((Date.now() - d.getTime())/1000);
@@ -108,104 +165,79 @@
           if (h < 24) return `${h}h ago`;
           const days = Math.floor(h/24);
           return `${days}d ago`;
-        } catch {
-          return '';
-        }
-      }
+        } catch { return ''; }
+      };
 
-      function makeConfidenceBar(conf) {
-        const pct = Math.round((conf || 0) * 100);
-        const color = pct >= 75 ? 'bg-green-500' : pct >= 45 ? 'bg-yellow-500' : 'bg-gray-400';
-        return `
-          <div class="w-36 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div style="width:${pct}%" class="${color} h-full"></div>
-          </div>
-          <div class="text-xs text-color-muted ml-2">${pct}%</div>
-        `;
-      }
-
-      function openInNewTab(url) {
-        if (!url) return;
-        window.open(url, '_blank', 'noopener');
-      }
-
-      // safe text escape for HTML insertion
-      function esc(s) {
-        if (!s) return '';
-        const d = document.createElement('div');
-        d.innerText = s;
-        return d.innerHTML;
-      }
-
-      function buildCard(item) {
+      function makeRow(item) {
+        // expected keys: headline, text, published, source, usd_impact, xauusd_impact, confidence, action, url, reason
         const isAlert = (item.action || '').toUpperCase() === 'ALERT';
         const usd = (item.usd_impact || 'neutral').toLowerCase();
         const gold = (item.xauusd_impact || 'neutral').toLowerCase();
-        const usdClass = usd === 'up' ? 'text-green-600' : usd === 'down' ? 'text-red-500' : 'text-gray-400';
-        const goldClass = gold === 'up' ? 'text-yellow-600' : gold === 'down' ? 'text-blue-400' : 'text-gray-400';
-        const confidenceHtml = makeConfidenceBar(item.confidence);
+        const confPct = Math.round((item.confidence || 0) * 100);
 
-        const shortText = esc(item.text || item.headline || '');
-        const headline = esc(item.headline || '').replace(/\n/g, ' ');
-        const published = item.published || '';
+        const usdClass = usd === 'up' ? 'text-green-600' : usd === 'down' ? 'text-red-600' : 'text-gray-400';
+        const goldClass = gold === 'up' ? 'text-yellow-500' : gold === 'down' ? 'text-blue-400' : 'text-gray-400';
+        const badge = isAlert ? `<span class="badge-alert px-3 py-1 text-xs font-semibold rounded-full">ALERT</span>` :
+                                `<span class="badge-info px-3 py-1 text-xs font-semibold rounded-full">INFO</span>`;
+
+        const headline = esc(item.headline || item.text || '(no headline)');
+        const source = esc(item.source || item.handle || '');
         const reason = esc(item.reason || '');
-        const source = esc(item.source || '');
-        const originalUrl = item.url || '';
+        const published = item.published || '';
 
-        const expandedId = `expand-${btoa((item.headline||'').slice(0,40)).replace(/=/g,'')}`;
+        // truncate preview
+        const preview = esc((item.text || '').slice(0, 600));
 
         return `
-          <article class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md border ${isAlert ? 'border-red-400 ring-1 ring-red-200/20' : 'border-gray-200 dark:border-gray-700'}">
-            <div class="flex justify-between items-start gap-3">
-              <div class="flex-1">
+          <div class="p-4 rounded-xl border ${isAlert ? 'border-red-400 bg-red-50/3' : 'border-gray-200 dark:border-gray-700'} fade-in">
+            <div class="flex items-start gap-4">
+              <div class="flex-1 min-w-0">
                 <div class="flex items-start gap-3">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 leading-snug">${headline}</h3>
-                  <div class="ml-2">
-                    ${isAlert ? '<span class="news-badge bg-red-50 text-red-700 border border-red-100">ALERT</span>' : ''}
+                  <div class="flex-1 min-w-0">
+                    <button class="text-left w-full headline-btn">
+                      <div class="text-sm md:text-base font-semibold text-color-base truncate">${headline}</div>
+                      <div class="text-xs text-color-muted mt-1 truncate">${source} · ${new Date(published).toLocaleString()} · ${timeAgo(published)}</div>
+                    </button>
+                  </div>
+                  <div class="flex flex-col items-end gap-2 ml-3">
+                    <div class="${usdClass} font-bold text-sm">USD ${usd.toUpperCase()}</div>
+                    <div class="${goldClass} font-bold text-sm">GOLD ${gold.toUpperCase()}</div>
+                    <div class="mt-1 flex items-center gap-2">
+                      <div class="conf-pill bg-gray-100 dark:bg-gray-800 text-color-base">${confPct}%</div>
+                    </div>
                   </div>
                 </div>
-                <div class="text-xs text-color-muted mt-1 flex items-center gap-3">
-                  <span class="time-small">${timeAgo(published)} · ${new Date(published).toLocaleString()}</span>
-                  <span>•</span>
-                  <span>Source: <strong>${source}</strong></span>
-                </div>
-                <div id="${expandedId}" class="mt-3 text-sm text-gray-700 dark:text-gray-300 ${shortText.length > 420 ? 'card-collapsed' : ''}">
-                  ${shortText.replace(/\n/g,'<br/>')}
-                </div>
-                <div class="mt-3 flex gap-3 items-center">
-                  <button data-expand="${expandedId}" class="text-sm px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">View ${shortText.length > 420 ? 'more' : 'full'}</button>
-                  ${ originalUrl ? `<button data-url="${esc(originalUrl)}" class="text-sm px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">Open original</button>` : '' }
-                  <button class="text-sm px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5" data-copy="${esc(headline)}">Copy</button>
-                </div>
-              </div>
 
-              <div class="flex flex-col items-end gap-3 w-48">
-                <div class="text-sm">USD <span class="${usdClass} font-bold ml-1">${usd.toUpperCase()}</span></div>
-                <div class="text-sm">XAUUSD <span class="${goldClass} font-bold ml-1">${gold.toUpperCase()}</span></div>
-                <div class="flex items-center mt-2">${confidenceHtml}</div>
+                <div class="mt-3 text-sm text-gray-700 dark:text-gray-300 ${preview.length>220 ? 'card-truncate' : ''}">
+                  ${preview.replace(/\n/g,'<br/>')}
+                </div>
+
+                <div class="mt-3 flex items-center gap-3">
+                  ${badge}
+                  <div class="text-xs text-color-muted">Reason: ${reason || '—'}</div>
+                  <div class="ml-auto flex items-center gap-2">
+                    <button class="open-original text-xs px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700">Open</button>
+                    <button class="copy-headline text-xs px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700">Copy</button>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <div class="mt-3 text-xs text-color-muted">Reason: ${reason || '<span class="text-gray-400">—</span>'}</div>
-          </article>
+          </div>
         `;
       }
 
+      // Render & wiring
       function render() {
-        // filters & search
         const q = (searchInput.value || '').trim().toLowerCase();
         const impactV = impactSelect.value;
         const goldV = goldSelect.value;
         const sb = sortBy.value;
 
-        let data = Array.from(feedData);
+        let data = Array.from(feedData || []);
 
         if (q) {
           data = data.filter(it =>
-            (it.headline||'').toLowerCase().includes(q) ||
-            (it.text||'').toLowerCase().includes(q) ||
-            (it.reason||'').toLowerCase().includes(q) ||
-            (it.source||'').toLowerCase().includes(q)
+            ((it.headline||'') + ' ' + (it.text||'') + ' ' + (it.reason||'') + ' ' + (it.source||it.handle||'')).toLowerCase().includes(q)
           );
         }
         if (impactV) data = data.filter(it => (it.usd_impact||'').toLowerCase() === impactV);
@@ -214,7 +246,7 @@
         if (sb === 'confidence') {
           data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
         } else if (sb === 'alert_first') {
-          data.sort((a,b) => ((b.action||'') === 'ALERT') - ((a.action||'') === 'ALERT') || ((b.confidence||0) - (a.confidence||0)));
+          data.sort((a,b) => ((b.action||'')==='ALERT') - ((a.action||'')==='ALERT') || ((b.confidence||0) - (a.confidence||0)));
         } else {
           data.sort((a,b) => new Date(b.published).getTime() - new Date(a.published).getTime());
         }
@@ -224,60 +256,50 @@
           emptyState.classList.remove('hidden');
         } else {
           emptyState.classList.add('hidden');
-          data.forEach(item => {
-            const html = buildCard(item);
+          for (const item of data) {
             const wrapper = document.createElement('div');
-            wrapper.innerHTML = html;
-            // attach handlers for buttons
-            const expandBtn = wrapper.querySelector('[data-expand]');
-            if (expandBtn) {
-              expandBtn.addEventListener('click', (e) => {
-                const id = expandBtn.getAttribute('data-expand');
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.classList.toggle('card-collapsed');
-                expandBtn.innerText = el.classList.contains('card-collapsed') ? 'View more' : 'Collapse';
+            wrapper.innerHTML = makeRow(item);
+            // wire headline click -> open modal with full processed text (item.text) and original url
+            const headlineBtn = wrapper.querySelector('.headline-btn');
+            if (headlineBtn) {
+              headlineBtn.addEventListener('click', () => {
+                modalContent.innerText = item.text || item.headline || '(no text)';
+                modalOpenOriginal.href = item.url || item.linked_url || '#';
+                modalRoot.classList.remove('hidden');
               });
             }
-            const openBtn = wrapper.querySelector('[data-url]');
-            if (openBtn) {
-              openBtn.addEventListener('click', () => {
-                const url = openBtn.getAttribute('data-url');
-                openInNewTab(url);
-              });
-            }
-            const copyBtn = wrapper.querySelector('[data-copy]');
-            if (copyBtn) {
-              copyBtn.addEventListener('click', (e) => {
-                const txt = copyBtn.getAttribute('data-copy') || '';
-                navigator.clipboard && navigator.clipboard.writeText(txt);
-                copyBtn.innerText = 'Copied';
-                setTimeout(()=> copyBtn.innerText = 'Copy', 1200);
-              });
-            }
+            const openBtn = wrapper.querySelector('.open-original');
+            if (openBtn) openBtn.addEventListener('click', () => window.open(item.url || item.linked_url || '#', '_blank', 'noopener'));
+
+            const copyBtn = wrapper.querySelector('.copy-headline');
+            if (copyBtn) copyBtn.addEventListener('click', () => {
+              const text = item.headline || item.text || '';
+              navigator.clipboard && navigator.clipboard.writeText(text);
+              copyBtn.innerText = 'Copied';
+              setTimeout(()=> copyBtn.innerText = 'Copy', 1000);
+            });
+
             feedEl.appendChild(wrapper);
-          });
+          }
         }
       }
 
       async function fetchFeed(force=false) {
         const now = Date.now();
-        // avoid too frequent fetches unless forced
-        if (!force && (now - lastFetch) < 5000) return;
+        if (!force && (now - lastFetch) < 5000) return; // throttle
         try {
           const res = await fetch(DATA_PATH + '?_=' + now, { cache: 'no-store' });
           if (!res.ok) throw new Error('Fetch failed: ' + res.status);
-          const data = await res.json();
-          // basic dedupe (by headline + published)
-          const seen = new Map();
+          const arr = await res.json();
+          // basic dedupe & normalize
+          const seen = new Set();
           const unique = [];
-          for (const it of data || []) {
-            const key = (it.headline||'') + '|' + (it.published||'');
-            if (!seen.has(key)) { seen.set(key, true); unique.push(it); }
+          for (const it of (arr || [])) {
+            const key = ((it.headline||'') + '|' + (it.published||'')).slice(0,400);
+            if (!seen.has(key)) { seen.add(key); unique.push(it); }
           }
           feedData = unique;
           lastFetch = Date.now();
-          lastUpdatedEl.innerText = timeAgo(new Date().toISOString());
           lastUpdatedEl.innerText = 'Just now';
           render();
         } catch (err) {
@@ -285,27 +307,39 @@
         }
       }
 
-      // wire UI
+      // Export JSON locally
+      exportBtn.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(feedData, null, 2)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'website_feed.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      // Controls
       refreshBtn.addEventListener('click', () => fetchFeed(true));
       searchInput.addEventListener('input', () => render());
       impactSelect.addEventListener('change', () => render());
       goldSelect.addEventListener('change', () => render());
       sortBy.addEventListener('change', () => render());
 
-      // show the app wrapper now that page-specific logic is attached
+      // Modal
+      modalClose.addEventListener('click', () => modalRoot.classList.add('hidden'));
+      document.getElementById('modalBackdrop').addEventListener('click', () => modalRoot.classList.add('hidden'));
+
+      // Reveal page once logic is attached
       document.getElementById('app-wrapper').style.display = '';
 
-      // initial load
+      // Initial fetch + polling
       fetchFeed(true);
-
-      // start polling
       if (pollTimer) clearInterval(pollTimer);
       pollTimer = setInterval(() => fetchFeed(), POLL_INTERVAL_MS);
 
-      // update "last updated" display every second or so
-      setInterval(()=>{
+      // update last-updated label periodically
+      setInterval(()=> {
         if (!lastFetch) return;
-        const delta = Math.floor((Date.now()-lastFetch)/1000);
+        const delta = Math.floor((Date.now() - lastFetch) / 1000);
         if (delta < 5) lastUpdatedEl.innerText = 'Just now';
         else if (delta < 60) lastUpdatedEl.innerText = `${delta}s ago`;
         else if (delta < 3600) lastUpdatedEl.innerText = `${Math.floor(delta/60)}m ago`;
@@ -313,7 +347,7 @@
       }, 1000);
     }
 
-    // initialize app (this will call initNewsPage(user, db) once app core is ready)
+    // initialize app core which calls initNewsPage(user, db)
     initializeAppCore(initNewsPage);
   </script>
 </body>
