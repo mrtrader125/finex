@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        // --- ANTI-FLASH SCRIPT ---
+        // --- ANTI-FLASH SCRIPT (NEW) ---
         // Checks local storage BEFORE page renders to set correct theme immediately.
         const savedTheme = localStorage.getItem('finex_theme');
         if (savedTheme === 'light') {
@@ -159,7 +159,7 @@
                     }
                     elements.accountEmailSpan.textContent = user.email;
 
-                    // Theme is already applied by app.js, just sync the toggle switch
+                    // Theme is already applied by app.js on load, just sync the toggle switch state here
                     elements.themeToggle.checked = (userPreferences.theme === 'dark');
 
                     // Load Sidebar Options
@@ -173,11 +173,13 @@
                 } catch (error) { console.error("Error loading data:", error); }
             }
             
-            // === INSTANT THEME SWITCHING LISTENER ===
+            // === INSTANT THEME SWITCHING LISTENER (NEW) ===
             elements.themeToggle.addEventListener('change', () => {
                 const newTheme = elements.themeToggle.checked ? 'dark' : 'light';
-                applyTheme(newTheme); // Instant visual change
-                debouncedSavePreferences(); // Background save to DB
+                // Apply INSTANTLY to the DOM and LocalStorage
+                applyTheme(newTheme); 
+                // Save to database in background (debounced)
+                debouncedSavePreferences(); 
             });
 
             async function savePreferences() {
