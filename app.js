@@ -52,36 +52,17 @@ export const allSidebarItems = [
         ]
     },
     { id: 'tools', href: 'tools_calculators.html', icon: 'fa-tools', text: 'Tools' },
-    // { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' }, // Commented out until page is ready
+    // { id: 'backtesting', href: 'backtesting.html', icon: 'fa-history', text: 'Backtesting' }, 
     { id: 'snake', href: 'snake_game.html', icon: 'fa-gamepad', text: 'Snake Game' },
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-// Initialize preferences, trying LocalStorage first for speed
-export let userPreferences = { 
-    theme: localStorage.getItem('finex_theme') || 'dark', 
-    sidebarItems: {} 
-};
+export let userPreferences = { theme: localStorage.getItem('finex_theme') || 'dark', sidebarItems: {} };
 
-// Apply theme immediately on module load to minimize FOUC (Flash of Unstyled Content)
 if (typeof window !== 'undefined') {
     const savedTheme = localStorage.getItem('finex_theme');
-    if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
-        document.documentElement.classList.remove('dark');
-    }
-}
-
-function getDefaultSidebarVisibility() {
-    const visibility = {};
-    allSidebarItems.forEach(item => {
-        visibility[item.id] = true;
-        if (item.subItems) {
-            item.subItems.forEach(sub => visibility[sub.id] = true);
-        }
-    });
-    return visibility;
+    if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+    else if (savedTheme === 'light') document.documentElement.classList.remove('dark');
 }
 
 // --- Main App Initialization ---
@@ -97,45 +78,29 @@ export async function initializeAppCore(pageSpecificInit) {
                 if (userDocSnap.exists()) {
                     userProfile.displayName = userDocSnap.data().displayName || userProfile.displayName;
                 }
-            } catch (e) {
-                console.error("Error fetching user profile:", e);
-            }
+            } catch (e) { console.error("Error fetching user profile:", e); }
 
             if (pageSpecificInit && typeof pageSpecificInit === 'function') {
                 pageSpecificInit(user, db, userProfile);
             }
 
-            // --- NEW: Load ALL THREE layers of settings ---
             const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
             const adminOverridesRef = doc(db, `users/${user.uid}/admin_settings`, 'sidebar');
             const userPrefsRef = doc(db, `users/${user.uid}/preferences`, 'settings');
 
             try {
-                await Promise.all([
-                    loadCommonComponents(),
-                    // Pass all 3 refs to the loader
-                    loadPreferences(globalSettingsRef, adminOverridesRef, userPrefsRef) 
-                ]);
-
+                await Promise.all([ loadCommonComponents(), loadPreferences(globalSettingsRef, adminOverridesRef, userPrefsRef) ]);
                 applyTheme(userPreferences.theme);
                 renderSidebar();
                 attachCoreEventListeners();
-                
                 const userEmailSpan = document.getElementById('user-email');
                 if (userEmailSpan) userEmailSpan.textContent = userProfile.email;
-
-                const appLoader = document.getElementById('app-loader');
-                if (appLoader) appLoader.style.display = 'none';
-                
-                const appWrapper = document.getElementById('app-wrapper');
-                if (appWrapper) appWrapper.style.display = 'block';
-
+                document.getElementById('app-loader').style.display = 'none';
+                document.getElementById('app-wrapper').style.display = 'block';
             } catch (error) {
                 console.error("Failed to initialize app components:", error);
-                const appLoader = document.getElementById('app-loader');
-                if (appLoader) appLoader.textContent = "Error loading application.";
+                document.getElementById('app-loader').textContent = "Error loading application.";
             }
-
         } else {
             window.location.replace(new URL('login.html', window.location.href).href);
         }
@@ -146,81 +111,77 @@ async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
     if (!headerPlaceholder && !sidebarPlaceholder) return;
-
     try {
         const [headerRes, sidebarRes] = await Promise.all([ fetch('_header.html'), fetch('_sidebar.html') ]);
-        if (!headerRes.ok) throw new Error(`Failed to load _header.html`);
-        if (!sidebarRes.ok) throw new Error(`Failed to load _sidebar.html`);
-        if (headerPlaceholder) headerPlaceholder.innerHTML = await headerRes.text();
-        if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = await sidebarRes.text();
+        if (!headerRes.ok || !sidebarRes.ok) throw new Error(`Failed to load components`);
+        headerPlaceholder.innerHTML = await headerRes.text();
+        sidebarPlaceholder.innerHTML = await sidebarRes.text();
     } catch (error) { console.error("Error loading common components:", error); }
  }
 
-// --- UPDATED PREFERENCE LOADER ---
 async function loadPreferences(globalRef, adminRef, userRef) {
     try {
-        let defaultItems = getDefaultSidebarVisibility();
-        
-        // Fetch all 3 layers in parallel
-        const [globalSnap, adminSnap, userSnap] = await Promise.all([
-            getDoc(globalRef),
-            getDoc(adminRef),
-            getDoc(userRef)
-        ]);
+        const [globalSnap, adminSnap, userSnap] = await Promise.all([ getDoc(globalRef), getDoc(adminRef), getDoc(userRef) ]);
+        const globalPrefs = globalSnap.exists() ? globalSnap.data().sidebarItems || {} : {};
+        const adminPrefs = adminSnap.exists() ? adminSnap.data() : {}; 
+        const userPrefsDoc = userSnap.exists() ? userSnap.data() : {};
+        const userSidebarPrefs = userPrefsDoc.sidebarItems || {};
 
-        let globalPrefs = globalSnap.exists() ? globalSnap.data().sidebarItems || {} : {};
-        let adminPrefs = adminSnap.exists() ? adminSnap.data() : {}; // Admin prefs are direct keys
-        let userPrefsDoc = userSnap.exists() ? userSnap.data() : {};
-        let userSidebarPrefs = userPrefsDoc.sidebarItems || {};
-
-        // Set Theme (User preference takes priority for theme)
         userPreferences.theme = userPrefsDoc.theme || localStorage.getItem('finex_theme') || 'dark';
 
-        // --- MERGE SIDEBAR PREFERENCES ---
         const finalSidebar = {};
-        Object.keys(defaultItems).forEach(key => {
-            // 1. Start with Default (True)
-            let isVisible = true;
+        allSidebarItems.forEach(item => {
+            const processItem = (id) => {
+                // 1. Default to TRUE
+                let isVisible = true;
+                // 2. User preference (can be overridden by higher powers below)
+                if (userSidebarPrefs[id] !== undefined) isVisible = userSidebarPrefs[id];
+                // 3. Admin Override trumps User Preference
+                if (adminPrefs[id] !== undefined) isVisible = adminPrefs[id];
+                // 4. Global DISABLED trumps EVERYTHING
+                if (globalPrefs[id] === false) isVisible = false;
+                return isVisible;
+            };
 
-            // 2. Apply Global Default Override
-            if (globalPrefs[key] === false) isVisible = false;
-
-            // 3. Apply User Preference Override
-            if (userSidebarPrefs[key] !== undefined) isVisible = userSidebarPrefs[key];
-
-            // 4. Apply Admin Override (FINAL SAY - Force Hide/Show)
-            if (adminPrefs[key] !== undefined) isVisible = adminPrefs[key];
-
-            finalSidebar[key] = isVisible;
+            finalSidebar[item.id] = processItem(item.id);
+            if (item.subItems) {
+                item.subItems.forEach(sub => finalSidebar[sub.id] = processItem(sub.id));
+            }
         });
         userPreferences.sidebarItems = finalSidebar;
-
      } catch (error) { 
          console.error("Error loading preferences:", error);
          userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
-         userPreferences.sidebarItems = getDefaultSidebarVisibility(); 
      }
 }
 
-// --- Theme Application ---
 export function applyTheme(theme) {
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('finex_theme', theme);
-    }
+    if (typeof window !== 'undefined') localStorage.setItem('finex_theme', theme);
     userPreferences.theme = theme;
-    if (theme === 'light') {
-        document.documentElement.classList.remove('dark');
-    } else {
-        document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
     const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.checked = (theme === 'dark');
-    }
+    if (themeToggle) themeToggle.checked = (theme === 'dark');
 }
 
 export function renderSidebar() {
-    const sidebarNav=document.getElementById('sidebar-nav'); const pageTitleEl=document.getElementById('page-title'); if(!sidebarNav){ return;} const currentPage=window.location.pathname.split('/').pop()||'member_dashboard.html'; let currentPageTitle="Dashboard"; let isSubItemActive=false; sidebarNav.innerHTML=''; allSidebarItems.forEach(item=>{if(!userPreferences.sidebarItems[item.id]){return;} if(item.subItems&&Array.isArray(item.subItems)){const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; item.subItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; isSubItemActive=true; currentPageTitle=subItem.text;}}); if(parentIsActive){toggleButton.classList.add('active-parent');} toggleButton.innerHTML=`<span class="flex items-center gap-4"><i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span></span><i class="fas fa-chevron-down text-xs transition-transform duration-200 chevron-icon"></i>`; dropdownContainer.appendChild(toggleButton); const subMenu=document.createElement('div'); subMenu.id=`submenu-${item.id}`; subMenu.className='pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out sidebar-submenu'; item.subItems.forEach(subItem=>{const link=document.createElement('a'); link.href=subItem.href; link.className=`sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; if(subItem.href===currentPage){link.classList.add('active');} link.innerHTML=`<i class="fas ${subItem.icon} fa-fw w-5"></i> <span>${subItem.text}</span>`; subMenu.appendChild(link);}); dropdownContainer.appendChild(subMenu); sidebarNav.appendChild(dropdownContainer);}else{const link=document.createElement('a'); link.href=item.href; link.className=`sidebar-link flex items-center gap-4 p-3 rounded-lg`; if(item.href===currentPage&&!isSubItemActive){link.classList.add('active'); currentPageTitle=item.text;} link.innerHTML=`<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`; sidebarNav.appendChild(link);}});
+    const sidebarNav=document.getElementById('sidebar-nav'); const pageTitleEl=document.getElementById('page-title'); if(!sidebarNav){ return;} const currentPage=window.location.pathname.split('/').pop()||'member_dashboard.html'; let currentPageTitle="Dashboard"; 
+    sidebarNav.innerHTML=''; 
+    allSidebarItems.forEach(item=>{
+        if(!userPreferences.sidebarItems[item.id]){return;} 
+        if(item.subItems&&Array.isArray(item.subItems)){
+            // Only show dropdown if at least one sub-item is visible
+            const visibleSubItems = item.subItems.filter(sub => userPreferences.sidebarItems[sub.id]);
+            if (visibleSubItems.length === 0) return;
+
+            const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; 
+            visibleSubItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; currentPageTitle=subItem.text;}}); 
+            if(parentIsActive){toggleButton.classList.add('active-parent');} 
+            toggleButton.innerHTML=`<span class="flex items-center gap-4"><i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span></span><i class="fas fa-chevron-down text-xs transition-transform duration-200 chevron-icon"></i>`; dropdownContainer.appendChild(toggleButton); const subMenu=document.createElement('div'); subMenu.id=`submenu-${item.id}`; subMenu.className='pl-6 pt-1 space-y-1 overflow-hidden max-h-0 transition-max-height duration-300 ease-in-out sidebar-submenu'; 
+            visibleSubItems.forEach(subItem=>{const link=document.createElement('a'); link.href=subItem.href; link.className=`sidebar-link flex items-center gap-3 py-2 px-3 rounded-lg text-sm`; if(subItem.href===currentPage){link.classList.add('active');} link.innerHTML=`<i class="fas ${subItem.icon} fa-fw w-5"></i> <span>${subItem.text}</span>`; subMenu.appendChild(link);}); dropdownContainer.appendChild(subMenu); sidebarNav.appendChild(dropdownContainer);
+        }else{
+            const link=document.createElement('a'); link.href=item.href; link.className=`sidebar-link flex items-center gap-4 p-3 rounded-lg`; if(item.href===currentPage){link.classList.add('active'); currentPageTitle=item.text;} link.innerHTML=`<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`; sidebarNav.appendChild(link);
+        }
+    });
     if(pageTitleEl){ if (currentPageTitle === 'Dashboard') { pageTitleEl.textContent = 'Finex'; } else { pageTitleEl.textContent = currentPageTitle; } }
  }
 
