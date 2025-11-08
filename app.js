@@ -57,7 +57,8 @@ export const allSidebarItems = [
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-export let userPreferences = { theme: localStorage.getItem('finex_theme') || 'dark', sidebarItems: {} };
+// Added 'lockedItems' to track what users cannot change
+export let userPreferences = { theme: localStorage.getItem('finex_theme') || 'dark', sidebarItems: {}, lockedItems: {} };
 
 if (typeof window !== 'undefined') {
     const savedTheme = localStorage.getItem('finex_theme');
@@ -70,26 +71,25 @@ export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             applyTheme(userPreferences.theme);
-
             const userDocRef = doc(db, 'users', user.uid);
             let userProfile = { email: user.email, displayName: user.email.split('@')[0] };
             try {
                 const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    userProfile.displayName = userDocSnap.data().displayName || userProfile.displayName;
-                }
+                if (userDocSnap.exists()) userProfile.displayName = userDocSnap.data().displayName || userProfile.displayName;
             } catch (e) { console.error("Error fetching user profile:", e); }
 
-            if (pageSpecificInit && typeof pageSpecificInit === 'function') {
-                pageSpecificInit(user, db, userProfile);
-            }
-
-            const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
-            const adminOverridesRef = doc(db, `users/${user.uid}/admin_settings`, 'sidebar');
-            const userPrefsRef = doc(db, `users/${user.uid}/preferences`, 'settings');
+            if (pageSpecificInit && typeof pageSpecificInit === 'function') pageSpecificInit(user, db, userProfile);
 
             try {
-                await Promise.all([ loadCommonComponents(), loadPreferences(globalSettingsRef, adminOverridesRef, userPrefsRef) ]);
+                // Load ALL settings layers
+                await Promise.all([
+                    loadCommonComponents(),
+                    loadPreferences(
+                        doc(db, "siteSettings", "sidebarDefaults"),
+                        doc(db, `users/${user.uid}/admin_settings`, 'sidebar'),
+                        doc(db, `users/${user.uid}/preferences`, 'settings')
+                    )
+                ]);
                 applyTheme(userPreferences.theme);
                 renderSidebar();
                 attachCoreEventListeners();
@@ -98,7 +98,7 @@ export async function initializeAppCore(pageSpecificInit) {
                 document.getElementById('app-loader').style.display = 'none';
                 document.getElementById('app-wrapper').style.display = 'block';
             } catch (error) {
-                console.error("Failed to initialize app components:", error);
+                console.error("Failed to initialize app:", error);
                 document.getElementById('app-loader').textContent = "Error loading application.";
             }
         } else {
@@ -130,25 +130,34 @@ async function loadPreferences(globalRef, adminRef, userRef) {
         userPreferences.theme = userPrefsDoc.theme || localStorage.getItem('finex_theme') || 'dark';
 
         const finalSidebar = {};
-        allSidebarItems.forEach(item => {
-            const processItem = (id) => {
-                // 1. Default to TRUE
-                let isVisible = true;
-                // 2. User preference (can be overridden by higher powers below)
-                if (userSidebarPrefs[id] !== undefined) isVisible = userSidebarPrefs[id];
-                // 3. Admin Override trumps User Preference
-                if (adminPrefs[id] !== undefined) isVisible = adminPrefs[id];
-                // 4. Global DISABLED trumps EVERYTHING
-                if (globalPrefs[id] === false) isVisible = false;
-                return isVisible;
-            };
+        const lockedItems = {};
 
+        // --- HIERARCHY OF TRUTH ---
+        const processItem = (id) => {
+            let isVisible = true; 
+            let isLocked = false;
+
+            // 1. User Prefs (Weakest)
+            if (userSidebarPrefs[id] !== undefined) isVisible = userSidebarPrefs[id];
+            // 2. Admin Override (Stronger)
+            if (adminPrefs[id] !== undefined) { isVisible = adminPrefs[id]; isLocked = true; }
+            // 3. Global Disable (Strongest - Forces OFF)
+            if (globalPrefs[id] === false) { isVisible = false; isLocked = true; }
+
+            if (isLocked) lockedItems[id] = true;
+            return isVisible;
+        };
+
+        allSidebarItems.forEach(item => {
             finalSidebar[item.id] = processItem(item.id);
             if (item.subItems) {
                 item.subItems.forEach(sub => finalSidebar[sub.id] = processItem(sub.id));
             }
         });
+
         userPreferences.sidebarItems = finalSidebar;
+        userPreferences.lockedItems = lockedItems; // Store for settings.html to use
+
      } catch (error) { 
          console.error("Error loading preferences:", error);
          userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
@@ -169,10 +178,8 @@ export function renderSidebar() {
     allSidebarItems.forEach(item=>{
         if(!userPreferences.sidebarItems[item.id]){return;} 
         if(item.subItems&&Array.isArray(item.subItems)){
-            // Only show dropdown if at least one sub-item is visible
             const visibleSubItems = item.subItems.filter(sub => userPreferences.sidebarItems[sub.id]);
             if (visibleSubItems.length === 0) return;
-
             const dropdownContainer=document.createElement('div'); let parentIsActive=false; const toggleButton=document.createElement('button'); toggleButton.className='sidebar-link w-full flex items-center justify-between gap-4 p-3 rounded-lg text-left'; toggleButton.setAttribute('type','button'); toggleButton.dataset.toggle=item.id; 
             visibleSubItems.forEach(subItem=>{if(subItem.href===currentPage){parentIsActive=true; currentPageTitle=subItem.text;}}); 
             if(parentIsActive){toggleButton.classList.add('active-parent');} 
