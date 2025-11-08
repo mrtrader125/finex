@@ -57,22 +57,24 @@ export const allSidebarItems = [
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-// Initialize preferences, trying LocalStorage first for speed
+// === THEME PERSISTENCE START ===
+// Try to get theme from local storage immediately for speed
+const savedLocalTheme = typeof window !== 'undefined' ? localStorage.getItem('finex_theme') : null;
+
 export let userPreferences = { 
-    theme: localStorage.getItem('finex_theme') || 'dark', 
+    theme: savedLocalTheme || 'dark', // Default to dark if nothing saved
     sidebarItems: {} 
 };
 
-// Apply theme immediately on module load to minimize FOUC (Flash of Unstyled Content)
-// This works because 'app.js' is imported as a module in the <head> or early <body>
-if (typeof window !== 'undefined') {
-    const savedTheme = localStorage.getItem('finex_theme');
-    if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
+// Apply initially if we have a saved preference
+if (savedLocalTheme) {
+    if (savedLocalTheme === 'light') {
         document.documentElement.classList.remove('dark');
+    } else {
+        document.documentElement.classList.add('dark');
     }
 }
+// === THEME PERSISTENCE END ===
 
 function getDefaultSidebarVisibility() {
     const visibility = {};
@@ -89,7 +91,7 @@ function getDefaultSidebarVisibility() {
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // 1. Apply theme immediately from local preference if available
+            // Ensure theme is applied as soon as we know we have a user
             applyTheme(userPreferences.theme);
 
             const userDocRef = doc(db, 'users', user.uid);
@@ -115,7 +117,7 @@ export async function initializeAppCore(pageSpecificInit) {
                     loadPreferences(settingsDocRef) 
                 ]);
 
-                // Re-apply theme after fetching from DB (in case DB has a newer/different setting)
+                // Re-apply theme after DB load to ensure sync
                 applyTheme(userPreferences.theme);
                 renderSidebar();
                 attachCoreEventListeners();
@@ -144,7 +146,6 @@ export async function initializeAppCore(pageSpecificInit) {
 async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
-    // Only fetch if the placeholders exist on this page
     if (!headerPlaceholder && !sidebarPlaceholder) return;
 
     try {
@@ -168,7 +169,9 @@ async function loadPreferences(settingsDocRef) {
         let globalPrefs = globalDocSnap.exists() ? { ...{ theme: 'dark', sidebarItems: {} }, ...globalDocSnap.data() } : { theme: 'dark', sidebarItems: {} };
         let userPrefs = userDocSnap.exists() ? { ...{ theme: null, sidebarItems: {} }, ...userDocSnap.data() } : { theme: null, sidebarItems: {} };
 
-        // Priority: User DB > LocalStorage > Global DB > Default 'dark'
+        // Priority: LocalStorage (for speed) -> User DB -> Global DB -> Default
+        // We prefer LocalStorage for theme to avoid FOUC, but DB for sidebar to retain across devices if changed.
+        // Actually, let's trust DB for theme IF it exists, otherwise fallback to local.
         userPreferences.theme = userPrefs.theme || localStorage.getItem('finex_theme') || globalPrefs.theme || 'dark';
 
         const finalSidebar = {};
@@ -183,26 +186,27 @@ async function loadPreferences(settingsDocRef) {
         userPreferences.sidebarItems = finalSidebar;
      } catch (error) { 
          console.error("Error loading preferences:", error);
-         // Fallback to local storage or default if DB fails
-         userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
+         userPreferences.theme = 'dark';
          userPreferences.sidebarItems = getDefaultSidebarVisibility(); 
      }
 }
 
-// --- Theme Application (Enhanced) ---
+// --- Theme Application (INSTANT & PERSISTENT) ---
 export function applyTheme(theme) {
-    // 1. Save to LocalStorage for instant future loads
-    localStorage.setItem('finex_theme', theme);
+    // 1. Save to LocalStorage instantly
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('finex_theme', theme);
+    }
     userPreferences.theme = theme;
 
-    // 2. Apply class to DOM
+    // 2. Apply to DOM instantly
     if (theme === 'light') {
         document.documentElement.classList.remove('dark');
     } else {
         document.documentElement.classList.add('dark');
     }
 
-    // 3. Sync any toggle switches on the page
+    // 3. Sync toggle if it exists on the current page
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         themeToggle.checked = (theme === 'dark');
