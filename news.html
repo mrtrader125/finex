@@ -40,24 +40,30 @@
       <div class="flex items-start justify-between gap-4 mb-6">
         <div>
           <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-color-base">📡 Live Market News Feed</h1>
-          <p class="text-sm text-color-muted mt-1">Headlines + processed signals (USD / XAUUSD) — auto-updating. Click a headline to view full processed text.</p>
+          <p class="text-sm text-color-muted mt-1">Real-time headlines + processed signals (USD / XAUUSD). Click a headline to view full text.</p>
         </div>
 
         <div class="text-right">
-          <div class="text-xs text-color-muted">Last update</div>
-          <div id="last-updated" class="text-sm font-medium time-small">—</div>
+          <div class="text-xs text-color-muted">Status</div>
+          <div id="connection-status" class="text-sm font-medium text-green-500 flex items-center justify-end gap-2">
+              <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+              Live
+          </div>
         </div>
       </div>
 
       <!-- Controls -->
       <section class="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-8 gap-3">
-          <div class="md:col-span-4">
-            <input id="search" placeholder="Search headline, source or reason..." class="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500" />
+          <div class="md:col-span-5">
+            <input id="search" placeholder="Search headline, source or reason..." class="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 bg-white/50 dark:bg-black/20 text-color-base" />
           </div>
 
           <div class="md:col-span-1">
-            <select id="impact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <select id="impact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 text-color-base">
               <option value="">All USD</option>
               <option value="up">USD ↑</option>
               <option value="down">USD ↓</option>
@@ -66,84 +72,79 @@
           </div>
 
           <div class="md:col-span-1">
-            <select id="goldImpact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700">
-              <option value="">All XAUUSD</option>
-              <option value="up">XAUUSD ↑</option>
-              <option value="down">XAUUSD ↓</option>
+            <select id="goldImpact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 text-color-base">
+              <option value="">All Gold</option>
+              <option value="up">Gold ↑</option>
+              <option value="down">Gold ↓</option>
               <option value="neutral">Neutral</option>
             </select>
           </div>
 
           <div class="md:col-span-1">
-            <select id="sortBy" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <select id="sortBy" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 text-color-base">
               <option value="recent">Newest</option>
               <option value="confidence">Confidence</option>
               <option value="alert_first">Alerts first</option>
             </select>
           </div>
-
-          <div class="md:col-span-1 flex items-center gap-2">
-            <button id="refreshBtn" class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow">Refresh</button>
-            <button id="exportBtn" title="Download feed JSON" class="px-3 py-3 border rounded-2xl border-gray-200 dark:border-gray-700"><i class="fa fa-download"></i></button>
-          </div>
         </div>
       </section>
 
       <!-- Feed -->
-      <section id="feed" class="grid gap-4"></section>
+      <section id="feed" class="grid gap-4 min-h-[200px] relative">
+          <!-- Loading skeleton will be replaced -->
+      </section>
 
-      <div id="emptyState" class="hidden text-center text-gray-500 mt-8">
-        No news items found. Try refreshing.
+      <div id="emptyState" class="hidden text-center text-gray-500 mt-8 py-12 bg-black/5 dark:bg-white/5 rounded-2xl">
+        No news items found matching your criteria.
       </div>
     </main>
-
-    <footer class="fixed bottom-0 left-0 right-0">
-      <div class="glass-card py-2 mx-4 mb-4 rounded-lg text-center text-xs text-color-muted">Finex • Live News Feed</div>
-    </footer>
   </div>
 
   <!-- Modal for full processed text -->
   <div id="modalRoot" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/40" id="modalBackdrop"></div>
-    <div class="relative max-w-3xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-auto" style="max-height:85vh;">
-      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
-        <div class="font-semibold">Processed content</div>
-        <div class="flex items-center gap-3">
-          <a id="modalOpenOriginal" class="link-muted mr-2" target="_blank" rel="noopener">Open original</a>
-          <button id="modalClose" class="px-3 py-1 rounded-lg border">Close</button>
-        </div>
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modalBackdrop"></div>
+    <div class="relative max-w-2xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-white/10 transform transition-all">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/20">
+        <h3 class="font-bold text-lg text-color-base">Details</h3>
+        <button id="modalClose" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+        </button>
       </div>
-      <div id="modalContent" class="p-5 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap"></div>
+      <div id="modalContent" class="p-6 text-base text-gray-800 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-[70vh] overflow-y-auto"></div>
+      <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/20 flex justify-end">
+          <a id="modalOpenOriginal" class="main-button text-sm py-2 px-4 rounded-lg inline-flex items-center gap-2" target="_blank" rel="noopener">
+              Open Original Source <i class="fas fa-external-link-alt"></i>
+          </a>
+      </div>
     </div>
   </div>
 
-  <!-- app core (keeps your header/sidebar/auth behavior) -->
+  <!-- app core -->
   <script type="module" src="app.js"></script>
 
-  <!-- Page logic (replaceable) -->
+  <!-- Page logic -->
   <script type="module">
     import { initializeAppCore } from './app.js';
+    // Import Firestore functions needed for real-time updates
+    import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
     function initNewsPage(user, db) {
-      // Config
-      const DATA_PATH = '/data/website_feed.json';
-      const POLL_INTERVAL_MS = 30 * 1000; // 30s
+      console.log("Initializing Real-time News Feed...");
+
       const feedEl = document.getElementById('feed');
-      const lastUpdatedEl = document.getElementById('last-updated');
+      const connectionStatus = document.getElementById('connection-status');
       const searchInput = document.getElementById('search');
       const impactSelect = document.getElementById('impact');
       const goldSelect = document.getElementById('goldImpact');
       const sortBy = document.getElementById('sortBy');
-      const refreshBtn = document.getElementById('refreshBtn');
-      const exportBtn = document.getElementById('exportBtn');
       const emptyState = document.getElementById('emptyState');
       const modalRoot = document.getElementById('modalRoot');
       const modalContent = document.getElementById('modalContent');
       const modalClose = document.getElementById('modalClose');
       const modalOpenOriginal = document.getElementById('modalOpenOriginal');
-      let feedData = [];
-      let lastFetch = 0;
-      let pollTimer = null;
+      
+      let allFeedData = []; // Local cache of live data for filtering
 
       // Helpers
       const esc = s => {
@@ -156,9 +157,10 @@
       const timeAgo = iso => {
         if (!iso) return '';
         try {
-          const d = new Date(iso);
+          // Handle both Firestore Timestamp and ISO strings
+          const d = iso.toDate ? iso.toDate() : new Date(iso);
           const s = Math.floor((Date.now() - d.getTime())/1000);
-          if (s < 60) return `${s}s ago`;
+          if (s < 60) return `Just now`;
           const m = Math.floor(s/60);
           if (m < 60) return `${m}m ago`;
           const h = Math.floor(m/60);
@@ -169,86 +171,94 @@
       };
 
       function makeRow(item) {
-        // expected keys: headline, text, published, source, usd_impact, xauusd_impact, confidence, action, url, reason
         const isAlert = (item.action || '').toUpperCase() === 'ALERT';
         const usd = (item.usd_impact || 'neutral').toLowerCase();
         const gold = (item.xauusd_impact || 'neutral').toLowerCase();
         const confPct = Math.round((item.confidence || 0) * 100);
 
-        const usdClass = usd === 'up' ? 'text-green-600' : usd === 'down' ? 'text-red-600' : 'text-gray-400';
-        const goldClass = gold === 'up' ? 'text-yellow-500' : gold === 'down' ? 'text-blue-400' : 'text-gray-400';
-        const badge = isAlert ? `<span class="badge-alert px-3 py-1 text-xs font-semibold rounded-full">ALERT</span>` :
-                                `<span class="badge-info px-3 py-1 text-xs font-semibold rounded-full">INFO</span>`;
+        const usdClass = usd === 'up' ? 'text-green-500 dark:text-green-400' : usd === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500';
+        const goldClass = gold === 'up' ? 'text-yellow-500 dark:text-yellow-400' : gold === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500';
+        
+        const badge = isAlert 
+            ? `<span class="bg-red-500 text-white px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded-full">ALERT</span>` 
+            : `<span class="bg-blue-500/10 text-blue-500 dark:text-blue-400 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded-full">INFO</span>`;
 
-        const headline = esc(item.headline || item.text || '(no headline)');
-        const source = esc(item.source || item.handle || '');
+        const headline = esc(item.headline || '(no headline)');
+        const source = esc(item.source || 'Finex Desk');
         const reason = esc(item.reason || '');
-        const published = item.published || '';
+        // Use published date if available, otherwise createdAt
+        const pubDate = item.published ? (new Date(item.published)) : (item.createdAt?.toDate ? item.createdAt.toDate() : new Date());
 
         // truncate preview
-        const preview = esc((item.text || '').slice(0, 600));
+        const preview = esc((item.text || '').slice(0, 250) + (item.text && item.text.length > 250 ? '...' : ''));
 
         return `
-          <div class="p-4 rounded-xl border ${isAlert ? 'border-red-400 bg-red-50/3' : 'border-gray-200 dark:border-gray-700'} fade-in">
-            <div class="flex items-start gap-4">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-start gap-3">
-                  <div class="flex-1 min-w-0">
-                    <button class="text-left w-full headline-btn">
-                      <div class="text-sm md:text-base font-semibold text-color-base truncate">${headline}</div>
-                      <div class="text-xs text-color-muted mt-1 truncate">${source} · ${new Date(published).toLocaleString()} · ${timeAgo(published)}</div>
-                    </button>
-                  </div>
-                  <div class="flex flex-col items-end gap-2 ml-3">
-                    <div class="${usdClass} font-bold text-sm">USD ${usd.toUpperCase()}</div>
-                    <div class="${goldClass} font-bold text-sm">GOLD ${gold.toUpperCase()}</div>
-                    <div class="mt-1 flex items-center gap-2">
-                      <div class="conf-pill bg-gray-100 dark:bg-gray-800 text-color-base">${confPct}%</div>
-                    </div>
-                  </div>
+          <div class="p-5 rounded-2xl border ${isAlert ? 'border-red-500/20 bg-red-500/5' : 'border-gray-200 dark:border-white/5 bg-white dark:bg-white/5'} fade-in transition-all hover:border-blue-500/30 group">
+            <div class="flex flex-col gap-3">
+                <!-- Top Row: Meta -->
+                <div class="flex items-center justify-between">
+                     <div class="flex items-center gap-2">
+                        ${badge}
+                        <span class="text-xs text-color-muted">${source} &bull; ${timeAgo(item.createdAt || item.published)}</span>
+                     </div>
+                     <div class="flex items-center gap-3 text-xs font-bold">
+                        <span class="${usdClass}">USD ${usd.toUpperCase()}</span>
+                        <span class="text-gray-300">|</span>
+                        <span class="${goldClass}">GOLD ${gold.toUpperCase()}</span>
+                     </div>
                 </div>
 
-                <div class="mt-3 text-sm text-gray-700 dark:text-gray-300 ${preview.length>220 ? 'card-truncate' : ''}">
-                  ${preview.replace(/\n/g,'<br/>')}
-                </div>
+                <!-- Middle: Headline -->
+                 <button class="text-left w-full headline-btn group-hover:text-blue-500 transition-colors">
+                    <h3 class="text-lg font-bold text-color-base leading-tight">${headline}</h3>
+                 </button>
 
-                <div class="mt-3 flex items-center gap-3">
-                  ${badge}
-                  <div class="text-xs text-color-muted">Reason: ${reason || '—'}</div>
-                  <div class="ml-auto flex items-center gap-2">
-                    <button class="open-original text-xs px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700">Open</button>
-                    <button class="copy-headline text-xs px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700">Copy</button>
-                  </div>
+                <!-- Bottom: Reason & Preview -->
+                ${reason ? `<div class="text-sm italic text-color-muted bg-black/5 dark:bg-black/20 p-2 rounded-lg"><i class="fas fa-info-circle mr-2 opacity-50"></i>${reason}</div>` : ''}
+                
+                <div class="text-sm text-color-base opacity-80 line-clamp-2">
+                    ${preview}
                 </div>
-              </div>
+                 <div class="flex items-center justify-between mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
+                     <span class="text-xs font-medium text-color-muted">Confidence: <span class="${confPct > 75 ? 'text-green-500' : 'text-yellow-500'}">${confPct}%</span></span>
+                     <button class="headline-btn text-xs font-bold text-blue-500 hover:underline">Read Details</button>
+                 </div>
             </div>
           </div>
         `;
       }
 
-      // Render & wiring
+      // Render & filtering
       function render() {
         const q = (searchInput.value || '').trim().toLowerCase();
         const impactV = impactSelect.value;
         const goldV = goldSelect.value;
         const sb = sortBy.value;
 
-        let data = Array.from(feedData || []);
+        let data = Array.from(allFeedData);
 
         if (q) {
           data = data.filter(it =>
-            ((it.headline||'') + ' ' + (it.text||'') + ' ' + (it.reason||'') + ' ' + (it.source||it.handle||'')).toLowerCase().includes(q)
+            ((it.headline||'') + ' ' + (it.text||'') + ' ' + (it.reason||'') + ' ' + (it.source||'')).toLowerCase().includes(q)
           );
         }
-        if (impactV) data = data.filter(it => (it.usd_impact||'').toLowerCase() === impactV);
-        if (goldV) data = data.filter(it => (it.xauusd_impact||'').toLowerCase() === goldV);
+        if (impactV) data = data.filter(it => (it.usd_impact||'neutral') === impactV);
+        if (goldV) data = data.filter(it => (it.xauusd_impact||'neutral') === goldV);
 
         if (sb === 'confidence') {
           data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
         } else if (sb === 'alert_first') {
-          data.sort((a,b) => ((b.action||'')==='ALERT') - ((a.action||'')==='ALERT') || ((b.confidence||0) - (a.confidence||0)));
+          data.sort((a,b) => ((b.action==='ALERT') ? 1 : 0) - ((a.action==='ALERT') ? 1 : 0) || ((b.confidence||0) - (a.confidence||0)));
+          // Re-sort by date if alerts match
+           data.sort((a,b) => {
+               if (b.action === 'ALERT' && a.action !== 'ALERT') return 1;
+               if (a.action === 'ALERT' && b.action !== 'ALERT') return -1;
+               return b.createdAt - a.createdAt;
+           });
         } else {
-          data.sort((a,b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+           // Default: Recent first
+           // Firestore already gives us sorted data, but good to ensure if we filtered
+           data.sort((a,b) => b.createdAt - a.createdAt);
         }
 
         feedEl.innerHTML = '';
@@ -256,98 +266,63 @@
           emptyState.classList.remove('hidden');
         } else {
           emptyState.classList.add('hidden');
-          for (const item of data) {
+          data.forEach(item => {
             const wrapper = document.createElement('div');
             wrapper.innerHTML = makeRow(item);
-            // wire headline click -> open modal with full processed text (item.text) and original url
-            const headlineBtn = wrapper.querySelector('.headline-btn');
-            if (headlineBtn) {
-              headlineBtn.addEventListener('click', () => {
-                modalContent.innerText = item.text || item.headline || '(no text)';
-                modalOpenOriginal.href = item.url || item.linked_url || '#';
-                modalRoot.classList.remove('hidden');
-              });
-            }
-            const openBtn = wrapper.querySelector('.open-original');
-            if (openBtn) openBtn.addEventListener('click', () => window.open(item.url || item.linked_url || '#', '_blank', 'noopener'));
-
-            const copyBtn = wrapper.querySelector('.copy-headline');
-            if (copyBtn) copyBtn.addEventListener('click', () => {
-              const text = item.headline || item.text || '';
-              navigator.clipboard && navigator.clipboard.writeText(text);
-              copyBtn.innerText = 'Copied';
-              setTimeout(()=> copyBtn.innerText = 'Copy', 1000);
+            
+            // Wire up modals
+            const headlineBtns = wrapper.querySelectorAll('.headline-btn');
+            headlineBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                  modalContent.innerText = item.text || item.headline || '(no further details)';
+                  if (item.url) {
+                      modalOpenOriginal.href = item.url;
+                      modalOpenOriginal.style.display = 'inline-flex';
+                  } else {
+                      modalOpenOriginal.style.display = 'none';
+                  }
+                  modalRoot.classList.remove('hidden');
+                });
             });
-
+            
             feedEl.appendChild(wrapper);
-          }
+          });
         }
       }
 
-      async function fetchFeed(force=false) {
-        const now = Date.now();
-        if (!force && (now - lastFetch) < 5000) return; // throttle
-        try {
-          const res = await fetch(DATA_PATH + '?_=' + now, { cache: 'no-store' });
-          if (!res.ok) throw new Error('Fetch failed: ' + res.status);
-          const arr = await res.json();
-          // basic dedupe & normalize
-          const seen = new Set();
-          const unique = [];
-          for (const it of (arr || [])) {
-            const key = ((it.headline||'') + '|' + (it.published||'')).slice(0,400);
-            if (!seen.has(key)) { seen.add(key); unique.push(it); }
-          }
-          feedData = unique;
-          lastFetch = Date.now();
-          lastUpdatedEl.innerText = 'Just now';
+      // REAL-TIME LISTENER
+      // Listens to the 'news_feed' collection, ordered by newest first, limited to 100 items for performance
+      const q = query(collection(db, 'news_feed'), orderBy('createdAt', 'desc'), limit(100));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+          allFeedData = [];
+          snapshot.forEach(doc => {
+              // Add doc.id just in case we need it later
+              allFeedData.push({ id: doc.id, ...doc.data() });
+          });
           render();
-        } catch (err) {
-          console.error('Failed to fetch feed', err);
-        }
-      }
+          // Update connection status indicator if it was ever showing an error
+          connectionStatus.innerHTML = '<span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> Live';
+          connectionStatus.className = "text-sm font-medium text-green-500 flex items-center justify-end gap-2";
 
-      // Export JSON locally
-      exportBtn.addEventListener('click', () => {
-        const blob = new Blob([JSON.stringify(feedData, null, 2)], {type: 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'website_feed.json';
-        a.click();
-        URL.revokeObjectURL(a.href);
+      }, (error) => {
+          console.error("Live feed error:", error);
+          connectionStatus.textContent = "Offline (Reconnecting...)";
+          connectionStatus.className = "text-sm font-medium text-red-500 flex items-center justify-end gap-2";
       });
 
-      // Controls
-      refreshBtn.addEventListener('click', () => fetchFeed(true));
-      searchInput.addEventListener('input', () => render());
-      impactSelect.addEventListener('change', () => render());
-      goldSelect.addEventListener('change', () => render());
-      sortBy.addEventListener('change', () => render());
+      // Controls event listeners
+      searchInput.addEventListener('input', render);
+      impactSelect.addEventListener('change', render);
+      goldSelect.addEventListener('change', render);
+      sortBy.addEventListener('change', render);
 
-      // Modal
+      // Modal controls
       modalClose.addEventListener('click', () => modalRoot.classList.add('hidden'));
       document.getElementById('modalBackdrop').addEventListener('click', () => modalRoot.classList.add('hidden'));
-
-      // Reveal page once logic is attached
-      document.getElementById('app-wrapper').style.display = '';
-
-      // Initial fetch + polling
-      fetchFeed(true);
-      if (pollTimer) clearInterval(pollTimer);
-      pollTimer = setInterval(() => fetchFeed(), POLL_INTERVAL_MS);
-
-      // update last-updated label periodically
-      setInterval(()=> {
-        if (!lastFetch) return;
-        const delta = Math.floor((Date.now() - lastFetch) / 1000);
-        if (delta < 5) lastUpdatedEl.innerText = 'Just now';
-        else if (delta < 60) lastUpdatedEl.innerText = `${delta}s ago`;
-        else if (delta < 3600) lastUpdatedEl.innerText = `${Math.floor(delta/60)}m ago`;
-        else lastUpdatedEl.innerText = `${Math.floor(delta/3600)}h ago`;
-      }, 1000);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modalRoot.classList.add('hidden'); });
     }
 
-    // initialize app core which calls initNewsPage(user, db)
     initializeAppCore(initNewsPage);
   </script>
 </body>
