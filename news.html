@@ -1,105 +1,320 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live News Feed | Finex</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
-    <link rel="stylesheet" href="main.css">
-    <style>
-        .news-source-button { @apply form-input flex items-center justify-between p-4 w-full cursor-pointer transition duration-300; }
-        .news-source-button:hover { @apply bg-gray-100 dark:bg-white/10 border-blue-500/50; }
-        main { padding-bottom: 70px; } footer { z-index: 20; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Live News Feed | Finex</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  <link rel="stylesheet" href="main.css">
+  <style>
+    .news-badge { @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold; }
+    .card-collapsed { max-height: 5.25rem; overflow: hidden; }
+    .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
+    .time-small { font-variant-numeric: tabular-nums; }
+  </style>
 </head>
 <body class="antialiased textured-background">
-    <div id="app-wrapper" style="display: none;">
-        <div id="sidebar-placeholder"></div>
-        <div id="header-placeholder"></div>
+  <!-- App wrapper is hidden until initializeAppCore finishes auth/load -->
+  <div id="app-wrapper" style="display:none;">
+    <div id="sidebar-placeholder"></div>
+    <div id="header-placeholder"></div>
 
+    <main class="container mx-auto p-4 md:p-8">
+      <div class="flex items-start justify-between mb-6 gap-4">
         <div>
-            <main class="container mx-auto p-4 md:p-8">
-                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2">
-                        <h2 class="text-3xl font-bold mb-4 text-color-base">Top Stories</h2>
-                        <div class="tradingview-widget-container" style="height:calc(100vh - 200px); width:100%">
-                            <div id="tradingview-timeline-widget" class="tradingview-widget-container__widget h-full"></div>
-                        </div>
-                    </div>
-                    <div class="space-y-8">
-                        <div>
-                            <h2 class="text-3xl font-bold mb-4 text-color-base">Market Overview</h2>
-                            <div class="tradingview-widget-container" style="height:450px; width:100%">
-                                <div id="tradingview-marketoverview-widget" class="tradingview-widget-container__widget h-full"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <h2 class="text-3xl font-bold mb-4 text-color-base">Top News Sources</h2>
-                            <div class="space-y-3">
-                                <a href="https://www.reuters.com/markets/" target="_blank" rel="noopener noreferrer" class="news-source-button"><span class="font-bold text-color-base">Reuters Markets</span><i class="fas fa-external-link-alt text-color-muted"></i></a>
-                                <a href="https://www.bloomberg.com/" target="_blank" rel="noopener noreferrer" class="news-source-button"><span class="font-bold text-color-base">Bloomberg</span><i class="fas fa-external-link-alt text-color-muted"></i></a>
-                                <a href="https://www.wsj.com/news/markets" target="_blank" rel="noopener noreferrer" class="news-source-button"><span class="font-bold text-color-base">Wall Street Journal</span><i class="fas fa-external-link-alt text-color-muted"></i></a>
-                                 <a href="https://www.coindesk.com/" target="_blank" rel="noopener noreferrer" class="news-source-button"><span class="font-bold text-color-base">CoinDesk (Crypto)</span><i class="fas fa-external-link-alt text-color-muted"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                 </div>
-            </main>
+          <h1 class="text-3xl font-bold text-color-base">📡 Live Market News Feed</h1>
+          <p class="text-sm text-color-muted mt-1">Auto-updating stream of headlines, full content, and market impact signals (USD / XAUUSD).</p>
         </div>
-        <footer class="fixed bottom-0 left-0 right-0">
-            <div class="glass-card py-1 mx-4 mb-4 rounded-lg">
-                <div class="tradingview-widget-container">
-                    <div id="tradingview-ticker-widget" class="tradingview-widget-container__widget"></div>
-                </div>
-            </div>
-        </footer>
+        <div class="text-right space-y-1">
+          <div class="text-xs text-color-muted">Last update</div>
+          <div id="last-updated" class="text-sm font-medium time-small">—</div>
         </div>
+      </div>
 
-    <script type="module" src="app.js"></script>
-    <script type="module">
-        import { initializeAppCore } from './app.js';
-        function initNewsPage(user, db) {
-            console.log("Setting up News Feed page specific logic...");
-            function loadTradingViewWidget(containerId, widgetConfig, widgetSource) {
-                 const container = document.getElementById(containerId);
-                 if (!container || container.querySelector('script')) return;
-                 const isDarkMode = document.documentElement.classList.contains('dark');
-                 const theme = isDarkMode ? 'dark' : 'light';
-                 widgetConfig.colorTheme = theme;
-                 if (containerId === 'tradingview-marketoverview-widget') {
-                    widgetConfig.scaleFontColor = isDarkMode ? "rgba(169, 169, 179, 1)" : "rgba(107, 114, 128, 1)";
-                 }
-                 const script = document.createElement('script');
-                 script.type = 'text/javascript'; script.src = widgetSource; script.async = true;
-                 script.innerHTML = JSON.stringify(widgetConfig);
-                 container.innerHTML = ''; container.appendChild(script);
-            }
-            const timelineConfig = {"feedMode": "all_symbols", "isTransparent": true, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "en" };
-            const marketOverviewConfig = { "dateRange": "12M", "showChart": true, "locale": "en", "largeChartUrl": "", "isTransparent": true, "showSymbolLogo": true, "showFloatingTooltip": false, "width": "100%", "height": "100%", "plotLineColorGrowing": "rgba(41, 98, 255, 1)", "plotLineColorFalling": "rgba(41, 98, 255, 1)", "gridLineColor": "rgba(240, 243, 250, 0)", "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)", "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)", "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)", "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)", "symbolActiveColor": "rgba(41, 98, 255, 0.12)", "tabs": [ { "title": "Indices", "symbols": [ { "s": "FOREXCOM:SPXUSD", "d": "S&P 500" }, { "s": "FOREXCOM:NSXUSD", "d": "US 100" }, { "s": "FOREXCOM:DJI", "d": "Dow 30" }, { "s": "INDEX:VIX", "d": "VIX" } ] }, { "title": "Futures", "symbols": [ { "s": "CME_MINI:ES1!", "d": "S&P 500" }, { "s": "CME:6E1!", "d": "Euro" }, { "s": "COMEX:GC1!", "d": "Gold" }, { "s": "NYMEX:CL1!", "d": "Crude Oil" } ] }, { "title": "Bonds", "symbols": [ { "s": "CME:GE1!", "d": "Eurodollar" }, { "s": "CBOT:ZB1!", "d": "T-Bond" }, { "s": "CBOT:UB1!", "d": "Ultra T-Bond" } ] }, { "title": "Forex", "symbols": [ { "s": "FX:EURUSD", "d": "EUR/USD" }, { "s": "FX:GBPUSD", "d": "GBP/USD" }, { "s": "FX:USDJPY", "d": "USD/JPY" } ] } ] };
-            const tickerConfig = { "symbols": [ { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" }, { "proName": "FOREXCOM:NSXUSD", "title": "US 100" }, { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" }, { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" }, { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" } ], "showSymbolLogo": true, "isTransparent": true, "displayMode": "adaptive", "locale": "en" };
-            function loadAllWidgets() {
-                loadTradingViewWidget('tradingview-timeline-widget', timelineConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js');
-                loadTradingViewWidget('tradingview-marketoverview-widget', marketOverviewConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js');
-                loadTradingViewWidget('tradingview-ticker-widget', tickerConfig, 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js');
-            }
-            loadAllWidgets();
-            const observer = new MutationObserver(mutations => {
-                mutations.forEach(mutation => {
-                    if (mutation.attributeName === 'class' && mutation.target === document.documentElement) {
-                        console.log("Theme changed, reloading news widgets."); loadAllWidgets();
-                    }
-                });
-            });
-            observer.observe(document.documentElement, { attributes: true });
+      <section class="mb-6">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+          <input id="search" type="search" placeholder="Search headline, reason, or source..." class="flex-1 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 focus:outline-none" />
+          <select id="impact" class="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <option value="">All USD impacts</option>
+            <option value="up">USD ↑ (Bullish USD)</option>
+            <option value="down">USD ↓ (Dovish USD)</option>
+            <option value="neutral">Neutral</option>
+          </select>
+          <select id="goldImpact" class="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <option value="">All XAUUSD impacts</option>
+            <option value="up">XAUUSD ↑ (Gold bullish)</option>
+            <option value="down">XAUUSD ↓ (Gold bearish)</option>
+            <option value="neutral">Neutral</option>
+          </select>
+          <select id="sortBy" class="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <option value="recent">Sort: Newest</option>
+            <option value="confidence">Sort: Confidence</option>
+            <option value="alert_first">Sort: Alerts first</option>
+          </select>
+          <button id="refreshBtn" class="px-4 py-2 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">Refresh</button>
+        </div>
+      </section>
+
+      <section id="feed" class="grid gap-4"></section>
+
+      <div id="emptyState" class="hidden text-center text-gray-500 mt-6">
+        No news items found.
+      </div>
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0">
+      <div class="glass-card py-2 mx-4 mb-4 rounded-lg">
+        <div class="container mx-auto text-center text-xs text-color-muted">Finex • Live News Feed</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- app.js initialization (keeps your auth + dynamic header/sidebar behavior) -->
+  <script type="module" src="app.js"></script>
+
+  <script type="module">
+    import { initializeAppCore } from './app.js';
+
+    function initNewsPage(user, db) {
+      // page config
+      const DATA_PATH = '/data/website_feed.json';
+      const POLL_INTERVAL_MS = 30 * 1000; // 30s default; tune as needed
+      let feedData = [];
+      let lastFetch = 0;
+      let pollTimer = null;
+
+      const feedEl = document.getElementById('feed');
+      const lastUpdatedEl = document.getElementById('last-updated');
+      const searchInput = document.getElementById('search');
+      const impactSelect = document.getElementById('impact');
+      const goldSelect = document.getElementById('goldImpact');
+      const sortBy = document.getElementById('sortBy');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const emptyState = document.getElementById('emptyState');
+
+      function timeAgo(iso) {
+        try {
+          const d = new Date(iso);
+          const s = Math.floor((Date.now() - d.getTime())/1000);
+          if (s < 60) return `${s}s ago`;
+          const m = Math.floor(s/60);
+          if (m < 60) return `${m}m ago`;
+          const h = Math.floor(m/60);
+          if (h < 24) return `${h}h ago`;
+          const days = Math.floor(h/24);
+          return `${days}d ago`;
+        } catch {
+          return '';
         }
-        initializeAppCore(initNewsPage);
-    </script>
+      }
+
+      function makeConfidenceBar(conf) {
+        const pct = Math.round((conf || 0) * 100);
+        const color = pct >= 75 ? 'bg-green-500' : pct >= 45 ? 'bg-yellow-500' : 'bg-gray-400';
+        return `
+          <div class="w-36 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div style="width:${pct}%" class="${color} h-full"></div>
+          </div>
+          <div class="text-xs text-color-muted ml-2">${pct}%</div>
+        `;
+      }
+
+      function openInNewTab(url) {
+        if (!url) return;
+        window.open(url, '_blank', 'noopener');
+      }
+
+      // safe text escape for HTML insertion
+      function esc(s) {
+        if (!s) return '';
+        const d = document.createElement('div');
+        d.innerText = s;
+        return d.innerHTML;
+      }
+
+      function buildCard(item) {
+        const isAlert = (item.action || '').toUpperCase() === 'ALERT';
+        const usd = (item.usd_impact || 'neutral').toLowerCase();
+        const gold = (item.xauusd_impact || 'neutral').toLowerCase();
+        const usdClass = usd === 'up' ? 'text-green-600' : usd === 'down' ? 'text-red-500' : 'text-gray-400';
+        const goldClass = gold === 'up' ? 'text-yellow-600' : gold === 'down' ? 'text-blue-400' : 'text-gray-400';
+        const confidenceHtml = makeConfidenceBar(item.confidence);
+
+        const shortText = esc(item.text || item.headline || '');
+        const headline = esc(item.headline || '').replace(/\n/g, ' ');
+        const published = item.published || '';
+        const reason = esc(item.reason || '');
+        const source = esc(item.source || '');
+        const originalUrl = item.url || '';
+
+        const expandedId = `expand-${btoa((item.headline||'').slice(0,40)).replace(/=/g,'')}`;
+
+        return `
+          <article class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md border ${isAlert ? 'border-red-400 ring-1 ring-red-200/20' : 'border-gray-200 dark:border-gray-700'}">
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1">
+                <div class="flex items-start gap-3">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 leading-snug">${headline}</h3>
+                  <div class="ml-2">
+                    ${isAlert ? '<span class="news-badge bg-red-50 text-red-700 border border-red-100">ALERT</span>' : ''}
+                  </div>
+                </div>
+                <div class="text-xs text-color-muted mt-1 flex items-center gap-3">
+                  <span class="time-small">${timeAgo(published)} · ${new Date(published).toLocaleString()}</span>
+                  <span>•</span>
+                  <span>Source: <strong>${source}</strong></span>
+                </div>
+                <div id="${expandedId}" class="mt-3 text-sm text-gray-700 dark:text-gray-300 ${shortText.length > 420 ? 'card-collapsed' : ''}">
+                  ${shortText.replace(/\n/g,'<br/>')}
+                </div>
+                <div class="mt-3 flex gap-3 items-center">
+                  <button data-expand="${expandedId}" class="text-sm px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">View ${shortText.length > 420 ? 'more' : 'full'}</button>
+                  ${ originalUrl ? `<button data-url="${esc(originalUrl)}" class="text-sm px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">Open original</button>` : '' }
+                  <button class="text-sm px-3 py-1 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5" data-copy="${esc(headline)}">Copy</button>
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-3 w-48">
+                <div class="text-sm">USD <span class="${usdClass} font-bold ml-1">${usd.toUpperCase()}</span></div>
+                <div class="text-sm">XAUUSD <span class="${goldClass} font-bold ml-1">${gold.toUpperCase()}</span></div>
+                <div class="flex items-center mt-2">${confidenceHtml}</div>
+              </div>
+            </div>
+
+            <div class="mt-3 text-xs text-color-muted">Reason: ${reason || '<span class="text-gray-400">—</span>'}</div>
+          </article>
+        `;
+      }
+
+      function render() {
+        // filters & search
+        const q = (searchInput.value || '').trim().toLowerCase();
+        const impactV = impactSelect.value;
+        const goldV = goldSelect.value;
+        const sb = sortBy.value;
+
+        let data = Array.from(feedData);
+
+        if (q) {
+          data = data.filter(it =>
+            (it.headline||'').toLowerCase().includes(q) ||
+            (it.text||'').toLowerCase().includes(q) ||
+            (it.reason||'').toLowerCase().includes(q) ||
+            (it.source||'').toLowerCase().includes(q)
+          );
+        }
+        if (impactV) data = data.filter(it => (it.usd_impact||'').toLowerCase() === impactV);
+        if (goldV) data = data.filter(it => (it.xauusd_impact||'').toLowerCase() === goldV);
+
+        if (sb === 'confidence') {
+          data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
+        } else if (sb === 'alert_first') {
+          data.sort((a,b) => ((b.action||'') === 'ALERT') - ((a.action||'') === 'ALERT') || ((b.confidence||0) - (a.confidence||0)));
+        } else {
+          data.sort((a,b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+        }
+
+        feedEl.innerHTML = '';
+        if (!data.length) {
+          emptyState.classList.remove('hidden');
+        } else {
+          emptyState.classList.add('hidden');
+          data.forEach(item => {
+            const html = buildCard(item);
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            // attach handlers for buttons
+            const expandBtn = wrapper.querySelector('[data-expand]');
+            if (expandBtn) {
+              expandBtn.addEventListener('click', (e) => {
+                const id = expandBtn.getAttribute('data-expand');
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.toggle('card-collapsed');
+                expandBtn.innerText = el.classList.contains('card-collapsed') ? 'View more' : 'Collapse';
+              });
+            }
+            const openBtn = wrapper.querySelector('[data-url]');
+            if (openBtn) {
+              openBtn.addEventListener('click', () => {
+                const url = openBtn.getAttribute('data-url');
+                openInNewTab(url);
+              });
+            }
+            const copyBtn = wrapper.querySelector('[data-copy]');
+            if (copyBtn) {
+              copyBtn.addEventListener('click', (e) => {
+                const txt = copyBtn.getAttribute('data-copy') || '';
+                navigator.clipboard && navigator.clipboard.writeText(txt);
+                copyBtn.innerText = 'Copied';
+                setTimeout(()=> copyBtn.innerText = 'Copy', 1200);
+              });
+            }
+            feedEl.appendChild(wrapper);
+          });
+        }
+      }
+
+      async function fetchFeed(force=false) {
+        const now = Date.now();
+        // avoid too frequent fetches unless forced
+        if (!force && (now - lastFetch) < 5000) return;
+        try {
+          const res = await fetch(DATA_PATH + '?_=' + now, { cache: 'no-store' });
+          if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+          const data = await res.json();
+          // basic dedupe (by headline + published)
+          const seen = new Map();
+          const unique = [];
+          for (const it of data || []) {
+            const key = (it.headline||'') + '|' + (it.published||'');
+            if (!seen.has(key)) { seen.set(key, true); unique.push(it); }
+          }
+          feedData = unique;
+          lastFetch = Date.now();
+          lastUpdatedEl.innerText = timeAgo(new Date().toISOString());
+          lastUpdatedEl.innerText = 'Just now';
+          render();
+        } catch (err) {
+          console.error('Failed to fetch feed', err);
+        }
+      }
+
+      // wire UI
+      refreshBtn.addEventListener('click', () => fetchFeed(true));
+      searchInput.addEventListener('input', () => render());
+      impactSelect.addEventListener('change', () => render());
+      goldSelect.addEventListener('change', () => render());
+      sortBy.addEventListener('change', () => render());
+
+      // show the app wrapper now that page-specific logic is attached
+      document.getElementById('app-wrapper').style.display = '';
+
+      // initial load
+      fetchFeed(true);
+
+      // start polling
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(() => fetchFeed(), POLL_INTERVAL_MS);
+
+      // update "last updated" display every second or so
+      setInterval(()=>{
+        if (!lastFetch) return;
+        const delta = Math.floor((Date.now()-lastFetch)/1000);
+        if (delta < 5) lastUpdatedEl.innerText = 'Just now';
+        else if (delta < 60) lastUpdatedEl.innerText = `${delta}s ago`;
+        else if (delta < 3600) lastUpdatedEl.innerText = `${Math.floor(delta/60)}m ago`;
+        else lastUpdatedEl.innerText = `${Math.floor(delta/3600)}h ago`;
+      }, 1000);
+    }
+
+    // initialize app (this will call initNewsPage(user, db) once app core is ready)
+    initializeAppCore(initNewsPage);
+  </script>
 </body>
 </html>
