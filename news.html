@@ -5,314 +5,194 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Live News Feed | Finex</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  <link rel="stylesheet" href="main.css">
   <style>
-    body { font-family: "Source Sans Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #0b1220; color: #e6eef8; }
-    .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; }
-    .card-collapsed { max-height: 5.2rem; overflow:hidden; }
-    .time-small { font-variant-numeric: tabular-nums; }
-    .muted { color: #98a0b3; }
-    .confidence-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow:hidden; }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .news-card { transition: all 0.2s ease; }
+    .news-card:hover { transform: translateY(-2px); }
   </style>
 </head>
-<body>
-  <main class="max-w-6xl mx-auto p-6">
-    <header class="flex items-start justify-between gap-4 mb-6">
-      <div>
-        <h1 class="text-3xl font-bold">📡 Live Market News Feed</h1>
-        <p class="muted mt-1">Headlines, full text and automated USD / XAU impact signals — live from admin.</p>
-      </div>
-      <div class="text-right">
-        <div class="muted text-xs">Last update</div>
-        <div id="last-updated" class="font-medium time-small">—</div>
-      </div>
-    </header>
 
-    <section class="mb-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-      <input id="search" type="search" placeholder="Search headline, text, or reason..." class="p-3 rounded-xl bg-white/3 border border-white/6" />
-      <select id="filterUsd" class="p-3 rounded-xl bg-white/3 border border-white/6">
-        <option value="">All USD impacts</option>
-        <option value="up">USD ↑ (Bullish)</option>
-        <option value="down">USD ↓ (Dovish)</option>
-        <option value="neutral">Neutral</option>
-      </select>
-      <select id="filterGold" class="p-3 rounded-xl bg-white/3 border border-white/6">
-        <option value="">All XAUUSD impacts</option>
-        <option value="up">Gold ↑</option>
-        <option value="down">Gold ↓</option>
-        <option value="neutral">Neutral</option>
-      </select>
-      <select id="sortBy" class="p-3 rounded-xl bg-white/3 border border-white/6">
-        <option value="recent">Sort: Newest</option>
-        <option value="confidence">Sort: Confidence</option>
-        <option value="alert_first">Sort: Alerts first</option>
-      </select>
-    </section>
+<body class="antialiased textured-background">
+  <div id="app-wrapper" style="display:none;">
+    <div id="sidebar-placeholder"></div>
+    <div id="header-placeholder"></div>
 
-    <section id="feed" class="space-y-4">
-      <div class="muted text-center">Loading live feed…</div>
-    </section>
-
-    <div id="empty" class="text-center muted hidden mt-6">No news items found.</div>
-  </main>
-
-  <!-- Firebase + app logic -->
-  <script type="module">
-    // -------------------------
-    // CONFIG: Replace with your Firebase config if different
-    // -------------------------
-    const firebaseConfig = {
-      apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM",
-      authDomain: "adminpanel-93879.firebaseapp.com",
-      projectId: "adminpanel-93879",
-      storageBucket: "adminpanel-93879.appspot.com",
-      messagingSenderId: "854889610123",
-      appId: "1:854889610123:web:4522c7fc685e9864014d8e"
-    };
-
-    // -------------------------
-    // Firebase imports (modular)
-    // -------------------------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, doc, onSnapshot, getDoc, collection, query, orderBy, limit, getDocs
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    // -------------------------
-    // Init
-    // -------------------------
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // DOM
-    const feedEl = document.getElementById('feed');
-    const searchEl = document.getElementById('search');
-    const filterUsdEl = document.getElementById('filterUsd');
-    const filterGoldEl = document.getElementById('filterGold');
-    const sortByEl = document.getElementById('sortBy');
-    const lastUpdatedEl = document.getElementById('last-updated');
-    const emptyEl = document.getElementById('empty');
-
-    // Local state
-    let feedData = [];
-    let lastFetch = 0;
-
-    function esc(s){
-      if (s === null || s === undefined) return '';
-      const d = document.createElement('div');
-      d.innerText = String(s);
-      return d.innerHTML;
-    }
-
-    function timeAgo(iso){
-      try{
-        const d = new Date(iso);
-        const s = Math.floor((Date.now() - d.getTime())/1000);
-        if (s < 60) return `${s}s ago`;
-        const m = Math.floor(s/60); if (m < 60) return `${m}m ago`;
-        const h = Math.floor(m/60); if (h < 24) return `${h}h ago`;
-        const days = Math.floor(h/24); return `${days}d ago`;
-      }catch(e){ return ''; }
-    }
-
-    function makeConfidenceHtml(conf){
-      const pct = Math.round((conf||0)*100);
-      const color = pct >= 75 ? 'bg-green-400' : pct >= 45 ? 'bg-yellow-400' : 'bg-gray-400';
-      return `<div style="display:flex;align-items:center;gap:.5rem">
-                <div class="confidence-bar" style="width:120px">
-                  <div style="width:${pct}%;height:100%;background:linear-gradient(90deg, rgba(16,185,129,0.9), rgba(34,197,94,0.9));"></div>
-                </div>
-                <div class="muted" style="font-size:.8rem">${pct}%</div>
-              </div>`;
-    }
-
-    function buildCard(item){
-      const isAlert = (item.action||'').toUpperCase() === 'ALERT';
-      const usd = (item.usd_impact||'neutral').toLowerCase();
-      const gold = (item.xauusd_impact||'neutral').toLowerCase();
-      const bullet = isAlert ? '<span style="background:#ffe4e6;color:#9b1c1c;padding:.2rem .5rem;border-radius:999px;font-weight:700;font-size:.75rem">ALERT</span>' : '';
-      const short = esc(item.text || item.headline || '').replace(/\n/g,'<br/>');
-      const headline = esc(item.headline || '').replace(/\n/g,' ');
-      const published = item.published || item.createdAt || new Date().toISOString();
-      const reason = esc(item.reason || '');
-      const source = esc(item.source || '');
-      const url = esc(item.url || '');
-
-      return `
-      <article class="glass p-4 rounded-lg border border-white/6">
-        <div style="display:flex;justify-content:space-between;gap:1rem">
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:.6rem">
-              <h3 style="margin:0;font-size:1.05rem;font-weight:700">${headline}</h3>
-              ${bullet}
-            </div>
-            <div class="muted" style="margin-top:.35rem;font-size:.85rem">${timeAgo(published)} · ${new Date(published).toLocaleString()} · Source: <strong>${source}</strong></div>
-            <div id="txt-${btoa(headline).replace(/=/g,'')}" class="mt-3" style="${(short.length>600)?'max-height:5.2rem;overflow:hidden;':''}">${short}</div>
-            <div class="mt-3 flex gap-2">
-              <button data-expand="${btoa(headline).replace(/=/g,'')}" class="p-2 rounded-xl bg-white/3 text-sm">View ${short.length>600?'more':'full'}</button>
-              ${ url ? `<a href="${url}" target="_blank" class="p-2 rounded-xl bg-white/3 text-sm">Open original</a>` : '' }
-              <button data-copy="${headline}" class="p-2 rounded-xl bg-white/3 text-sm">Copy headline</button>
-            </div>
-          </div>
-
-          <div style="width:180px;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem">
-            <div class="muted">USD <span style="font-weight:700;color:${usd==='up'?'#10b981':usd==='down'?'#ef4444':'#94a3b8'};margin-left:.4rem">${usd.toUpperCase()}</span></div>
-            <div class="muted">XAUUSD <span style="font-weight:700;color:${gold==='up'?'#f59e0b':gold==='down'?'#3b82f6':'#94a3b8'};margin-left:.4rem">${gold.toUpperCase()}</span></div>
-            <div style="margin-top:.5rem">${makeConfidenceHtml(item.confidence)}</div>
-          </div>
+    <main class="container mx-auto p-4 md:p-8 min-h-screen">
+      <!-- Header Area -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-color-base flex items-center gap-3">
+            <span class="relative flex h-4 w-4">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
+            </span>
+            Live Market Wire
+          </h1>
+          <p class="text-color-muted mt-2 font-medium">Real-time institutional news, analysis, and impact signals.</p>
         </div>
-        <div class="muted" style="margin-top:.6rem">Reason: ${reason || '—'}</div>
-      </article>
-      `;
-    }
+        <div id="connection-status" class="text-xs font-bold uppercase tracking-widest text-yellow-500 bg-yellow-500/10 px-4 py-2 rounded-full flex items-center gap-2">
+            <i class="fas fa-circle-notch fa-spin"></i> Connecting Feed...
+        </div>
+      </div>
 
-    function render(){
-      const q = (searchEl.value||'').trim().toLowerCase();
-      const usdFilter = filterUsdEl.value;
-      const goldFilter = filterGoldEl.value;
-      const sort = sortByEl.value;
+      <!-- Search & Filters -->
+      <section class="mb-8 bg-white/50 dark:bg-white/5 p-4 rounded-2xl border border-gray-200 dark:border-white/10 backdrop-blur-md">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="relative">
+              <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-color-muted"></i>
+              <input id="search" placeholder="Filter headlines..." class="form-input pl-11" />
+          </div>
+          <select id="impact" class="form-select"><option value="">USD Impact (All)</option><option value="up">USD Bullish ↑</option><option value="down">USD Bearish ↓</option><option value="neutral">Neutral</option></select>
+          <select id="goldImpact" class="form-select"><option value="">Gold Impact (All)</option><option value="up">Gold Bullish ↑</option><option value="down">Gold Bearish ↓</option><option value="neutral">Neutral</option></select>
+          <select id="sortBy" class="form-select"><option value="recent">Latest First</option><option value="confidence">Highest Confidence</option><option value="alert_first">Priority Alerts</option></select>
+        </div>
+      </section>
 
-      let items = Array.from(feedData || []);
+      <!-- News Feed -->
+      <section id="feed" class="space-y-4 min-h-[300px]">
+          <!-- Loading Skeleton -->
+          <div class="animate-pulse space-y-4 opacity-50">
+              <div class="h-32 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+              <div class="h-32 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+              <div class="h-32 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+          </div>
+      </section>
 
-      if (q) {
-        items = items.filter(it => (it.headline||'').toLowerCase().includes(q) || (it.text||'').toLowerCase().includes(q) || (it.reason||'').toLowerCase().includes(q));
+      <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-color-muted">
+        <i class="fas fa-newspaper text-5xl mb-4 opacity-20"></i>
+        <p class="text-lg">No news matches your filters.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Article Modal -->
+  <div id="modalRoot" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 px-4 md:px-8">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modalBackdrop"></div>
+    <div class="relative w-full max-w-2xl bg-white dark:bg-[#1a2332] rounded-2xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[80vh]">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-black/20">
+        <h3 class="font-bold text-lg text-color-base flex items-center gap-2">
+            <i class="fas fa-file-alt text-blue-500"></i> Full Report
+        </h3>
+        <button id="modalClose" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 dark:bg-white/10 text-color-base hover:bg-gray-300 dark:hover:bg-white/20 transition-colors">
+            <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6 md:p-8 overflow-y-auto text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap" id="modalContent"></div>
+      <div class="px-6 py-4 border-t border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-black/20 flex justify-end">
+          <a id="modalOpenOriginal" class="main-button py-2.5 px-6 rounded-lg inline-flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20" target="_blank">
+              Read at Source <i class="fas fa-external-link-alt"></i>
+          </a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+  <script type="module">
+    import { initializeAppCore } from './app.js';
+    import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
+    function initNewsPage(user, db) {
+      document.getElementById('app-wrapper').style.display = 'block'; // INSTANT REVEAL
+      
+      let allFeedData = [];
+      const els = { feed: document.getElementById('feed'), status: document.getElementById('connection-status'), search: document.getElementById('search'), impact: document.getElementById('impact'), gold: document.getElementById('goldImpact'), sort: document.getElementById('sortBy'), empty: document.getElementById('emptyState'), modal: document.getElementById('modalRoot'), modalTxt: document.getElementById('modalContent'), modalLink: document.getElementById('modalOpenOriginal') };
+
+      function timeAgo(dateStr) {
+        try {
+             const date = dateStr?.toDate ? dateStr.toDate() : new Date(dateStr);
+             const s = Math.floor((new Date() - date) / 1000);
+             if (s<60) return 'Just now'; if (s<3600) return Math.floor(s/60)+'m ago'; if (s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago';
+        } catch { return ''; }
       }
-      if (usdFilter) items = items.filter(it => (it.usd_impact||'').toLowerCase() === usdFilter);
-      if (goldFilter) items = items.filter(it => (it.xauusd_impact||'').toLowerCase() === goldFilter);
 
-      if (sort === 'confidence') {
-        items.sort((a,b)=> (b.confidence||0)-(a.confidence||0));
-      } else if (sort === 'alert_first') {
-        items.sort((a,b)=> ( (b.action==='ALERT')?1:0 ) - ( (a.action==='ALERT')?1:0 ) || ( (b.confidence||0)-(a.confidence||0) ));
-      } else {
-        items.sort((a,b)=> new Date(b.published||b.createdAt).getTime() - new Date(a.published||a.createdAt).getTime());
-      }
+      function render() {
+        let data = allFeedData.filter(it => 
+            (els.search.value === '' || (it.headline+it.text+it.source).toLowerCase().includes(els.search.value.toLowerCase())) &&
+            (els.impact.value === '' || (it.usd_impact || 'neutral') === els.impact.value) &&
+            (els.gold.value === '' || (it.xauusd_impact || 'neutral') === els.gold.value)
+        );
 
-      feedEl.innerHTML = '';
-      if (!items.length) {
-        emptyEl.classList.remove('hidden');
-        return;
-      } else emptyEl.classList.add('hidden');
-
-      items.forEach(item => {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = buildCard(item);
-        // attach expand/copy handlers
-        const expandBtn = wrapper.querySelector('[data-expand]');
-        if (expandBtn) {
-          expandBtn.addEventListener('click', () => {
-            const id = expandBtn.getAttribute('data-expand');
-            const el = document.getElementById('txt-'+id);
-            if (!el) return;
-            if (el.style.maxHeight) {
-              el.style.maxHeight = ''; expandBtn.textContent = 'View full';
-            } else {
-              el.style.maxHeight = 'none'; expandBtn.textContent = 'Collapse';
-            }
-          });
-        }
-        const copyBtn = wrapper.querySelector('[data-copy]');
-        if (copyBtn) {
-          copyBtn.addEventListener('click', () => {
-            const txt = copyBtn.getAttribute('data-copy') || '';
-            navigator.clipboard?.writeText(txt);
-            copyBtn.textContent = 'Copied';
-            setTimeout(()=> copyBtn.textContent = 'Copy headline', 1200);
-          });
-        }
-        feedEl.appendChild(wrapper);
-      });
-    }
-
-    // update last-updated helper
-    function setLastUpdated(){
-      lastUpdatedEl.innerText = 'Just now';
-      lastFetch = Date.now();
-      setTimeout(()=> {
-        // update relative time display every sec
-        const id = setInterval(()=>{
-          const delta = Math.floor((Date.now()-lastFetch)/1000);
-          if (delta < 5) lastUpdatedEl.innerText = 'Just now';
-          else if (delta < 60) lastUpdatedEl.innerText = `${delta}s ago`;
-          else if (delta < 3600) lastUpdatedEl.innerText = `${Math.floor(delta/60)}m ago`;
-          else lastUpdatedEl.innerText = `${Math.floor(delta/3600)}h ago`;
-        }, 1000);
-        // stop after 10 minutes to avoid leaking timers — harmless but tidy
-        setTimeout(()=>clearInterval(id), 10*60*1000);
-      }, 0);
-    }
-
-    // -------------------------
-    // Primary: listen to meta/latest_feed doc
-    // -------------------------
-    async function subscribeToSnapshot(){
-      try{
-        const metaRef = doc(db, 'meta', 'latest_feed');
-        onSnapshot(metaRef, async (docSnap) => {
-          if (!docSnap.exists) {
-            // fallback: load collection
-            console.warn('meta/latest_feed not found, falling back to collection read');
-            await loadFromCollection();
-            return;
-          }
-          const data = docSnap.data();
-          const arr = data.snapshot || data.items || [];
-          // normalize timestamps if needed
-          feedData = arr.map(it => ({
-            headline: it.headline,
-            text: it.text,
-            source: it.source,
-            published: it.published,
-            createdAt: it.createdAt,
-            usd_impact: it.usd_impact,
-            xauusd_impact: it.xauusd_impact,
-            confidence: it.confidence,
-            reason: it.reason,
-            action: it.action,
-            url: it.url
-          }));
-          setLastUpdated();
-          render();
-        }, (err) => {
-          console.error('meta/latest_feed onSnapshot error', err);
-          // fallback to collection read
-          loadFromCollection();
+        if (els.sort.value === 'confidence') data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
+        else if (els.sort.value === 'alert_first') data.sort((a,b) => (b.action==='ALERT'?1:0) - (a.action==='ALERT'?1:0));
+        
+        // Always secondary sort by time
+        data.sort((a,b) => {
+            const dA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published);
+            const dB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published);
+            return dB - dA;
         });
-      } catch (err) {
-        console.error('subscribeToSnapshot error', err);
-        loadFromCollection();
+
+        els.feed.innerHTML = '';
+        if (data.length === 0) {
+             if (allFeedData.length > 0) els.empty.classList.remove('hidden');
+             else els.feed.innerHTML = '<div class="text-center py-16 opacity-50"><i class="fas fa-satellite-dish text-4xl mb-4"></i><p>Waiting for news stream...</p></div>';
+        } else {
+             els.empty.classList.add('hidden');
+             data.forEach(item => {
+                const isAlert = item.action === 'ALERT', conf = Math.round((item.confidence||0)*100);
+                const div = document.createElement('div');
+                // Premium card styling
+                div.className = `news-card p-5 rounded-2xl border fade-in group bg-white dark:bg-white/[0.02] ${isAlert ? 'border-red-500/40 dark:border-red-500/30 shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)]' : 'border-gray-200 dark:border-white/[0.08] hover:border-blue-500/30 dark:hover:border-blue-500/30'}`;
+                
+                div.innerHTML = `
+                <div class="flex justify-between items-start gap-4 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="${isAlert ? 'bg-red-600 text-white shadow-red-500/50' : 'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'} text-[0.65rem] px-2.5 py-1 rounded-md font-black uppercase tracking-wider shadow-sm">${isAlert ? 'MAJOR ALERT' : 'UPDATE'}</span>
+                        <span class="text-xs font-semibold text-color-muted flex items-center gap-1.5"><i class="fas fa-clock opacity-50"></i> ${timeAgo(item.createdAt || item.published)}</span>
+                    </div>
+                     <div class="flex gap-2 text-[0.7rem] font-black tracking-wide uppercase">
+                        <span class="px-2 py-1 rounded-md ${item.usd_impact==='up'?'bg-green-500/10 text-green-600 dark:text-green-400':item.usd_impact==='down'?'bg-red-500/10 text-red-600 dark:text-red-400':'bg-gray-100 dark:bg-white/5 text-gray-500'}">USD ${item.usd_impact?.substring(0,4) || 'NEUT'}</span>
+                        <span class="px-2 py-1 rounded-md ${item.xauusd_impact==='up'?'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500':item.xauusd_impact==='down'?'bg-blue-500/10 text-blue-600 dark:text-blue-400':'bg-gray-100 dark:bg-white/5 text-gray-500'}">GOLD ${item.xauusd_impact?.substring(0,4) || 'NEUT'}</span>
+                     </div>
+                </div>
+                <h3 class="text-lg md:text-xl font-bold text-color-base mb-3 leading-tight cursor-pointer group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors headline-trigger">${item.headline}</h3>
+                
+                ${item.reason ? `<div class="text-sm text-color-muted bg-gray-50 dark:bg-black/20 p-3 rounded-xl mb-4 border border-gray-100 dark:border-white/5 flex gap-2"><i class="fas fa-info-circle mt-1 text-blue-500"></i> <span>${item.reason}</span></div>` : ''}
+                
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-white/5">
+                    <div class="flex items-center gap-4 text-xs font-bold text-color-muted">
+                         <span class="flex items-center gap-1.5"><i class="fas fa-robot opacity-50"></i> AI Confidence: <span class="${conf>80?'text-green-500':'text-yellow-500'}">${conf}%</span></span>
+                         <span class="opacity-50 hidden sm:inline">•</span>
+                         <span class="opacity-50 hidden sm:inline">${item.source || 'Finex Desk'}</span>
+                    </div>
+                    <button class="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 headline-trigger">
+                        Read Analysis <i class="fas fa-arrow-right ml-1 text-xs opacity-50"></i>
+                    </button>
+                </div>`;
+                div.querySelectorAll('.headline-trigger').forEach(b => b.onclick = () => {
+                    els.modalTxt.innerText = item.text || item.headline;
+                    els.modalLink.href = item.url; els.modalLink.style.display = item.url ? 'inline-flex' : 'none';
+                    els.modal.classList.remove('hidden');
+                });
+                els.feed.appendChild(div);
+            });
+        }
       }
+
+      // ROBUST LISTENER
+      onSnapshot(query(collection(db, 'news_feed'), orderBy('createdAt', 'desc'), limit(100)), (snap) => {
+          allFeedData = snap.docs.map(d => d.data());
+          render();
+          els.status.innerHTML = '<span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span></span> LIVE STREAM';
+          els.status.className = 'text-xs font-bold uppercase tracking-widest text-green-500 bg-green-500/10 px-4 py-2 rounded-full flex items-center gap-2';
+      }, (err) => {
+          console.error("Feed Error:", err);
+          els.status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> OFFLINE';
+          els.status.className = 'text-xs font-bold uppercase tracking-widest text-red-500 bg-red-500/10 px-4 py-2 rounded-full flex items-center gap-2';
+      });
+
+      [els.search, els.impact, els.gold, els.sort].forEach(el => el.addEventListener('input', render));
+      document.getElementById('modalClose').onclick = document.getElementById('modalBackdrop').onclick = () => els.modal.classList.add('hidden');
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') els.modal.classList.add('hidden'); });
     }
-
-    // -------------------------
-    // Fallback: read top N from collection
-    // -------------------------
-    async function loadFromCollection(){
-      try{
-        const q = query(collection(db, 'news_feed'), orderBy('createdAt','desc'), limit(200));
-        const snap = await getDocs(q);
-        feedData = snap.docs.map(d => d.data());
-        setLastUpdated();
-        render();
-      } catch (err) {
-        console.error('loadFromCollection failed', err);
-        feedEl.innerHTML = `<div class="text-center" style="color:#ffb4b4">Failed to load feed — check Firestore rules or network. (${esc(err.message||err)})</div>`;
-      }
-    }
-
-    // -------------------------
-    // Start subscription
-    // -------------------------
-    subscribeToSnapshot();
-
-    // wire UI interactions
-    [searchEl, filterUsdEl, filterGoldEl, sortByEl].forEach(el => el.addEventListener('input', render));
-    // expose reload helper for debugging
-    window.reloadFeed = () => { subscribeToSnapshot(); };
-
+    initializeAppCore(initNewsPage);
   </script>
 </body>
 </html>
