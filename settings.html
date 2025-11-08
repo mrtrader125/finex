@@ -10,58 +10,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        // --- ANTI-FLASH SCRIPT (NEW) ---
-        // Checks local storage BEFORE page renders to set correct theme immediately.
-        const savedTheme = localStorage.getItem('finex_theme');
-        if (savedTheme === 'light') {
+        // Immediate theme application to prevent FOUC
+        if (localStorage.getItem('finex_theme') === 'light') {
             document.documentElement.classList.remove('dark');
-        } else if (savedTheme === 'dark') {
+        } else {
             document.documentElement.classList.add('dark');
         }
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="main.css">
     <style>
-        /* Main details/summary */
-        details > summary {
-            list-style: none; /* Hide default <details> marker */
-        }
-        details > summary::-webkit-details-marker {
-            display: none; /* Hide default <details> marker */
-        }
-        details[open] > summary .chevron-icon {
-            transform: rotate(180deg);
-        }
-        details > summary .chevron-icon {
-            transition: transform 0.2s ease-in-out;
-        }
-
-        /* Nested sidebar item details/summary */
-        .sidebar-option-item summary {
-            list-style: none;
-        }
-        .sidebar-option-item summary::-webkit-details-marker {
-            display: none;
-        }
-        .sidebar-option-item[open] > summary .chevron-icon-nested {
-            transform: rotate(90deg);
-        }
-        .sidebar-option-item .chevron-icon-nested {
-            transition: transform 0.2s ease-in-out;
-            font-size: 0.7rem;
-            margin-right: 0.75rem; /* 12px */
-            width: 1rem; /* w-4 */
-            text-align: center;
-        }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chevron-icon { transform: rotate(180deg); }
+        details > summary .chevron-icon { transition: transform 0.2s ease-in-out; }
+        .sidebar-option-item summary { list-style: none; }
+        .sidebar-option-item summary::-webkit-details-marker { display: none; }
+        .sidebar-option-item[open] > summary .chevron-icon-nested { transform: rotate(90deg); }
+        .sidebar-option-item .chevron-icon-nested { transition: transform 0.2s ease-in-out; font-size: 0.7rem; margin-right: 0.75rem; width: 1rem; text-align: center; }
     </style>
 </head>
 <body class="antialiased textured-background">
+    <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
     <div id="app-wrapper" style="display: none;">
         <div id="sidebar-placeholder"></div>
         <div id="header-placeholder"></div>
 
         <div class="min-h-screen flex flex-col">
-            <main class="container mx-auto p-4 md:p-8 flex-grow">
+            <main class="container mx-auto p-4 md:p-8 flex-grow pt-[68px]">
                 <div class="max-w-4xl mx-auto space-y-8">
 
                     <div class="glass-card p-6 md:p-8">
@@ -122,9 +101,7 @@
         import { initializeAppCore, db, auth, applyTheme, renderSidebar, allSidebarItems, userPreferences } from './app.js';
         import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        function initSettingsPage(user, db) {
-            console.log("Setting up Settings page specific logic...");
-            
+        function initSettingsPage(user, db, userProfile) {
             const elements = {
                 accountEmailSpan: document.getElementById('account-email'),
                 themeToggle: document.getElementById('theme-toggle'),
@@ -136,49 +113,18 @@
                 profileSaveStatus: document.getElementById('profile-save-status')
             };
 
-            if (Object.values(elements).some(el => !el)) {
-                console.error("Critical settings elements missing!");
-                 const main = document.querySelector('main'); if(main) main.innerHTML = "<p class='text-red-500 text-center p-8'>Error loading settings page elements.</p>"; return;
-            }
+            if (Object.values(elements).some(el => !el)) return;
 
             let currentUserId = user.uid;
             let settingsDocRef = doc(db, `users/${currentUserId}/preferences`, 'settings');
             let userDocRef = doc(db, "users", currentUserId);
-            
-            let globalPreferences = { theme: 'dark', sidebarItems: {} };
             let debounceTimer = null;
 
-            async function loadData() {
-                try {
-                    // Load Profile
-                    const userDocSnap = await getDoc(userDocRef);
-                    if (userDocSnap.exists()) {
-                        elements.displayNameInput.value = userDocSnap.data().displayName || user.email.split('@')[0];
-                    } else {
-                        elements.displayNameInput.value = user.email.split('@')[0];
-                    }
-                    elements.accountEmailSpan.textContent = user.email;
-
-                    // Theme is already applied by app.js on load, just sync the toggle switch state here
-                    elements.themeToggle.checked = (userPreferences.theme === 'dark');
-
-                    // Load Sidebar Options
-                    const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
-                    const globalDocSnap = await getDoc(globalSettingsRef);
-                    if (globalDocSnap.exists()) {
-                        globalPreferences = { ...globalPreferences, ...globalDocSnap.data() };
-                    }
-                    populateSidebarOptions();
-
-                } catch (error) { console.error("Error loading data:", error); }
-            }
-            
-            // === INSTANT THEME SWITCHING LISTENER (NEW) ===
+            // --- INSTANT THEME SWITCHING ---
+            elements.themeToggle.checked = (userPreferences.theme === 'dark');
             elements.themeToggle.addEventListener('change', () => {
                 const newTheme = elements.themeToggle.checked ? 'dark' : 'light';
-                // Apply INSTANTLY to the DOM and LocalStorage
                 applyTheme(newTheme); 
-                // Save to database in background (debounced)
                 debouncedSavePreferences(); 
             });
 
@@ -222,47 +168,63 @@
                 }
             }
 
-            function populateSidebarOptions() {
+             function populateSidebarOptions() {
                 elements.sidebarOptionsContainer.innerHTML = '';
                 allSidebarItems.forEach(item => {
                     if (item.id === 'settings') return;
-                    if (globalPreferences.sidebarItems[item.id] === false) return; 
-                    
-                    const createCheckbox = (itemData, isSubItem = false) => {
-                        const userVal = userPreferences.sidebarItems[itemData.id];
-                        const globalVal = globalPreferences.sidebarItems[itemData.id];
-                        const isChecked = (userVal !== undefined) ? userVal : (globalVal !== undefined ? globalVal : true);
 
+                    // CRITICAL CHANGE: Completely hide items locked by Admin/Global
+                    // If locked AND set to false (hidden), do not show it at all.
+                    if (userPreferences.lockedItems[item.id] === true && userPreferences.sidebarItems[item.id] === false) {
+                        return;
+                    }
+
+                    const createCheckbox = (itemData, isSubItem = false) => {
+                        // Hide locked sub-items too
+                        if (userPreferences.lockedItems[itemData.id] === true && userPreferences.sidebarItems[itemData.id] === false) {
+                            return null;
+                        }
+
+                        const isChecked = userPreferences.sidebarItems[itemData.id] !== false; // Default true if undefined
                         const label = document.createElement('label');
                         label.className = `flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover-bg-base checkbox-label ${isSubItem ? 'pl-10' : ''}`;
-                        
-                        label.innerHTML = `
-                            <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700" 
-                                ${isChecked ? 'checked' : ''} 
-                                data-item-id="${itemData.id}" 
-                                ${!isSubItem && itemData.subItems ? 'data-is-parent="true"' : ''} 
-                                ${isSubItem ? `data-parent-id="${item.id}"` : ''}>
-                            <i class="fas ${itemData.icon} fa-fw text-color-muted w-4 text-center"></i>
-                            <span class="text-color-base">${itemData.text}</span>
-                        `;
+                        label.innerHTML = `<input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700" ${isChecked ? 'checked' : ''} data-item-id="${itemData.id}" ${!isSubItem && itemData.subItems ? 'data-is-parent="true"' : ''} ${isSubItem ? `data-parent-id="${item.id}"` : ''}><i class="fas ${itemData.icon} fa-fw text-color-muted w-4 text-center"></i><span class="text-color-base">${itemData.text}</span>`;
                         return label;
                     };
 
                     if (item.subItems) {
-                        const details = document.createElement('details'); details.className = 'sidebar-option-item'; details.open = true;
-                        const summary = document.createElement('summary'); summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
-                        
-                        summary.innerHTML = `<i class="fas fa-chevron-right chevron-icon-nested text-color-muted"></i>`;
-                        const parentLabel = createCheckbox(item, false);
-                        parentLabel.classList.add('flex-grow'); parentLabel.classList.remove('p-2');
-                        summary.appendChild(parentLabel);
-                        
-                        const subItemsContainer = document.createElement('div'); subItemsContainer.className = 'space-y-1';
-                        item.subItems.forEach(sub => { if (globalPreferences.sidebarItems[sub.id] !== false) subItemsContainer.appendChild(createCheckbox(sub, true)); });
-                        
-                        details.appendChild(summary); details.appendChild(subItemsContainer); elements.sidebarOptionsContainer.appendChild(details);
+                        const subItemsContainer = document.createElement('div');
+                        subItemsContainer.className = 'space-y-1';
+                        let hasVisibleSubItems = false;
+
+                        item.subItems.forEach(sub => {
+                             const subCheckbox = createCheckbox(sub, true);
+                             if (subCheckbox) {
+                                 subItemsContainer.appendChild(subCheckbox);
+                                 hasVisibleSubItems = true;
+                             }
+                        });
+
+                        // Only render parent if it has visible sub-items OR is itself not locked-hidden
+                        if (hasVisibleSubItems) {
+                             const details = document.createElement('details'); details.className = 'sidebar-option-item'; details.open = true;
+                             const summary = document.createElement('summary'); summary.className = 'flex items-center cursor-pointer rounded-lg hover-bg-base';
+                             summary.innerHTML = `<i class="fas fa-chevron-right chevron-icon-nested text-color-muted"></i>`;
+                             
+                             const parentLabel = createCheckbox(item, false);
+                             // If parent is locked-hidden but has visible children, we might need to render it differently,
+                             // but for now we'll assume if parent is locked hidden, children usually are too.
+                             // If parentLabel is null here, it means it was locked hidden.
+                             if (parentLabel) {
+                                 parentLabel.classList.add('flex-grow'); parentLabel.classList.remove('p-2');
+                                 summary.appendChild(parentLabel);
+                                 details.appendChild(summary); details.appendChild(subItemsContainer); 
+                                 elements.sidebarOptionsContainer.appendChild(details);
+                             }
+                        }
                     } else {
-                        elements.sidebarOptionsContainer.appendChild(createCheckbox(item, false));
+                        const checkbox = createCheckbox(item, false);
+                        if (checkbox) elements.sidebarOptionsContainer.appendChild(checkbox);
                     }
                 });
             }
@@ -271,23 +233,36 @@
                 if (e.target.type !== 'checkbox') return;
                 const checkbox = e.target;
                 userPreferences.sidebarItems[checkbox.dataset.itemId] = checkbox.checked;
-
-                if (checkbox.dataset.isParent && !checkbox.checked) {
-                    elements.sidebarOptionsContainer.querySelectorAll(`[data-parent-id="${checkbox.dataset.itemId}"]`).forEach(child => {
-                        child.checked = false; userPreferences.sidebarItems[child.dataset.itemId] = false;
-                    });
+                
+                // Handle parent toggling children
+                if (checkbox.dataset.isParent) {
+                     const isChecked = checkbox.checked;
+                     elements.sidebarOptionsContainer.querySelectorAll(`[data-parent-id="${checkbox.dataset.itemId}"]`).forEach(child => {
+                         child.querySelector('input').checked = isChecked;
+                         userPreferences.sidebarItems[child.querySelector('input').dataset.itemId] = isChecked;
+                     });
                 }
+                // Handle child toggling parent
                 if (checkbox.dataset.parentId && checkbox.checked) {
-                    const parent = elements.sidebarOptionsContainer.querySelector(`[data-item-id="${checkbox.dataset.parentId}"]`);
-                    if (parent && !parent.checked) {
-                        parent.checked = true; userPreferences.sidebarItems[parent.dataset.itemId] = true;
+                    const parentInput = elements.sidebarOptionsContainer.querySelector(`input[data-item-id="${checkbox.dataset.parentId}"]`);
+                    if (parentInput && !parentInput.checked) {
+                        parentInput.checked = true;
+                        userPreferences.sidebarItems[parentInput.dataset.itemId] = true;
                     }
                 }
                 debouncedSavePreferences();
             });
 
+            // Initial load of profile data
+            if (userProfile) {
+                 elements.displayNameInput.value = userProfile.displayName;
+                 elements.accountEmailSpan.textContent = userProfile.email;
+            }
+            
             elements.profileForm.addEventListener('submit', saveProfile);
-            loadData();
+            
+            // Populate options immediately since app.js already loaded prefs
+            populateSidebarOptions();
         }
         initializeAppCore(initSettingsPage);
     </script>
