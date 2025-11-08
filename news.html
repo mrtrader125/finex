@@ -4,352 +4,138 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Live News Feed | Finex</title>
-
-  <!-- Tailwind + fonts + icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
   <script>tailwind.config = { darkMode: 'class' }</script>
   <link rel="stylesheet" href="main.css">
-
   <style>
-    /* small UI tweaks */
-    body { font-family: "Source Sans Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
-    .badge-alert { background: rgba(254, 226, 226, 0.9); color: #7f1d1d; border: 1px solid rgba(239,68,68,0.12); }
-    .badge-info { background: rgba(235, 247, 255, 0.95); color: #0c4a6e; border: 1px solid rgba(6, 182, 212, 0.08); }
     .card-truncate { max-height: 5.25rem; overflow: hidden; }
     .fade-in { animation: fadeIn .22s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
-    .time-small { font-variant-numeric: tabular-nums; }
-    .conf-pill { padding: 0.25rem 0.5rem; border-radius: 999px; font-weight:600; font-size:0.75rem; }
-    .link-muted { color: rgba(148,163,184,1); text-decoration: underline; text-underline-offset: 3px; }
   </style>
 </head>
 
 <body class="antialiased textured-background">
-  <!-- App wrapper is shown after initializeAppCore attaches page logic -->
   <div id="app-wrapper" style="display:none;">
     <div id="sidebar-placeholder"></div>
     <div id="header-placeholder"></div>
 
     <main class="container mx-auto p-4 md:p-8">
-      <div class="flex items-start justify-between gap-4 mb-6">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-color-base">📡 Live Market News Feed</h1>
-          <p class="text-sm text-color-muted mt-1">Real-time headlines + processed signals (USD / XAUUSD). Click a headline to view full text.</p>
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-color-base">📡 Live Market News</h1>
+          <p class="text-sm text-color-muted mt-1">Real-time headlines and signals. Auto-updating.</p>
         </div>
-
-        <div class="text-right">
-          <div class="text-xs text-color-muted">Status</div>
-          <div id="connection-status" class="text-sm font-medium text-yellow-500 flex items-center justify-end gap-2">
-              <span class="relative flex h-3 w-3">
-                  <span class="animate-spin inline-flex h-full w-full rounded-full border-2 border-dotted border-yellow-500"></span>
-              </span>
-              Connecting...
-          </div>
+        <div id="connection-status" class="text-sm font-medium text-yellow-500 flex items-center gap-2 bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-full">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-spin inline-flex h-full w-full rounded-full border-2 border-dotted border-current"></span>
+            </span>
+            Connecting...
         </div>
       </div>
 
       <!-- Controls -->
-      <section class="mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-8 gap-3">
-          <div class="md:col-span-5">
-            <input id="search" placeholder="Search headline, source or reason..." class="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 bg-white/50 dark:bg-black/20 text-color-base" />
-          </div>
-
-          <div class="md:col-span-1">
-            <select id="impact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 text-color-base">
-              <option value="">All USD</option>
-              <option value="up">USD ↑</option>
-              <option value="down">USD ↓</option>
-              <option value="neutral">Neutral</option>
-            </select>
-          </div>
-
-          <div class="md:col-span-1">
-            <select id="goldImpact" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 text-color-base">
-              <option value="">All Gold</option>
-              <option value="up">Gold ↑</option>
-              <option value="down">Gold ↓</option>
-              <option value="neutral">Neutral</option>
-            </select>
-          </div>
-
-          <div class="md:col-span-1">
-            <select id="sortBy" class="w-full px-3 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 text-color-base">
-              <option value="recent">Newest</option>
-              <option value="confidence">Confidence</option>
-              <option value="alert_first">Alerts first</option>
-            </select>
-          </div>
-        </div>
+      <section class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <input id="search" placeholder="Search news..." class="form-input" />
+        <select id="impact" class="form-select"><option value="">All USD Impact</option><option value="up">USD Bullish ↑</option><option value="down">USD Bearish ↓</option><option value="neutral">Neutral</option></select>
+        <select id="goldImpact" class="form-select"><option value="">All Gold Impact</option><option value="up">Gold Bullish ↑</option><option value="down">Gold Bearish ↓</option><option value="neutral">Neutral</option></select>
+        <select id="sortBy" class="form-select"><option value="recent">Newest First</option><option value="confidence">Highest Confidence</option><option value="alert_first">Alerts First</option></select>
       </section>
 
       <!-- Feed -->
-      <section id="feed" class="grid gap-4 min-h-[200px] relative">
-          <div class="col-span-full text-center text-color-muted py-12 flex flex-col items-center">
-               <i class="fas fa-circle-notch fa-spin text-3xl mb-4 opacity-50"></i>
-               <p>Connecting to live feed...</p>
-          </div>
+      <section id="feed" class="space-y-4 min-h-[200px]">
+          <div class="text-center text-color-muted py-12"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading feed...</div>
       </section>
-
-      <div id="emptyState" class="hidden text-center text-gray-500 mt-8 py-12 bg-black/5 dark:bg-white/5 rounded-2xl">
-        No news items found matching your criteria.
-      </div>
     </main>
   </div>
 
-  <!-- Modal for full processed text -->
+  <!-- Modal -->
   <div id="modalRoot" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modalBackdrop"></div>
-    <div class="relative max-w-2xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-white/10 transform transition-all">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/20">
-        <h3 class="font-bold text-lg text-color-base">Details</h3>
-        <button id="modalClose" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
-            <i class="fas fa-times text-xl"></i>
-        </button>
-      </div>
-      <div id="modalContent" class="p-6 text-base text-gray-800 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-[70vh] overflow-y-auto"></div>
-      <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/20 flex justify-end">
-          <a id="modalOpenOriginal" class="main-button text-sm py-2 px-4 rounded-lg inline-flex items-center gap-2" target="_blank" rel="noopener">
-              Open Original Source <i class="fas fa-external-link-alt"></i>
-          </a>
+    <div class="relative max-w-2xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+      <div class="p-6 max-h-[70vh] overflow-y-auto text-base text-gray-800 dark:text-gray-300 whitespace-pre-wrap leading-relaxed" id="modalContent"></div>
+      <div class="px-6 py-4 bg-gray-50 dark:bg-white/5 flex justify-end gap-3">
+          <button id="modalClose" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-color-base hover:bg-gray-100 dark:hover:bg-white/10">Close</button>
+          <a id="modalOpenOriginal" class="main-button py-2 px-4 rounded-lg hidden" target="_blank">Open Source</a>
       </div>
     </div>
   </div>
 
-  <!-- app core -->
   <script type="module" src="app.js"></script>
-
-  <!-- Page logic -->
   <script type="module">
     import { initializeAppCore } from './app.js';
-    // Import Firestore functions needed for real-time updates
     import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
     function initNewsPage(user, db) {
-      console.log("Initializing Real-time News Feed...");
+      document.getElementById('app-wrapper').style.display = 'block'; // REVEAL PAGE
+      let allFeedData = [];
+      const els = { feed: document.getElementById('feed'), status: document.getElementById('connection-status'), search: document.getElementById('search'), impact: document.getElementById('impact'), gold: document.getElementById('goldImpact'), sort: document.getElementById('sortBy'), modal: document.getElementById('modalRoot'), modalTxt: document.getElementById('modalContent'), modalLink: document.getElementById('modalOpenOriginal') };
 
-      // REVEAL PAGE IMMEDIATELY
-      document.getElementById('app-wrapper').style.display = 'block';
+      function render() {
+        let data = allFeedData.filter(it => 
+            (els.search.value === '' || (it.headline+it.text+it.source).toLowerCase().includes(els.search.value.toLowerCase())) &&
+            (els.impact.value === '' || it.usd_impact === els.impact.value) &&
+            (els.gold.value === '' || it.xauusd_impact === els.gold.value)
+        );
 
-      const feedEl = document.getElementById('feed');
-      const connectionStatus = document.getElementById('connection-status');
-      const searchInput = document.getElementById('search');
-      const impactSelect = document.getElementById('impact');
-      const goldSelect = document.getElementById('goldImpact');
-      const sortBy = document.getElementById('sortBy');
-      const emptyState = document.getElementById('emptyState');
-      const modalRoot = document.getElementById('modalRoot');
-      const modalContent = document.getElementById('modalContent');
-      const modalClose = document.getElementById('modalClose');
-      const modalOpenOriginal = document.getElementById('modalOpenOriginal');
-      
-      let allFeedData = []; // Local cache of live data for filtering
+        if (els.sort.value === 'confidence') data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
+        else if (els.sort.value === 'alert_first') data.sort((a,b) => (b.action==='ALERT' ? 1 : 0) - (a.action==='ALERT' ? 1 : 0) || new Date(b.published) - new Date(a.published));
+        else data.sort((a,b) => new Date(b.published) - new Date(a.published));
 
-      // Helpers
-      const esc = s => {
-        if (!s) return '';
-        const d = document.createElement('div');
-        d.innerText = s;
-        return d.innerHTML;
-      };
-
-      const timeAgo = iso => {
-        if (!iso) return '';
-        try {
-          // Handle both Firestore Timestamp and ISO strings
-          const d = iso.toDate ? iso.toDate() : new Date(iso);
-          const s = Math.floor((Date.now() - d.getTime())/1000);
-          if (s < 60) return `Just now`;
-          const m = Math.floor(s/60);
-          if (m < 60) return `${m}m ago`;
-          const h = Math.floor(m/60);
-          if (h < 24) return `${h}h ago`;
-          const days = Math.floor(h/24);
-          return `${days}d ago`;
-        } catch { return ''; }
-      };
-
-      function makeRow(item) {
-        const isAlert = (item.action || '').toUpperCase() === 'ALERT';
-        const usd = (item.usd_impact || 'neutral').toLowerCase();
-        const gold = (item.xauusd_impact || 'neutral').toLowerCase();
-        const confPct = Math.round((item.confidence || 0) * 100);
-
-        const usdClass = usd === 'up' ? 'text-green-500 dark:text-green-400' : usd === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500';
-        const goldClass = gold === 'up' ? 'text-yellow-500 dark:text-yellow-400' : gold === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500';
+        els.feed.innerHTML = data.length ? '' : '<div class="text-center py-12 text-color-muted bg-black/5 dark:bg-white/5 rounded-2xl">No news found.</div>';
         
-        const badge = isAlert 
-            ? `<span class="bg-red-500 text-white px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded-full">ALERT</span>` 
-            : `<span class="bg-blue-500/10 text-blue-500 dark:text-blue-400 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded-full">INFO</span>`;
-
-        const headline = esc(item.headline || '(no headline)');
-        const source = esc(item.source || 'Finex Desk');
-        const reason = esc(item.reason || '');
-        // Use published date if available, otherwise createdAt
-        const pubDate = item.published ? (new Date(item.published)) : (item.createdAt?.toDate ? item.createdAt.toDate() : new Date());
-
-        // truncate preview
-        const preview = esc((item.text || '').slice(0, 250) + (item.text && item.text.length > 250 ? '...' : ''));
-
-        return `
-          <div class="p-5 rounded-2xl border ${isAlert ? 'border-red-500/20 bg-red-500/5' : 'border-gray-200 dark:border-white/5 bg-white dark:bg-white/5'} fade-in transition-all hover:border-blue-500/30 group">
-            <div class="flex flex-col gap-3">
-                <!-- Top Row: Meta -->
-                <div class="flex items-center justify-between">
-                     <div class="flex items-center gap-2">
-                        ${badge}
-                        <span class="text-xs text-color-muted">${source} &bull; ${timeAgo(item.createdAt || item.published)}</span>
-                     </div>
-                     <div class="flex items-center gap-3 text-xs font-bold">
-                        <span class="${usdClass}">USD ${usd.toUpperCase()}</span>
-                        <span class="text-gray-300">|</span>
-                        <span class="${goldClass}">GOLD ${gold.toUpperCase()}</span>
-                     </div>
+        data.forEach(item => {
+            const isAlert = item.action === 'ALERT', conf = Math.round((item.confidence||0)*100);
+            const div = document.createElement('div');
+            div.className = `p-5 rounded-2xl border fade-in transition-all hover:border-blue-500/30 ${isAlert ? 'border-red-500/30 bg-red-500/5' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5'}`;
+            div.innerHTML = `
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="${isAlert ? 'bg-red-500 text-white' : 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'} text-[0.65rem] px-2 py-0.5 rounded-full font-bold tracking-wider">${isAlert ? 'ALERT' : 'INFO'}</span>
+                    <span class="text-xs text-color-muted">${item.source || 'Finex'} • ${timeAgo(item.published)}</span>
                 </div>
-
-                <!-- Middle: Headline -->
-                 <button class="text-left w-full headline-btn group-hover:text-blue-500 transition-colors">
-                    <h3 class="text-lg font-bold text-color-base leading-tight">${headline}</h3>
-                 </button>
-
-                <!-- Bottom: Reason & Preview -->
-                ${reason ? `<div class="text-sm italic text-color-muted bg-black/5 dark:bg-black/20 p-2 rounded-lg"><i class="fas fa-info-circle mr-2 opacity-50"></i>${reason}</div>` : ''}
-                
-                <div class="text-sm text-color-base opacity-80 line-clamp-2">
-                    ${preview}
-                </div>
-                 <div class="flex items-center justify-between mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
-                     <span class="text-xs font-medium text-color-muted">Confidence: <span class="${confPct > 75 ? 'text-green-500' : 'text-yellow-500'}">${confPct}%</span></span>
-                     <button class="headline-btn text-xs font-bold text-blue-500 hover:underline">Read Details</button>
+                 <div class="flex gap-3 text-xs font-bold">
+                    <span class="${item.usd_impact==='up'?'text-green-500':item.usd_impact==='down'?'text-red-500':'text-color-muted'}">USD ${item.usd_impact?.toUpperCase()}</span>
+                    <span class="${item.xauusd_impact==='up'?'text-yellow-500':item.xauusd_impact==='down'?'text-blue-500':'text-color-muted'}">GOLD ${item.xauusd_impact?.toUpperCase()}</span>
                  </div>
             </div>
-          </div>
-        `;
-      }
-
-      // Render & filtering
-      function render() {
-        const q = (searchInput.value || '').trim().toLowerCase();
-        const impactV = impactSelect.value;
-        const goldV = goldSelect.value;
-        const sb = sortBy.value;
-
-        let data = Array.from(allFeedData);
-
-        if (q) {
-          data = data.filter(it =>
-            ((it.headline||'') + ' ' + (it.text||'') + ' ' + (it.reason||'') + ' ' + (it.source||'')).toLowerCase().includes(q)
-          );
-        }
-        if (impactV) data = data.filter(it => (it.usd_impact||'neutral') === impactV);
-        if (goldV) data = data.filter(it => (it.xauusd_impact||'neutral') === goldV);
-
-        if (sb === 'confidence') {
-          data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
-        } else if (sb === 'alert_first') {
-          data.sort((a,b) => ((b.action==='ALERT') ? 1 : 0) - ((a.action==='ALERT') ? 1 : 0) || ((b.confidence||0) - (a.confidence||0)));
-          // Re-sort by date if alerts match
-           data.sort((a,b) => {
-               if (b.action === 'ALERT' && a.action !== 'ALERT') return 1;
-               if (a.action === 'ALERT' && b.action !== 'ALERT') return -1;
-               // Use either createdAt (Timestamp) or published (ISO string) for sorting
-               const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published || 0);
-               const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published || 0);
-               return dateB - dateA;
-           });
-        } else {
-           // Default: Recent first
-           data.sort((a,b) => {
-               const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published || 0);
-               const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published || 0);
-               return dateB - dateA;
-           });
-        }
-
-        feedEl.innerHTML = '';
-        if (!data.length) {
-           // Only show empty state if we actually have NO data after filtering
-           // If allFeedData is empty, it means we really have no news.
-           if (allFeedData.length === 0) {
-                feedEl.innerHTML = `
-                    <div class="col-span-full text-center text-color-muted py-12 flex flex-col items-center bg-black/5 dark:bg-white/5 rounded-2xl">
-                        <i class="fas fa-newspaper text-4xl mb-4 opacity-30"></i>
-                        <p>No news published yet.</p>
-                    </div>`;
-           } else {
-               emptyState.classList.remove('hidden');
-           }
-        } else {
-          emptyState.classList.add('hidden');
-          data.forEach(item => {
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = makeRow(item);
-            
-            // Wire up modals
-            const headlineBtns = wrapper.querySelectorAll('.headline-btn');
-            headlineBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                  modalContent.innerText = item.text || item.headline || '(no further details)';
-                  if (item.url) {
-                      modalOpenOriginal.href = item.url;
-                      modalOpenOriginal.style.display = 'inline-flex';
-                  } else {
-                      modalOpenOriginal.style.display = 'none';
-                  }
-                  modalRoot.classList.remove('hidden');
-                });
+            <h3 class="text-lg font-bold text-color-base mb-2 cursor-pointer hover:text-blue-500 transition-colors headline-trigger">${item.headline}</h3>
+            ${item.reason ? `<p class="text-sm text-color-muted italic mb-3 bg-black/5 dark:bg-black/20 p-2 rounded"><i class="fas fa-info-circle mr-2 opacity-50"></i>${item.reason}</p>` : ''}
+            <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 dark:border-white/5">
+                <span class="text-xs font-medium text-color-muted">Confidence: <span class="${conf>75?'text-green-500':'text-yellow-500'}">${conf}%</span></span>
+                <button class="text-xs font-bold text-blue-500 hover:underline headline-trigger">Read More</button>
+            </div>`;
+            div.querySelectorAll('.headline-trigger').forEach(b => b.onclick = () => {
+                els.modalTxt.innerText = item.text || item.headline;
+                els.modalLink.href = item.url; els.modalLink.style.display = item.url ? 'inline-flex' : 'none';
+                els.modal.classList.remove('hidden');
             });
-            
-            feedEl.appendChild(wrapper);
-          });
-        }
+            els.feed.appendChild(div);
+        });
       }
 
-      // REAL-TIME LISTENER
-      // NOTE: Removed 'orderBy' initially to see if it fixes missing index issues for you.
-      // It will sort client-side in the render function anyway.
-      const q = query(collection(db, 'news_feed'), limit(100));
-      
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-          allFeedData = [];
-          snapshot.forEach(doc => {
-              // Add doc.id just in case we need it later
-              allFeedData.push({ id: doc.id, ...doc.data() });
-          });
+      onSnapshot(query(collection(db, 'news_feed'), orderBy('createdAt', 'desc'), limit(50)), (snap) => {
+          allFeedData = snap.docs.map(d => ({...d.data(), id: d.id}));
           render();
-          
-          connectionStatus.innerHTML = '<span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> Live';
-          connectionStatus.className = "text-sm font-medium text-green-500 flex items-center justify-end gap-2";
-
-      }, (error) => {
-          console.error("Live feed error:", error);
-          // Show the actual error on screen if possible
-          let errorMsg = "Offline";
-          if (error.code === 'permission-denied') errorMsg = "Access Denied (Check Rules)";
-          if (error.code === 'failed-precondition') errorMsg = "Missing Index (Check Console)";
-          
-          connectionStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMsg}`;
-          connectionStatus.className = "text-sm font-medium text-red-500 flex items-center justify-end gap-2";
+          els.status.innerHTML = '<span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span></span> Live';
+          els.status.className = 'text-sm font-medium text-green-500 flex items-center gap-2 bg-green-500/10 px-3 py-1.5 rounded-full';
+      }, (err) => {
+          console.error(err);
+          els.status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Offline';
+          els.status.className = 'text-sm font-medium text-red-500 flex items-center gap-2 bg-red-500/10 px-3 py-1.5 rounded-full';
       });
 
-      // Controls event listeners
-      searchInput.addEventListener('input', render);
-      impactSelect.addEventListener('change', render);
-      goldSelect.addEventListener('change', render);
-      sortBy.addEventListener('change', render);
-
-      // Modal controls
-      modalClose.addEventListener('click', () => modalRoot.classList.add('hidden'));
-      document.getElementById('modalBackdrop').addEventListener('click', () => modalRoot.classList.add('hidden'));
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modalRoot.classList.add('hidden'); });
+      [els.search, els.impact, els.gold, els.sort].forEach(el => el.addEventListener('input', render));
+      document.getElementById('modalClose').onclick = document.getElementById('modalBackdrop').onclick = () => els.modal.classList.add('hidden');
+      
+      function timeAgo(iso) {
+        try { const s = Math.floor((new Date() - new Date(iso))/1000);
+        if (s<60) return 'Just now'; if (s<3600) return Math.floor(s/60)+'m ago'; if (s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; } catch { return ''; }
+      }
     }
-
     initializeAppCore(initNewsPage);
   </script>
 </body>
