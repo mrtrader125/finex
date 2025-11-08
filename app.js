@@ -57,24 +57,21 @@ export const allSidebarItems = [
     { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-// === THEME PERSISTENCE START ===
-// Try to get theme from local storage immediately for speed
-const savedLocalTheme = typeof window !== 'undefined' ? localStorage.getItem('finex_theme') : null;
-
+// Initialize preferences, trying LocalStorage first for speed
 export let userPreferences = { 
-    theme: savedLocalTheme || 'dark', // Default to dark if nothing saved
+    theme: localStorage.getItem('finex_theme') || 'dark', 
     sidebarItems: {} 
 };
 
-// Apply initially if we have a saved preference
-if (savedLocalTheme) {
-    if (savedLocalTheme === 'light') {
-        document.documentElement.classList.remove('dark');
-    } else {
+// Apply theme immediately on module load to minimize FOUC (Flash of Unstyled Content)
+if (typeof window !== 'undefined') {
+    const savedTheme = localStorage.getItem('finex_theme');
+    if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
+    } else if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
     }
 }
-// === THEME PERSISTENCE END ===
 
 function getDefaultSidebarVisibility() {
     const visibility = {};
@@ -91,7 +88,6 @@ function getDefaultSidebarVisibility() {
 export async function initializeAppCore(pageSpecificInit) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // Ensure theme is applied as soon as we know we have a user
             applyTheme(userPreferences.theme);
 
             const userDocRef = doc(db, 'users', user.uid);
@@ -109,15 +105,18 @@ export async function initializeAppCore(pageSpecificInit) {
                 pageSpecificInit(user, db, userProfile);
             }
 
-            const settingsDocRef = doc(db, `users/${user.uid}/preferences`, 'settings');
+            // --- NEW: Load ALL THREE layers of settings ---
+            const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
+            const adminOverridesRef = doc(db, `users/${user.uid}/admin_settings`, 'sidebar');
+            const userPrefsRef = doc(db, `users/${user.uid}/preferences`, 'settings');
 
             try {
                 await Promise.all([
                     loadCommonComponents(),
-                    loadPreferences(settingsDocRef) 
+                    // Pass all 3 refs to the loader
+                    loadPreferences(globalSettingsRef, adminOverridesRef, userPrefsRef) 
                 ]);
 
-                // Re-apply theme after DB load to ensure sync
                 applyTheme(userPreferences.theme);
                 renderSidebar();
                 attachCoreEventListeners();
@@ -157,54 +156,63 @@ async function loadCommonComponents() {
     } catch (error) { console.error("Error loading common components:", error); }
  }
 
-async function loadPreferences(settingsDocRef) {
+// --- UPDATED PREFERENCE LOADER ---
+async function loadPreferences(globalRef, adminRef, userRef) {
     try {
         let defaultItems = getDefaultSidebarVisibility();
-        const globalSettingsRef = doc(db, "siteSettings", "sidebarDefaults");
-        const [globalDocSnap, userDocSnap] = await Promise.all([
-            getDoc(globalSettingsRef),
-            getDoc(settingsDocRef)
+        
+        // Fetch all 3 layers in parallel
+        const [globalSnap, adminSnap, userSnap] = await Promise.all([
+            getDoc(globalRef),
+            getDoc(adminRef),
+            getDoc(userRef)
         ]);
 
-        let globalPrefs = globalDocSnap.exists() ? { ...{ theme: 'dark', sidebarItems: {} }, ...globalDocSnap.data() } : { theme: 'dark', sidebarItems: {} };
-        let userPrefs = userDocSnap.exists() ? { ...{ theme: null, sidebarItems: {} }, ...userDocSnap.data() } : { theme: null, sidebarItems: {} };
+        let globalPrefs = globalSnap.exists() ? globalSnap.data().sidebarItems || {} : {};
+        let adminPrefs = adminSnap.exists() ? adminSnap.data() : {}; // Admin prefs are direct keys
+        let userPrefsDoc = userSnap.exists() ? userSnap.data() : {};
+        let userSidebarPrefs = userPrefsDoc.sidebarItems || {};
 
-        // Priority: LocalStorage (for speed) -> User DB -> Global DB -> Default
-        userPreferences.theme = userPrefs.theme || localStorage.getItem('finex_theme') || globalPrefs.theme || 'dark';
+        // Set Theme (User preference takes priority for theme)
+        userPreferences.theme = userPrefsDoc.theme || localStorage.getItem('finex_theme') || 'dark';
 
+        // --- MERGE SIDEBAR PREFERENCES ---
         const finalSidebar = {};
         Object.keys(defaultItems).forEach(key => {
-            const globalVal = globalPrefs.sidebarItems[key];
-            const userVal = userPrefs.sidebarItems[key];
-            if (globalVal === false) finalSidebar[key] = false;
-            else if (userVal !== undefined) finalSidebar[key] = userVal;
-            else if (globalVal !== undefined) finalSidebar[key] = globalVal;
-            else finalSidebar[key] = true;
+            // 1. Start with Default (True)
+            let isVisible = true;
+
+            // 2. Apply Global Default Override
+            if (globalPrefs[key] === false) isVisible = false;
+
+            // 3. Apply User Preference Override
+            if (userSidebarPrefs[key] !== undefined) isVisible = userSidebarPrefs[key];
+
+            // 4. Apply Admin Override (FINAL SAY - Force Hide/Show)
+            if (adminPrefs[key] !== undefined) isVisible = adminPrefs[key];
+
+            finalSidebar[key] = isVisible;
         });
         userPreferences.sidebarItems = finalSidebar;
+
      } catch (error) { 
          console.error("Error loading preferences:", error);
-         userPreferences.theme = 'dark';
+         userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
          userPreferences.sidebarItems = getDefaultSidebarVisibility(); 
      }
 }
 
-// --- Theme Application (INSTANT & PERSISTENT) ---
+// --- Theme Application ---
 export function applyTheme(theme) {
-    // 1. Save to LocalStorage instantly
     if (typeof window !== 'undefined') {
         localStorage.setItem('finex_theme', theme);
     }
     userPreferences.theme = theme;
-
-    // 2. Apply to DOM instantly
     if (theme === 'light') {
         document.documentElement.classList.remove('dark');
     } else {
         document.documentElement.classList.add('dark');
     }
-
-    // 3. Sync toggle if it exists on the current page
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         themeToggle.checked = (theme === 'dark');
