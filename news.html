@@ -45,12 +45,11 @@
 
         <div class="text-right">
           <div class="text-xs text-color-muted">Status</div>
-          <div id="connection-status" class="text-sm font-medium text-green-500 flex items-center justify-end gap-2">
+          <div id="connection-status" class="text-sm font-medium text-yellow-500 flex items-center justify-end gap-2">
               <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-              Live
+                  <span class="animate-spin inline-flex h-full w-full rounded-full border-2 border-dotted border-yellow-500"></span>
+              </span>
+              Connecting...
           </div>
         </div>
       </div>
@@ -92,7 +91,10 @@
 
       <!-- Feed -->
       <section id="feed" class="grid gap-4 min-h-[200px] relative">
-          <!-- Loading skeleton will be replaced -->
+          <div class="col-span-full text-center text-color-muted py-12 flex flex-col items-center">
+               <i class="fas fa-circle-notch fa-spin text-3xl mb-4 opacity-50"></i>
+               <p>Connecting to live feed...</p>
+          </div>
       </section>
 
       <div id="emptyState" class="hidden text-center text-gray-500 mt-8 py-12 bg-black/5 dark:bg-white/5 rounded-2xl">
@@ -131,6 +133,9 @@
 
     function initNewsPage(user, db) {
       console.log("Initializing Real-time News Feed...");
+
+      // REVEAL PAGE IMMEDIATELY
+      document.getElementById('app-wrapper').style.display = 'block';
 
       const feedEl = document.getElementById('feed');
       const connectionStatus = document.getElementById('connection-status');
@@ -253,17 +258,33 @@
            data.sort((a,b) => {
                if (b.action === 'ALERT' && a.action !== 'ALERT') return 1;
                if (a.action === 'ALERT' && b.action !== 'ALERT') return -1;
-               return b.createdAt - a.createdAt;
+               // Use either createdAt (Timestamp) or published (ISO string) for sorting
+               const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published || 0);
+               const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published || 0);
+               return dateB - dateA;
            });
         } else {
            // Default: Recent first
-           // Firestore already gives us sorted data, but good to ensure if we filtered
-           data.sort((a,b) => b.createdAt - a.createdAt);
+           data.sort((a,b) => {
+               const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published || 0);
+               const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published || 0);
+               return dateB - dateA;
+           });
         }
 
         feedEl.innerHTML = '';
         if (!data.length) {
-          emptyState.classList.remove('hidden');
+           // Only show empty state if we actually have NO data after filtering
+           // If allFeedData is empty, it means we really have no news.
+           if (allFeedData.length === 0) {
+                feedEl.innerHTML = `
+                    <div class="col-span-full text-center text-color-muted py-12 flex flex-col items-center bg-black/5 dark:bg-white/5 rounded-2xl">
+                        <i class="fas fa-newspaper text-4xl mb-4 opacity-30"></i>
+                        <p>No news published yet.</p>
+                    </div>`;
+           } else {
+               emptyState.classList.remove('hidden');
+           }
         } else {
           emptyState.classList.add('hidden');
           data.forEach(item => {
@@ -291,8 +312,9 @@
       }
 
       // REAL-TIME LISTENER
-      // Listens to the 'news_feed' collection, ordered by newest first, limited to 100 items for performance
-      const q = query(collection(db, 'news_feed'), orderBy('createdAt', 'desc'), limit(100));
+      // NOTE: Removed 'orderBy' initially to see if it fixes missing index issues for you.
+      // It will sort client-side in the render function anyway.
+      const q = query(collection(db, 'news_feed'), limit(100));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
           allFeedData = [];
@@ -301,13 +323,18 @@
               allFeedData.push({ id: doc.id, ...doc.data() });
           });
           render();
-          // Update connection status indicator if it was ever showing an error
+          
           connectionStatus.innerHTML = '<span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> Live';
           connectionStatus.className = "text-sm font-medium text-green-500 flex items-center justify-end gap-2";
 
       }, (error) => {
           console.error("Live feed error:", error);
-          connectionStatus.textContent = "Offline (Reconnecting...)";
+          // Show the actual error on screen if possible
+          let errorMsg = "Offline";
+          if (error.code === 'permission-denied') errorMsg = "Access Denied (Check Rules)";
+          if (error.code === 'failed-precondition') errorMsg = "Missing Index (Check Console)";
+          
+          connectionStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMsg}`;
           connectionStatus.className = "text-sm font-medium text-red-500 flex items-center justify-end gap-2";
       });
 
