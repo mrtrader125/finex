@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Article Preview | Finex</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="build.css">
     <style>
         .preview-container {
             position: relative;
@@ -83,13 +83,13 @@
     </footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // Import the initialized db from app.js
+        import { db } from './app.js';
+        
+        // Import only the functions we need
+        import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-        // Use the same Firebase config as app.js
-        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // --- Firebase config and init are no longer needed here ---
 
         // --- Fetch and Display Latest Article Preview ---
         async function fetchSampleArticle() {
@@ -114,8 +114,8 @@
                         ${formattedDate ? `<span class="mx-2">&bull;</span><span>${formattedDate}</span>` : ''}
                         ${article.readTime ? `<span class="mx-2">&bull;</span><span>${article.readTime}</span>` : ''}
                     `;
-                    // WARNING: Ensure article.content is safe HTML or sanitize it first.
-                    contentEl.innerHTML = article.content || "<p>Could not load content.</p>";
+                    // === SECURITY FIX: Sanitize HTML content ===
+                    contentEl.innerHTML = article.content ? DOMPurify.sanitize(article.content) : "<p>Could not load content.</p>";
                 } else {
                     titleEl.textContent = "No Articles Found"; metaEl.textContent = "";
                     contentEl.innerHTML = "<p class='text-center text-color-muted'>No sample article available.</p>";
