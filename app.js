@@ -162,7 +162,7 @@ async function loadPreferences(globalRef, adminRef, userRef) {
     try {
         const [globalSnap, adminSnap, userSnap] = await Promise.all([ getDoc(globalRef), getDoc(adminRef), getDoc(userRef) ]);
         const globalPrefs = globalSnap.exists() ? globalSnap.data().sidebarItems || {} : {};
-        const adminPrefs = adminSnap.exists() ? adminPrefs.data() : {}; 
+        const adminPrefs = adminSnap.exists() ? adminSnap.data() : {}; 
         const userPrefsDoc = userSnap.exists() ? userSnap.data() : {};
         const userSidebarPrefs = userPrefsDoc.sidebarItems || {};
 
