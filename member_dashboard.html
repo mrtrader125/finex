@@ -5,7 +5,9 @@
     <script>
         // --- THIS SCRIPT PREVENTS THEME FLICKER ---
         try {
-            const theme = localStorage.getItem('theme');
+            // --- START FIX: Changed 'theme' to 'finex_theme' to match app.js ---
+            const theme = localStorage.getItem('finex_theme');
+            // --- END FIX ---
             if (theme === 'light') {
                 document.documentElement.classList.remove('dark');
             } else {
