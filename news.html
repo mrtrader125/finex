@@ -4,17 +4,24 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Live News Feed | Finex</title>
+
+  <!-- Tailwind (Play CDN) -->
+  <script> tailwind.config = { darkMode: 'class' } </script>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script>tailwind.config = { darkMode: 'class' }</script>
+
+  <!-- Your site styles (defines text-color-base, textured-background, etc.) -->
   <link rel="stylesheet" href="main.css">
+
   <style>
-    .fade-in { animation: fadeIn 0.3s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .news-card { transition: all 0.2s ease; }
+    .fade-in { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .news-card { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
     .news-card:hover { transform: translateY(-2px); }
   </style>
 </head>
@@ -25,8 +32,8 @@
     <div id="header-placeholder"></div>
 
     <main class="container mx-auto p-4 md:p-8 min-h-screen">
-      <!-- Header Area -->
-      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+      <!-- Title + Status -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-color-base flex items-center gap-3">
             <span class="relative flex h-4 w-4">
@@ -37,34 +44,58 @@
           </h1>
           <p class="text-color-muted mt-2 font-medium">Real-time institutional news, analysis, and impact signals.</p>
         </div>
-        <div id="connection-status" class="text-xs font-bold uppercase tracking-widest text-yellow-500 bg-yellow-500/10 px-4 py-2 rounded-full flex items-center gap-2">
-            <i class="fas fa-circle-notch fa-spin"></i> Connecting Feed...
+
+        <div id="connection-status"
+             class="text-xs font-bold uppercase tracking-widest text-yellow-500 bg-yellow-500/10 px-4 py-2 rounded-full flex items-center gap-2"
+             aria-live="polite">
+          <i class="fas fa-circle-notch fa-spin"></i> Connecting Feed...
         </div>
       </div>
 
-      <!-- Search & Filters -->
-      <section class="mb-8 bg-white/50 dark:bg-white/5 p-4 rounded-2xl border border-gray-200 dark:border-white/10 backdrop-blur-md">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="relative">
+      <!-- Filters (sticky) -->
+      <section class="mb-6 sticky top-20 z-10">
+        <div class="bg-white/60 dark:bg-white/5 p-4 rounded-2xl border border-gray-200 dark:border-white/10 backdrop-blur-md shadow-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="relative">
               <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-color-muted"></i>
-              <input id="search" placeholder="Filter headlines..." class="form-input pl-11" />
+              <input id="search" placeholder="Filter headlines..."
+                     class="w-full pl-11 pr-3 py-2 rounded-xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-color-base placeholder:text-color-muted outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50" />
+            </div>
+
+            <select id="impact" class="w-full rounded-xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50">
+              <option value="">USD Impact (All)</option>
+              <option value="up">USD Bullish ↑</option>
+              <option value="down">USD Bearish ↓</option>
+              <option value="neutral">Neutral</option>
+            </select>
+
+            <select id="goldImpact" class="w-full rounded-xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50">
+              <option value="">Gold Impact (All)</option>
+              <option value="up">Gold Bullish ↑</option>
+              <option value="down">Gold Bearish ↓</option>
+              <option value="neutral">Neutral</option>
+            </select>
+
+            <select id="sortBy" class="w-full rounded-xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50">
+              <option value="recent">Latest First</option>
+              <option value="confidence">Highest Confidence</option>
+              <option value="alert_first">Priority Alerts</option>
+            </select>
           </div>
-          <select id="impact" class="form-select"><option value="">USD Impact (All)</option><option value="up">USD Bullish ↑</option><option value="down">USD Bearish ↓</option><option value="neutral">Neutral</option></select>
-          <select id="goldImpact" class="form-select"><option value="">Gold Impact (All)</option><option value="up">Gold Bullish ↑</option><option value="down">Gold Bearish ↓</option><option value="neutral">Neutral</option></select>
-          <select id="sortBy" class="form-select"><option value="recent">Latest First</option><option value="confidence">Highest Confidence</option><option value="alert_first">Priority Alerts</option></select>
         </div>
       </section>
 
-      <!-- News Feed -->
-      <section id="feed" class="space-y-4 min-h-[300px]">
-          <!-- Loading Skeleton -->
-          <div class="animate-pulse space-y-4 opacity-50">
-              <div class="h-32 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
-              <div class="h-32 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
-              <div class="h-32 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
-          </div>
+      <!-- Feed -->
+      <section id="feed" class="space-y-4 min-h-[300px]" aria-live="polite">
+        <!-- Loading skeleton -->
+        <div class="animate-pulse space-y-4 opacity-60">
+          <div class="h-28 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+          <div class="h-28 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+          <div class="h-28 bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+        </div>
       </section>
 
+      <!-- Empty state -->
       <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-color-muted">
         <i class="fas fa-newspaper text-5xl mb-4 opacity-20"></i>
         <p class="text-lg">No news matches your filters.</p>
@@ -73,125 +104,256 @@
   </div>
 
   <!-- Article Modal -->
-  <div id="modalRoot" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 px-4 md:px-8">
+  <div id="modalRoot" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:px-8">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modalBackdrop"></div>
-    <div class="relative w-full max-w-2xl bg-white dark:bg-[#1a2332] rounded-2xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[80vh]">
+    <div class="relative w-full max-w-2xl bg-white dark:bg-[#111827] rounded-2xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[80vh]"
+         role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-black/20">
-        <h3 class="font-bold text-lg text-color-base flex items-center gap-2">
-            <i class="fas fa-file-alt text-blue-500"></i> Full Report
+        <h3 id="modalTitle" class="font-bold text-lg text-color-base flex items-center gap-2">
+          <i class="fas fa-file-alt text-blue-500"></i> Full Report
         </h3>
-        <button id="modalClose" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 dark:bg-white/10 text-color-base hover:bg-gray-300 dark:hover:bg-white/20 transition-colors">
-            <i class="fas fa-times"></i>
+        <button id="modalClose"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 dark:bg-white/10 text-color-base hover:bg-gray-300 dark:hover:bg-white/20 transition-colors"
+                aria-label="Close">
+          <i class="fas fa-times"></i>
         </button>
       </div>
-      <div class="p-6 md:p-8 overflow-y-auto text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap" id="modalContent"></div>
+      <div id="modalContent" class="p-6 md:p-8 overflow-y-auto text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap"></div>
       <div class="px-6 py-4 border-t border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-black/20 flex justify-end">
-          <a id="modalOpenOriginal" class="main-button py-2.5 px-6 rounded-lg inline-flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20" target="_blank">
-              Read at Source <i class="fas fa-external-link-alt"></i>
-          </a>
+        <a id="modalOpenOriginal"
+           class="main-button py-2.5 px-6 rounded-lg inline-flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20"
+           target="_blank" rel="noopener noreferrer">
+          Read at Source <i class="fas fa-external-link-alt"></i>
+        </a>
       </div>
     </div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <!-- Single module script (do NOT also include <script src="app.js"> separately) -->
   <script type="module">
     import { initializeAppCore } from './app.js';
     import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
     function initNewsPage(user, db) {
-      document.getElementById('app-wrapper').style.display = 'block'; // INSTANT REVEAL
-      
+      // Instant reveal
+      document.getElementById('app-wrapper').style.display = 'block';
+
+      // Elements
+      const els = {
+        feed: document.getElementById('feed'),
+        status: document.getElementById('connection-status'),
+        search: document.getElementById('search'),
+        impact: document.getElementById('impact'),
+        gold: document.getElementById('goldImpact'),
+        sort: document.getElementById('sortBy'),
+        empty: document.getElementById('emptyState'),
+        modal: document.getElementById('modalRoot'),
+        modalTxt: document.getElementById('modalContent'),
+        modalLink: document.getElementById('modalOpenOriginal'),
+        modalClose: document.getElementById('modalClose'),
+        modalBackdrop: document.getElementById('modalBackdrop'),
+      };
+
       let allFeedData = [];
-      const els = { feed: document.getElementById('feed'), status: document.getElementById('connection-status'), search: document.getElementById('search'), impact: document.getElementById('impact'), gold: document.getElementById('goldImpact'), sort: document.getElementById('sortBy'), empty: document.getElementById('emptyState'), modal: document.getElementById('modalRoot'), modalTxt: document.getElementById('modalContent'), modalLink: document.getElementById('modalOpenOriginal') };
+      let lastFocusedEl = null;
 
-      function timeAgo(dateStr) {
+      // Persisted filters
+      const FILTER_KEY = 'finex_news_filters';
+      try {
+        const saved = JSON.parse(localStorage.getItem(FILTER_KEY) || '{}');
+        if (saved.search) els.search.value = saved.search;
+        if (saved.impact) els.impact.value = saved.impact;
+        if (saved.gold) els.gold.value = saved.gold;
+        if (saved.sort) els.sort.value = saved.sort;
+      } catch {}
+
+      const saveFilters = () => {
         try {
-             const date = dateStr?.toDate ? dateStr.toDate() : new Date(dateStr);
-             const s = Math.floor((new Date() - date) / 1000);
-             if (s<60) return 'Just now'; if (s<3600) return Math.floor(s/60)+'m ago'; if (s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago';
-        } catch { return ''; }
-      }
+          localStorage.setItem(FILTER_KEY, JSON.stringify({
+            search: els.search.value,
+            impact: els.impact.value,
+            gold: els.gold.value,
+            sort: els.sort.value,
+          }));
+        } catch {}
+      };
 
+      // Helpers
+      const timeAgo = (dateStr) => {
+        try {
+          const d = dateStr?.toDate ? dateStr.toDate() : new Date(dateStr);
+          const s = Math.floor((Date.now() - d.getTime()) / 1000);
+          if (s < 60) return 'Just now';
+          if (s < 3600) return Math.floor(s / 60) + 'm ago';
+          if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+          return Math.floor(s / 86400) + 'd ago';
+        } catch { return ''; }
+      };
+
+      const setStatus = (html, cls) => {
+        els.status.innerHTML = html;
+        els.status.className = 'text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 ' + cls;
+      };
+
+      // Render
       function render() {
-        let data = allFeedData.filter(it => 
-            (els.search.value === '' || (it.headline+it.text+it.source).toLowerCase().includes(els.search.value.toLowerCase())) &&
-            (els.impact.value === '' || (it.usd_impact || 'neutral') === els.impact.value) &&
-            (els.gold.value === '' || (it.xauusd_impact || 'neutral') === els.gold.value)
+        let data = allFeedData.filter(it =>
+          (els.search.value === '' || (it.headline + it.text + it.source).toLowerCase().includes(els.search.value.toLowerCase())) &&
+          (els.impact.value === '' || (it.usd_impact || 'neutral') === els.impact.value) &&
+          (els.gold.value === '' || (it.xauusd_impact || 'neutral') === els.gold.value)
         );
 
-        if (els.sort.value === 'confidence') data.sort((a,b) => (b.confidence||0) - (a.confidence||0));
-        else if (els.sort.value === 'alert_first') data.sort((a,b) => (b.action==='ALERT'?1:0) - (a.action==='ALERT'?1:0));
-        
-        // Always secondary sort by time
-        data.sort((a,b) => {
-            const dA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published);
-            const dB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published);
-            return dB - dA;
+        if (els.sort.value === 'confidence') {
+          data.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+        } else if (els.sort.value === 'alert_first') {
+          data.sort((a, b) => (b.action === 'ALERT' ? 1 : 0) - (a.action === 'ALERT' ? 1 : 0));
+        }
+
+        // Secondary sort by time (always)
+        data.sort((a, b) => {
+          const dA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.published);
+          const dB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.published);
+          return dB - dA;
         });
 
         els.feed.innerHTML = '';
-        if (data.length === 0) {
-             if (allFeedData.length > 0) els.empty.classList.remove('hidden');
-             else els.feed.innerHTML = '<div class="text-center py-16 opacity-50"><i class="fas fa-satellite-dish text-4xl mb-4"></i><p>Waiting for news stream...</p></div>';
-        } else {
-             els.empty.classList.add('hidden');
-             data.forEach(item => {
-                const isAlert = item.action === 'ALERT', conf = Math.round((item.confidence||0)*100);
-                const div = document.createElement('div');
-                // Premium card styling
-                div.className = `news-card p-5 rounded-2xl border fade-in group bg-white dark:bg-white/[0.02] ${isAlert ? 'border-red-500/40 dark:border-red-500/30 shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)]' : 'border-gray-200 dark:border-white/[0.08] hover:border-blue-500/30 dark:hover:border-blue-500/30'}`;
-                
-                div.innerHTML = `
-                <div class="flex justify-between items-start gap-4 mb-3">
-                    <div class="flex items-center gap-2.5">
-                        <span class="${isAlert ? 'bg-red-600 text-white shadow-red-500/50' : 'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'} text-[0.65rem] px-2.5 py-1 rounded-md font-black uppercase tracking-wider shadow-sm">${isAlert ? 'MAJOR ALERT' : 'UPDATE'}</span>
-                        <span class="text-xs font-semibold text-color-muted flex items-center gap-1.5"><i class="fas fa-clock opacity-50"></i> ${timeAgo(item.createdAt || item.published)}</span>
-                    </div>
-                     <div class="flex gap-2 text-[0.7rem] font-black tracking-wide uppercase">
-                        <span class="px-2 py-1 rounded-md ${item.usd_impact==='up'?'bg-green-500/10 text-green-600 dark:text-green-400':item.usd_impact==='down'?'bg-red-500/10 text-red-600 dark:text-red-400':'bg-gray-100 dark:bg-white/5 text-gray-500'}">USD ${item.usd_impact?.substring(0,4) || 'NEUT'}</span>
-                        <span class="px-2 py-1 rounded-md ${item.xauusd_impact==='up'?'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500':item.xauusd_impact==='down'?'bg-blue-500/10 text-blue-600 dark:text-blue-400':'bg-gray-100 dark:bg-white/5 text-gray-500'}">GOLD ${item.xauusd_impact?.substring(0,4) || 'NEUT'}</span>
-                     </div>
-                </div>
-                <h3 class="text-lg md:text-xl font-bold text-color-base mb-3 leading-tight cursor-pointer group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors headline-trigger">${item.headline}</h3>
-                
-                ${item.reason ? `<div class="text-sm text-color-muted bg-gray-50 dark:bg-black/20 p-3 rounded-xl mb-4 border border-gray-100 dark:border-white/5 flex gap-2"><i class="fas fa-info-circle mt-1 text-blue-500"></i> <span>${item.reason}</span></div>` : ''}
-                
-                <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-white/5">
-                    <div class="flex items-center gap-4 text-xs font-bold text-color-muted">
-                         <span class="flex items-center gap-1.5"><i class="fas fa-robot opacity-50"></i> AI Confidence: <span class="${conf>80?'text-green-500':'text-yellow-500'}">${conf}%</span></span>
-                         <span class="opacity-50 hidden sm:inline">•</span>
-                         <span class="opacity-50 hidden sm:inline">${item.source || 'Finex Desk'}</span>
-                    </div>
-                    <button class="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 headline-trigger">
-                        Read Analysis <i class="fas fa-arrow-right ml-1 text-xs opacity-50"></i>
-                    </button>
-                </div>`;
-                div.querySelectorAll('.headline-trigger').forEach(b => b.onclick = () => {
-                    els.modalTxt.innerText = item.text || item.headline;
-                    els.modalLink.href = item.url; els.modalLink.style.display = item.url ? 'inline-flex' : 'none';
-                    els.modal.classList.remove('hidden');
-                });
-                els.feed.appendChild(div);
-            });
+        if (!data.length) {
+          if (allFeedData.length) {
+            els.empty.classList.remove('hidden');
+          } else {
+            els.feed.innerHTML = `
+              <div class="text-center py-16 opacity-60">
+                <i class="fas fa-satellite-dish text-4xl mb-4"></i>
+                <p>Waiting for news stream...</p>
+              </div>`;
+          }
+          return;
         }
+        els.empty.classList.add('hidden');
+
+        const frag = document.createDocumentFragment();
+        data.forEach(item => {
+          const isAlert = item.action === 'ALERT';
+          const conf = Math.round((item.confidence || 0) * 100);
+
+          const card = document.createElement('article');
+          card.className = `news-card p-5 rounded-2xl border fade-in group bg-white dark:bg-white/[0.03] ${isAlert
+            ? 'border-red-500/40 dark:border-red-500/30 shadow-[0_0_30px_-12px_rgba(239,68,68,0.35)]'
+            : 'border-gray-200 dark:border-white/[0.08] hover:border-blue-500/40 dark:hover:border-blue-500/40'}`;
+
+          card.innerHTML = `
+            <div class="flex justify-between items-start gap-4 mb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="${isAlert ? 'bg-red-600 text-white shadow-red-500/50' : 'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'} text-[0.65rem] px-2.5 py-1 rounded-md font-black uppercase tracking-wider shadow-sm">
+                  ${isAlert ? 'MAJOR ALERT' : 'UPDATE'}
+                </span>
+                <span class="text-xs font-semibold text-color-muted flex items-center gap-1.5">
+                  <i class="fas fa-clock opacity-50"></i> ${timeAgo(item.createdAt || item.published)}
+                </span>
+              </div>
+              <div class="flex gap-2 text-[0.7rem] font-black tracking-wide uppercase">
+                <span class="px-2 py-1 rounded-md ${item.usd_impact==='up'?'bg-green-500/10 text-green-600 dark:text-green-400':item.usd_impact==='down'?'bg-red-500/10 text-red-600 dark:text-red-400':'bg-gray-100 dark:bg-white/5 text-gray-500'}">
+                  USD ${item.usd_impact?.substring(0,4) || 'NEUT'}
+                </span>
+                <span class="px-2 py-1 rounded-md ${item.xauusd_impact==='up'?'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500':item.xauusd_impact==='down'?'bg-blue-500/10 text-blue-600 dark:text-blue-400':'bg-gray-100 dark:bg-white/5 text-gray-500'}">
+                  GOLD ${item.xauusd_impact?.substring(0,4) || 'NEUT'}
+                </span>
+              </div>
+            </div>
+
+            <h2 class="text-lg md:text-xl font-bold text-color-base mb-3 leading-tight cursor-pointer group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors headline-trigger">
+              ${item.headline}
+            </h2>
+
+            ${item.reason ? `
+              <div class="text-sm text-color-muted bg-gray-50 dark:bg-black/20 p-3 rounded-xl mb-4 border border-gray-100 dark:border-white/5 flex gap-2">
+                <i class="fas fa-info-circle mt-1 text-blue-500"></i>
+                <span>${item.reason}</span>
+              </div>` : ''}
+
+            <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-white/5">
+              <div class="flex items-center gap-4 text-xs font-bold text-color-muted">
+                <span class="flex items-center gap-1.5"><i class="fas fa-robot opacity-50"></i> AI Confidence:
+                  <span class="${conf>80?'text-green-500':conf>60?'text-yellow-500':'text-orange-500'}">${conf}%</span>
+                </span>
+                <span class="opacity-50 hidden sm:inline">•</span>
+                <span class="opacity-50 hidden sm:inline">${item.source || 'Finex Desk'}</span>
+              </div>
+              <button class="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 headline-trigger">
+                Read Analysis <i class="fas fa-arrow-right ml-1 text-xs opacity-50"></i>
+              </button>
+            </div>
+          `;
+
+          // Open modal
+          card.querySelectorAll('.headline-trigger').forEach(btn => {
+            btn.addEventListener('click', () => openModal(item));
+          });
+
+          frag.appendChild(card);
+        });
+
+        els.feed.appendChild(frag);
       }
 
-      // ROBUST LISTENER
-      onSnapshot(query(collection(db, 'news_feed'), orderBy('createdAt', 'desc'), limit(100)), (snap) => {
+      // Debounced search for smoother typing
+      let tId;
+      const onFilterInput = () => { clearTimeout(tId); tId = setTimeout(() => { saveFilters(); render(); }, 120); };
+      [els.search, els.impact, els.gold, els.sort].forEach(el => el.addEventListener('input', onFilterInput));
+
+      // Modal controls (focus trap)
+      function openModal(item) {
+        lastFocusedEl = document.activeElement;
+        els.modalTxt.textContent = item.text || item.headline || '';
+        if (item.url) {
+          els.modalLink.href = item.url;
+          els.modalLink.style.display = 'inline-flex';
+        } else {
+          els.modalLink.style.display = 'none';
+        }
+        els.modal.classList.remove('hidden');
+        // Trap focus
+        els.modalClose.focus();
+        document.addEventListener('keydown', escClose);
+        document.addEventListener('keydown', trapTab);
+      }
+      function closeModal() {
+        els.modal.classList.add('hidden');
+        document.removeEventListener('keydown', escClose);
+        document.removeEventListener('keydown', trapTab);
+        if (lastFocusedEl) lastFocusedEl.focus();
+      }
+      const escClose = (e) => { if (e.key === 'Escape') closeModal(); };
+      const trapTab = (e) => {
+        if (e.key !== 'Tab') return;
+        const f = els.modal.querySelectorAll('a,button,[tabindex]:not([tabindex="-1"])');
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+        else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+      };
+      els.modalClose.addEventListener('click', closeModal);
+      els.modalBackdrop.addEventListener('click', closeModal);
+
+      // Firestore listener
+      onSnapshot(
+        query(collection(db, 'news_feed'), orderBy('createdAt', 'desc'), limit(100)),
+        (snap) => {
           allFeedData = snap.docs.map(d => d.data());
           render();
-          els.status.innerHTML = '<span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span></span> LIVE STREAM';
-          els.status.className = 'text-xs font-bold uppercase tracking-widest text-green-500 bg-green-500/10 px-4 py-2 rounded-full flex items-center gap-2';
-      }, (err) => {
-          console.error("Feed Error:", err);
-          els.status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> OFFLINE';
-          els.status.className = 'text-xs font-bold uppercase tracking-widest text-red-500 bg-red-500/10 px-4 py-2 rounded-full flex items-center gap-2';
-      });
-
-      [els.search, els.impact, els.gold, els.sort].forEach(el => el.addEventListener('input', render));
-      document.getElementById('modalClose').onclick = document.getElementById('modalBackdrop').onclick = () => els.modal.classList.add('hidden');
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') els.modal.classList.add('hidden'); });
+          setStatus(
+            '<span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span></span> LIVE STREAM',
+            'text-green-500 bg-green-500/10'
+          );
+        },
+        (err) => {
+          console.error('Feed Error:', err);
+          setStatus('<i class="fas fa-exclamation-triangle"></i> OFFLINE', 'text-red-500 bg-red-500/10');
+        }
+      );
     }
+
+    // Boot
     initializeAppCore(initNewsPage);
   </script>
 </body>
