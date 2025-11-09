@@ -5,9 +5,7 @@
     <script>
         // --- THIS SCRIPT PREVENTS THEME FLICKER ---
         try {
-            // --- START FIX: Changed 'theme' to 'finex_theme' to match app.js ---
             const theme = localStorage.getItem('finex_theme');
-            // --- END FIX ---
             if (theme === 'light') {
                 document.documentElement.classList.remove('dark');
             } else {
@@ -35,7 +33,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <script src="https://cdn.tailwindcss.com" defer></script>  
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="main.css">
     
     <script>
