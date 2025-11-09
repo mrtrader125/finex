@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Articles | Finex</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
@@ -15,7 +16,7 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    // Added for better article readability
+                    // This typography block is now correct because the plugin is loaded first
                     typography: (theme) => ({
                         DEFAULT: {
                             css: {
@@ -92,12 +93,14 @@
                     }),
                 },
             },
+            // START FIX: Removed broken plugins array
             plugins: [
-                require('@tailwindcss/typography'), // Added for prose styles
+                // require('@tailwindcss/typography') <-- This was the error
             ],
+            // END FIX
         }
     </script>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script> <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="main.css">
     <style>
         .page-view { display: none; }
         .page-view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
@@ -110,8 +113,6 @@
         #toc-list a { @apply block text-sm py-1.5 text-color-muted hover:text-blue-500 transition-colors; }
         #toc-list a.level-2 { @apply font-semibold text-color-base; }
         #toc-list a.level-3 { @apply pl-4; }
-
-        /* === DUPLICATE STYLES REMOVED FROM HERE === */
     </style>
 </head>
 <body class="antialiased textured-background">
