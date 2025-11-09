@@ -83,7 +83,7 @@ export async function initializeAppCore(pageSpecificInit) {
             try {
                 // Load ALL settings layers
                 await Promise.all([
-                    loadCommonComponents(),
+                    loadCommonComponents(), // <-- This function is now more resilient
                     loadPreferences(
                         doc(db, "siteSettings", "sidebarDefaults"),
                         doc(db, `users/${user.uid}/admin_settings`, 'sidebar'),
@@ -96,16 +96,14 @@ export async function initializeAppCore(pageSpecificInit) {
                 const userEmailSpan = document.getElementById('user-email');
                 if (userEmailSpan) userEmailSpan.textContent = userProfile.email;
                 
-                // --- START FIX: Made app-loader optional ---
-                // This prevents a script-stopping error on pages without a loader.
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) {
                     appLoader.style.display = 'none';
                 }
-                // --- END FIX ---
 
                 document.getElementById('app-wrapper').style.display = 'block';
             } catch (error) {
+                // This catch block will now only run for critical errors like loadPreferences
                 console.error("Failed to initialize app:", error);
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) {
@@ -118,17 +116,40 @@ export async function initializeAppCore(pageSpecificInit) {
     });
 }
 
+// --- START FIX: This function is now more resilient and will not stop the page from loading ---
 async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
-    if (!headerPlaceholder && !sidebarPlaceholder) return;
+    if (!headerPlaceholder && !sidebarPlaceholder) return; // Not on a page that needs them
+
     try {
-        const [headerRes, sidebarRes] = await Promise.all([ fetch('_header.html'), fetch('_sidebar.html') ]);
-        if (!headerRes.ok || !sidebarRes.ok) throw new Error(`Failed to load components`);
-        headerPlaceholder.innerHTML = await headerRes.text();
-        sidebarPlaceholder.innerHTML = await sidebarRes.text();
-    } catch (error) { console.error("Error loading common components:", error); }
+        const [headerRes, sidebarRes] = await Promise.all([ 
+            fetch('_header.html'), 
+            fetch('_sidebar.html') 
+        ]);
+        
+        if (!headerRes.ok) {
+             console.error("Failed to load _header.html", headerRes.statusText);
+             if (headerPlaceholder) headerPlaceholder.innerHTML = `<p style="color: red; text-align: center;">Error: Could not load header.</p>`;
+        } else {
+             if (headerPlaceholder) headerPlaceholder.innerHTML = await headerRes.text();
+        }
+
+        if (!sidebarRes.ok) {
+            console.error("Failed to load _sidebar.html", sidebarRes.statusText);
+            if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = `<p style="color: red; text-align: center;">Error: Could not load sidebar.</p>`;
+        } else {
+             if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = await sidebarRes.text();
+        }
+
+    } catch (error) { 
+        // This catch handles network errors (e.g., file not found, 404)
+        console.error("Error loading common components:", error); 
+        if (headerPlaceholder) headerPlaceholder.innerHTML = `<p style="color: red; text-align: center;">Error loading header. File not found?</p>`;
+        if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = `<p style="color: red; text-align: center;">Error loading sidebar. File not found?</p>`;
+    }
  }
+// --- END FIX ---
 
 async function loadPreferences(globalRef, adminRef, userRef) {
     try {
@@ -172,6 +193,8 @@ async function loadPreferences(globalRef, adminRef, userRef) {
      } catch (error) { 
          console.error("Error loading preferences:", error);
          userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
+         // We re-throw the error because preferences are critical to loading the sidebar
+         throw new Error("Could not load user preferences. " + error.message);
      }
 }
 
