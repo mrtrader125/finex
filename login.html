@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Access | Finex</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="build.css">
     <style>
         body {
             background-color: #0c111e;
@@ -67,7 +67,6 @@
             <div style="perspective: 1000px;">
                 <div id="form-flipper" class="relative w-full" style="height: 480px;">
 
-                    <!-- Login Form -->
                     <div class="form-face w-full h-full absolute">
                         <div class="glass-card p-8 h-full flex flex-col">
                             <form id="login-form" class="space-y-6 flex flex-col flex-grow">
@@ -91,7 +90,6 @@
                         </div>
                     </div>
 
-                    <!-- Signup Form -->
                     <div class="form-face form-back w-full h-full absolute">
                         <div class="glass-card p-8 h-full flex flex-col">
                             <form id="signup-form" class="space-y-6 flex flex-col flex-grow">
@@ -120,14 +118,14 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        // Import the initialized app, auth, and db from app.js
+        import { app, auth, db } from './app.js';
         
-        const firebaseConfig = { apiKey: "AIzaSyCRtzONV0M1syCLTF6H5__cGEBgJxM13sM", authDomain: "adminpanel-93879.firebaseapp.com", projectId: "adminpanel-93879", storageBucket: "adminpanel-93879.appspot.com", messagingSenderId: "854889610123", appId: "1:854889610123:web:4522c7fc685e9864014d8e" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Import only the functions we need
+        import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+        
+        // --- Firebase config and init are no longer needed here ---
 
         const formFlipper = document.getElementById('form-flipper');
         const showSignupBtn = document.getElementById('show-signup-btn');
