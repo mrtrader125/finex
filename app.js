@@ -81,34 +81,43 @@ export async function initializeAppCore(pageSpecificInit) {
             if (pageSpecificInit && typeof pageSpecificInit === 'function') pageSpecificInit(user, db, userProfile);
 
             try {
-                // Load ALL settings layers
+                // Load critical preferences and components
                 await Promise.all([
-                    loadCommonComponents(), // <-- This function is now more resilient
+                    loadCommonComponents(),
                     loadPreferences(
                         doc(db, "siteSettings", "sidebarDefaults"),
                         doc(db, `users/${user.uid}/admin_settings`, 'sidebar'),
                         doc(db, `users/${user.uid}/preferences`, 'settings')
                     )
                 ]);
+                
+                // These things DEPEND on preferences
                 applyTheme(userPreferences.theme);
                 renderSidebar();
                 attachCoreEventListeners();
                 const userEmailSpan = document.getElementById('user-email');
                 if (userEmailSpan) userEmailSpan.textContent = userProfile.email;
-                
-                const appLoader = document.getElementById('app-loader');
-                if (appLoader) {
-                    appLoader.style.display = 'none';
-                }
 
-                document.getElementById('app-wrapper').style.display = 'block';
             } catch (error) {
-                // This catch block will now only run for critical errors like loadPreferences
+                // This will now only catch critical, unhandled errors
                 console.error("Failed to initialize app:", error);
                 const appLoader = document.getElementById('app-loader');
                 if (appLoader) {
                     appLoader.textContent = "Error loading application.";
                 }
+            } finally {
+                // --- START FIX: This code now runs *always* ---
+                // This guarantees the loader is hidden and the page is shown,
+                // even if loadCommonComponents or loadPreferences fails.
+                const appLoader = document.getElementById('app-loader');
+                if (appLoader) {
+                    appLoader.style.display = 'none';
+                }
+                const appWrapper = document.getElementById('app-wrapper');
+                if (appWrapper) {
+                    appWrapper.style.display = 'block';
+                }
+                // --- END FIX ---
             }
         } else {
             window.location.replace(new URL('login.html', window.location.href).href);
@@ -116,7 +125,6 @@ export async function initializeAppCore(pageSpecificInit) {
     });
 }
 
-// --- START FIX: This function is now more resilient and will not stop the page from loading ---
 async function loadCommonComponents() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
@@ -149,13 +157,12 @@ async function loadCommonComponents() {
         if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = `<p style="color: red; text-align: center;">Error loading sidebar. File not found?</p>`;
     }
  }
-// --- END FIX ---
 
 async function loadPreferences(globalRef, adminRef, userRef) {
     try {
         const [globalSnap, adminSnap, userSnap] = await Promise.all([ getDoc(globalRef), getDoc(adminRef), getDoc(userRef) ]);
         const globalPrefs = globalSnap.exists() ? globalSnap.data().sidebarItems || {} : {};
-        const adminPrefs = adminSnap.exists() ? adminSnap.data() : {}; 
+        const adminPrefs = adminSnap.exists() ? adminPrefs.data() : {}; 
         const userPrefsDoc = userSnap.exists() ? userSnap.data() : {};
         const userSidebarPrefs = userPrefsDoc.sidebarItems || {};
 
@@ -191,10 +198,12 @@ async function loadPreferences(globalRef, adminRef, userRef) {
         userPreferences.lockedItems = lockedItems; // Store for settings.html to use
 
      } catch (error) { 
+         // --- START FIX: DO NOT throw an error here. ---
+         // This will allow the page to load with a default sidebar
+         // instead of getting stuck on the loader.
          console.error("Error loading preferences:", error);
          userPreferences.theme = localStorage.getItem('finex_theme') || 'dark';
-         // We re-throw the error because preferences are critical to loading the sidebar
-         throw new Error("Could not load user preferences. " + error.message);
+         // --- END FIX ---
      }
 }
 
@@ -227,5 +236,69 @@ export function renderSidebar() {
  }
 
 function attachCoreEventListeners() {
-    const openSidebarBtn=document.getElementById('open-sidebar-btn'); const closeSidebarBtn=document.getElementById('close-sidebar-btn'); const sidebar=document.getElementById('sidebar'); const sidebarOverlay=document.getElementById('sidebar-overlay'); const sidebarNav=document.getElementById('sidebar-nav'); const logoutBtn=document.getElementById('logout-btn'); function openSidebar(){if(sidebar)sidebar.classList.remove('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.remove('hidden'); setTimeout(()=>sidebarOverlay.classList.remove('opacity-0'),10);}} function closeSidebar(){if(sidebar)sidebar.classList.add('-translate-x-full'); if(sidebarOverlay){sidebarOverlay.classList.add('opacity-0'); setTimeout(()=>sidebarOverlay.classList.add('hidden'),300);}} if(openSidebarBtn)openSidebarBtn.addEventListener('click',openSidebar); if(closeSidebarBtn)closeSidebarBtn.addEventListener('click',closeSidebar); if(sidebarOverlay)sidebarOverlay.addEventListener('click',closeSidebar); if(logoutBtn)logoutBtn.addEventListener('click',(e)=>{e.preventDefault(); signOut(auth).then(()=>{window.location.href='index.html';}).catch((error)=>{console.error('Sign out error',error);});}); if(sidebarNav){sidebarNav.addEventListener('click',(e)=>{const link=e.target.closest('a'); const toggle=e.target.closest('button[data-toggle]'); if(link&&!link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}else if(toggle){const subMenuId=`submenu-${toggle.dataset.toggle}`; const subMenu=document.getElementById(subMenuId); const chevron=toggle.querySelector('.chevron-icon'); if(subMenu){if(subMenu.style.maxHeight&&subMenu.style.maxHeight!=='0px'){subMenu.style.maxHeight='0px'; toggle.classList.remove('active-parent'); if(chevron)chevron.classList.remove('rotate-180');}else{subMenu.style.maxHeight=subMenu.scrollHeight+"px"; toggle.classList.add('active-parent'); if(chevron)chevron.classList.add('rotate-180');}}}else if(link&&link.closest('.sidebar-submenu')){if(window.innerWidth<1024){closeSidebar();}}});}
+    // This function might run *before* the header/sidebar HTML is injected by fetch.
+    // We must use event delegation on the document body for buttons inside the header/sidebar.
+    
+    document.body.addEventListener('click', (e) => {
+        // Sidebar Toggle Buttons
+        const openBtn = e.target.closest('#open-sidebar-btn');
+        const closeBtn = e.target.closest('#close-sidebar-btn');
+        const overlay = e.target.closest('#sidebar-overlay');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        if (openBtn && sidebar && sidebarOverlay) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10);
+            return;
+        }
+
+        if ((closeBtn || overlay) && sidebar && sidebarOverlay) {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+            return;
+        }
+
+        // Logout Button
+        const logoutBtn = e.target.closest('#logout-btn');
+        if (logoutBtn) {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error('Sign out error', error);
+            });
+            return;
+        }
+
+        // Sidebar Navigation Links
+        const sidebarNav = document.getElementById('sidebar-nav');
+        if (sidebarNav && sidebarNav.contains(e.target)) {
+            const link = e.target.closest('a');
+            const toggle = e.target.closest('button[data-toggle]');
+
+            if (link && !link.closest('.sidebar-submenu')) {
+                if (window.innerWidth < 1024) closeSidebar();
+            } else if (toggle) {
+                const subMenuId = `submenu-${toggle.dataset.toggle}`;
+                const subMenu = document.getElementById(subMenuId);
+                const chevron = toggle.querySelector('.chevron-icon');
+                if (subMenu) {
+                    if (subMenu.style.maxHeight && subMenu.style.maxHeight !== '0px') {
+                        subMenu.style.maxHeight = '0px';
+                        toggle.classList.remove('active-parent');
+                        if (chevron) chevron.classList.remove('rotate-180');
+                    } else {
+                        subMenu.style.maxHeight = subMenu.scrollHeight + "px";
+                        toggle.classList.add('active-parent');
+                        if (chevron) chevron.classList.add('rotate-180');
+                    }
+                }
+            } else if (link && link.closest('.sidebar-submenu')) {
+                if (window.innerWidth < 1024) closeSidebar();
+            }
+        }
+    });
 }
