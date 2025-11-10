@@ -1,12 +1,28 @@
-<header id="header" class="header backdrop-blur-md sticky top-0 z-30">
-    <div class="container mx-auto flex justify-between items-center p-4">
-         <div class="flex items-center gap-4">
-            <button id="open-sidebar-btn" class="text-color-base hover:text-blue-500 p-2 rounded-full hover-bg-base"><i class="fas fa-bars fa-lg"></i></button>
-            <div id="page-title" class="text-2xl font-bold tracking-wider text-color-base">Page Title</div>
-        </div>
-        <nav class="flex items-center gap-4">
-             <span id="user-email" class="hidden sm:inline text-color-muted">user@example.com</span>
-             <a href="settings.html" class="text-color-base p-2 rounded-full hover-bg-base"><i class="fas fa-user-circle fa-lg"></i></a>
-        </nav>
+<header id="header" class="header sticky top-0 z-30 backdrop-blur bg-white/60 dark:bg-zinc-950/50 border-b border-zinc-200/60 dark:border-white/10">
+  <div class="container mx-auto flex justify-between items-center h-14 px-4">
+    <div class="flex items-center gap-4">
+      <button id="open-sidebar-btn" class="text-zinc-700 dark:text-zinc-200 hover:text-emerald-500 p-2 rounded-full hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70">
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+      <div id="page-title"
+           class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+        Page Title
+      </div>
     </div>
+
+    <nav class="flex items-center gap-3">
+      <span id="user-email" class="hidden sm:inline text-zinc-500 dark:text-zinc-400">user@example.com</span>
+
+      <!-- Theme toggle wired in app.js (uses applyTheme) -->
+      <button id="theme-toggle"
+              class="px-3 py-2 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-white/10 hover:shadow transition">
+        Toggle Theme
+      </button>
+
+      <a href="settings.html"
+         class="text-zinc-700 dark:text-zinc-200 p-2 rounded-full hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70">
+        <i class="fas fa-user-circle fa-lg"></i>
+      </a>
+    </nav>
+  </div>
 </header>
