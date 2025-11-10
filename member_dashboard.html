@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <script>
@@ -27,11 +27,33 @@
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Tailwind (Play CDN) -->
-  <script> tailwind.config = { darkMode: 'class' } </script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b'
+            }
+          },
+          fontFamily: {
+            sans: ["Inter","ui-sans-serif","system-ui","-apple-system","Segoe UI","Roboto","Helvetica","Arial","Noto Sans","sans-serif"],
+            display: ["Montserrat","Inter","ui-sans-serif","system-ui"]
+          },
+          boxShadow: {
+            soft: '0 10px 25px rgba(0,0,0,0.08)',
+            glow: '0 0 0 4px rgba(16,185,129,0.15)'
+          },
+          borderRadius: { '2xl': '1.25rem' }
+        }
+      }
+    }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Your sitewide CSS (optional) -->
@@ -45,7 +67,25 @@
       .border-color-base { @apply border-zinc-200 dark:border-zinc-800; }
       .hover-bg-base     { @apply hover:bg-zinc-100 dark:hover:bg-zinc-800; }
       .glass-card        { @apply rounded-2xl border border-color-base bg-white/60 dark:bg-zinc-900/40 backdrop-blur; }
-      .textured-background { @apply bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900; }
+      .textured-background { @apply bg-zinc-100/40 dark:bg-zinc-950; }
+      .btn { @apply inline-flex items-center justify-center px-3 py-2 rounded-xl transition shadow-soft; }
+      .btn-primary { @apply bg-emerald-600 text-white hover:bg-emerald-500 active:bg-emerald-700; }
+      .btn-ghost { @apply bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-white/10; }
+    }
+
+    /* Hero premium background */
+    body {
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(16,185,129,0.18), transparent 35%),
+        radial-gradient(ellipse at 80% 0%, rgba(99,102,241,0.14), transparent 40%);
+      background-attachment: fixed;
+    }
+    .bg-grid { position: relative; }
+    .bg-grid:before {
+      content: ""; position: absolute; inset: -2px;
+      background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 22px 22px; pointer-events: none;
+      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.7), transparent 70%);
     }
 
     .strength-bar-bg { @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800; }
@@ -74,11 +114,23 @@
   </style>
 </head>
 
-<body class="antialiased textured-background">
+<body class="antialiased font-sans bg-grid textured-background">
+  <!-- Top Bar -->
+  <div class="sticky top-0 z-40 backdrop-blur bg-white/60 dark:bg-zinc-950/50 border-b border-zinc-200/60 dark:border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500"></div>
+        <span class="font-semibold">Finex</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="theme-toggle" class="btn btn-ghost">Toggle Theme</button>
+      </div>
+    </div>
+  </div>
 
   <!-- App loader -->
   <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-emerald-500"></div>
   </div>
 
   <div id="app-wrapper" style="display: none;">
@@ -86,15 +138,20 @@
     <div id="sidebar-placeholder"></div>
 
     <main class="pt-[68px]">
-      <!-- HERO (as per your screenshot) -->
-      <section class="container mx-auto min-h-[72vh] flex flex-col items-center justify-center text-center p-4 relative">
+      <!-- HERO -->
+      <section class="container mx-auto min-h-[64vh] flex flex-col items-center justify-center text-center p-4 relative">
         <div class="max-w-3xl">
-          <h1 class="text-4xl md:text-6xl font-bold text-color-base">
+          <p class="text-xs uppercase tracking-widest text-zinc-500">Dashboard</p>
+          <h1 class="font-display text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
             Welcome back, <span id="member-name">Member</span>.
           </h1>
           <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">
             Your journey to financial clarity continues. What will you master today?
           </p>
+          <div class="mt-6 flex items-center justify-center gap-3">
+            <a href="#dashboard-content" class="btn btn-primary">Jump to tools</a>
+            <a href="articles.html" class="btn btn-ghost">Browse guides</a>
+          </div>
         </div>
         <!-- Chevron kept visible -->
         <div class="absolute bottom-[2px] left-1/2 -translate-x-1/2">
@@ -106,15 +163,15 @@
 
       <!-- MAIN CONTENT -->
       <section id="dashboard-content" class="scroll-mt-[84px] container mx-auto pt-16 md:py-20 space-y-10">
-        <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
-          <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
+        <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-emerald-500/50">
+          <div class="text-7xl text-emerald-500 flex-shrink-0" aria-hidden="true">
             <i class="fas fa-book-open"></i>
           </div>
           <div>
-            <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-            <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
-            <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
-            <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
+            <span class="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Featured Guide</span>
+            <h2 class="text-3xl font-bold mt-2 mb-3">The Five Pillars of Wealth</h2>
+            <p class="text-color-muted mb-6">Start with the essentials: capital protection, asymmetric risk, compounding, cashflow systems, and disciplined execution.</p>
+            <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block btn btn-primary">Start learning</a>
           </div>
         </article>
 
@@ -143,7 +200,7 @@
           <div class="glass-card h-[500px] flex flex-col p-6">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-2xl font-bold">Live Market Updates</h3>
-              <button id="news-refresh-btn" class="text-color-muted hover:text-blue-500 transition-colors" title="Refresh Feed">
+              <button id="news-refresh-btn" class="text-color-muted hover:text-emerald-500 transition-colors" title="Refresh Feed">
                 <i class="fas fa-sync-alt"></i>
               </button>
             </div>
@@ -177,7 +234,7 @@
             </div>
 
             <div class="mt-auto pt-4 border-t border-color-base">
-              <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
+              <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-emerald-500 hover:underline">
                 View more <i class="fas fa-external-link-alt fa-xs ml-1"></i>
               </a>
             </div>
@@ -224,13 +281,19 @@
 
       const rssFeedCache = new Map();
 
+      // Quick theme toggle on this page
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('finex_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      });
+
       // Smooth scroll helper for the chevron anchor
       function scrollToContent() {
         const el = document.getElementById('dashboard-content');
         if (!el) return;
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      document.querySelector('a[href="#dashboard-content"]')
+      document.querySelector('a[href="#dashboard-content']')
         ?.addEventListener('click', (e) => { e.preventDefault(); scrollToContent(); });
 
       function initDashboardPage(user, db, userProfile) {
@@ -266,7 +329,7 @@
             const article = { id: doc.id, ...doc.data() };
             container.innerHTML += `
               <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
+                <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-emerald-500">${article.title}</a>
                 <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
               </div>
               ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
@@ -291,7 +354,7 @@
             const analysis = { id: doc.id, ...doc.data() };
             container.innerHTML += `
               <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
+                <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-emerald-500">${analysis.title}</a>
                 <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
               </div>
               ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
@@ -389,7 +452,7 @@
         const moreLink = document.getElementById('view-more-link');
         if (!tabContainer || !refreshButton || !moreLink) return;
 
-        const activeTabClasses = ['bg-blue-500','text-white','shadow'];
+        const activeTabClasses = ['bg-emerald-600','text-white','shadow'];
         const inactiveTabClasses = ['text-zinc-400','hover:text-zinc-50'];
         const baseTabClasses = ['flex-1','inline-flex','items-center','justify-center','whitespace-nowrap','rounded-md','px-3','py-1','text-sm','font-medium','transition-all','cursor-pointer'];
 
@@ -467,7 +530,6 @@
                               : change < -0.01 ? { class:'change-red', icon:'▼' }
                               : { class:'change-gray', icon:'■' };
 
-            // Mixed presentation preserved intentionally to match your prior UX
             const rateString = ccy === 'JPY'
               ? `1 USD = ${current.toFixed(2)} ${ccy}`
               : `1 ${ccy} = ${(1 / current).toFixed(4)} USD`;
