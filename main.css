@@ -1,107 +1,312 @@
-/* main.css — Finex premium theme (ready to replace) */
-/* Keep your existing imports if any (fonts, resets). This file only defines theme tokens + utilities. */
+/* NOTE: @import rules for Google Fonts and Font Awesome 
+    have been moved to the .html file head for faster parallel loading.
+*/
 
-/* =============================
-   TOKENS
-============================= */
-:root{
-  --brand-50:#ecfdf5; --brand-100:#d1fae5; --brand-200:#a7f3d0; --brand-300:#6ee7b7;
-  --brand-400:#34d399; --brand-500:#10b981; --brand-600:#059669; --brand-700:#047857;
-  --brand-800:#065f46; --brand-900:#064e3b;
+/* main.css */
+
+html {
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For IE and Edge */
+    scroll-behavior: smooth; 
+}
+html::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, Opera */
 }
 
-/* =============================
-   GLOBAL BACKGROUND ENHANCERS
-============================= */
-body.premium-bg{
-  background-attachment: fixed;
-  background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(16,185,129,.18), transparent 35%),
-    radial-gradient(ellipse at 80% 0%, rgba(99,102,241,.14), transparent 40%);
-}
-.premium-grid{ position:relative; }
-.premium-grid::before{
-  content:""; position:absolute; inset:-2px;
-  background-image:
-    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size:22px 22px; pointer-events:none;
-  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.7), transparent 70%);
-          mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.7), transparent 70%);
+/* Hide default arrows on number inputs - Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-/* =============================
-   TYPOGRAPHY / COLORS HELPERS (match Tailwind utilities you used inline)
-============================= */
-.text-color-base{ color: #0a0a0a; }
-.dark .text-color-base{ color: #fafafa; }
-.text-color-muted{ color: #6b7280; }
-.dark .text-color-muted{ color: #9ca3af; }
-.border-color-base{ border-color: #e5e7eb; }
-.dark .border-color-base{ border-color: #27272a; }
-.hover-bg-base:hover{ background: rgba(0,0,0,0.06); }
-.dark .hover-bg-base:hover{ background: rgba(255,255,255,0.06); }
-
-/* =============================
-   GLASS CARD
-============================= */
-.glass-card{
-  border:1px solid rgba(255,255,255,0.12);
-  background: rgba(17,17,17,0.4);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-radius: 1rem;
+/* Hide default arrows on number inputs - Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
-:root:not(.dark) .glass-card{
-  background: rgba(255,255,255,0.7);
-  border-color: rgba(0,0,0,0.08);
+/* Base styles */
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+
+/* --- Light Theme (Main Content) --- */
+body {
+    background-color: #f4f6f9; /* Light gray background */
+    color: #1f2937; /* Dark text */
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.8); /* Lighter white */
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 1.5rem;
+    color: #1f2937; /* Dark text for cards */
+}
+ .header { /* Header style for light mode */
+     background-color: #f9fafb/30; /* Very light gray header */
+ }
+.form-input, .form-switch-bg, .form-textarea, .form-select, .form-checkbox { /* Added form elements */
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+    border-radius: 0.5rem; /* Consistent radius */
+}
+.form-checkbox { padding: 0.5rem; } /* Specific padding for checkboxes */
+.form-input, .form-textarea, .form-select { padding: 0.75rem; } /* Consistent padding */
+
+/* === THIS SECTION IS UPDATED (for .form-select) === */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Dark arrow for light mode */
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+/* === END OF UPDATE === */
+
+.text-color-base { color: #1f2937; }
+.text-color-muted { color: #4b5563; }
+.border-color-base { border-color: rgba(0, 0, 0, 0.1); }
+.hover-bg-base:hover { background-color: rgba(0, 0, 0, 0.05); }
+.main-button { background-color: #0052cc; color: white; transition: background-color 0.3s ease, transform 0.2s ease; border-radius: 0.5rem; padding: 0.75rem 1.5rem; } /* Added radius/padding */
+.main-button:hover { background-color: #0065ff; transform: scale(1.02); } /* Adjusted hover scale */
+
+/* Background pattern for light mode
+*/
+.textured-background {
+     background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+     background-size: 2rem 2rem;
+     /* Example: background-image: url('/images/light-texture.png'); */
 }
 
-/* =============================
-   SIDEBAR LINKS (used by renderSidebar)
-============================= */
-.sidebar-link{
-  color:#d1d5db; /* zinc-300 */
-  border-radius:.625rem;
-  transition: background-color .2s, color .2s;
+/* --- Dark Theme (Main Content) --- */
+.dark body {
+    background-color: #0c111e;
+    color: #f4f6f9;
 }
-.sidebar-link:hover{ background: rgba(255,255,255,0.06); color:#fff; }
-.sidebar-link.active{
-  background: linear-gradient(90deg, rgba(16,185,129,.18), rgba(20,184,166,.12));
-  color: var(--brand-500);
+.dark .glass-card {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f6f9;
 }
-.active-parent{ background: rgba(255,255,255,0.04); color:#e5e7eb; }
+ .dark .header { /* Header style for dark mode */
+   background-color: #111827/30;
+ }
+.dark .form-input, .dark .form-switch-bg, .dark .form-textarea, .dark .form-select, .dark .form-checkbox { /* Added form elements */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f6f9;
+    border-radius: 0.5rem; /* Consistent radius */
+}
+.dark .form-checkbox { padding: 0.5rem; }
+.dark .form-input, .dark .form-textarea, .dark .form-select { padding: 0.75rem; }
 
-/* =============================
-   BUTTON PRESETS (for non-Tailwind contexts)
-============================= */
-.btn{ display:inline-flex; align-items:center; justify-content:center; padding:.5rem .75rem; border-radius:.75rem; box-shadow:0 10px 25px rgba(0,0,0,.08); transition: box-shadow .2s, transform .05s; }
-.btn:active{ transform: translateY(1px); }
-.btn-primary{ background: var(--brand-600); color:#fff; }
-.btn-primary:hover{ background: var(--brand-500); }
-.btn-ghost{ background: rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.08); }
-.dark .btn-ghost{ background: rgba(24,24,27,0.6); border-color: rgba(255,255,255,0.1); color:#e5e7eb; }
+/* === THIS SECTION IS UPDATED (for .form-select) === */
+/* Style for select dropdown arrow in dark mode */
+.dark .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a9a9b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Light arrow for dark mode */
+    /* All other .form-select styles are inherited from the light mode rule */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+/* === END OF UPDATE === */
 
-/* =============================
-   NEWS LIST (your dashboard feed)
-============================= */
-.news-item{ display:flex; align-items:flex-start; gap:.75rem; padding:.75rem; }
-.news-item-icon{ height:2.5rem; width:2.5rem; border-radius:9999px; display:flex; align-items:center; justify-content:center; background:#e5e7eb; }
-.dark .news-item-icon{ background:#3f3f46; }
-.news-item-icon i{ color:#6b7280; font-size:1.125rem; }
-.news-item-source{ font-size:.875rem; font-weight:600; }
-.news-item-time{ font-size:.75rem; color:#9ca3af; }
-.news-item-desc{ font-size:.875rem; margin-top:.25rem; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; text-overflow:ellipsis; }
 
-/* =============================
-   FX COLORS (up/down/flat)
-============================= */
-.change-green{ color:#10b981; }
-.change-red{ color:#ef4444; }
-.change-gray{ color:#6b7280; }
+.dark .text-color-base { color: #f4f6f9; }
+.dark .text-color-muted { color: #a9a9b3; }
+.dark .border-color-base { border-color: rgba(255, 255, 255, 0.1); }
+.dark .hover-bg-base:hover { background-color: rgba(255, 255, 255, 0.05); }
+.dark .main-button { background-color: #0052cc; color: white; border-radius: 0.5rem; padding: 0.75rem 1.5rem;}
+.dark .main-button:hover { background-color: #0065ff; transform: scale(1.02); }
+ .dark .main-button:disabled { background-color: #003d99; cursor: not-allowed; opacity: 0.7; } /* Added disabled style */
 
-/* =============================
-   UTILITY FIXES (safe)
-============================= */
-.hide{ display:none !important; }
-.show{ display:block !important; }
+/* Background pattern for dark mode
+*/
+.dark .textured-background {
+     background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+     background-size: 2rem 2rem;
+     /* Example: background-image: url('/images/dark-texture.png'); */
+}
+
+/* --- Sidebar Styles (Static - Always Dark) --- */
+/* Base style for sidebar links */
+.sidebar-link {
+    transition: all 0.2s ease;
+    color: #a9a9b3; /* Default text color (medium gray) */
+    border-radius: 0.5rem; /* Match other elements */
+}
+/* Hover and Active state for sidebar links */
+.sidebar-link:hover, .sidebar-link.active {
+    color: #ffffff; /* White text */
+    background-color: rgba(255, 255, 255, 0.08); /* Subtle white background */
+}
+/* Styles for the sidebar container itself (aside#sidebar) are handled by Tailwind classes in _sidebar.html */
+/* Styles for the logout link (a#logout-btn) are handled by Tailwind classes in _sidebar.html */
+
+/* General styles & Utilities */
+#sidebar { transition: transform 0.3s ease-in-out; }
+#sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+
+/* Sidebar Scrollbar Hiding */
+#sidebar-nav {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+#sidebar-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Theme Toggle Switch Styles */
+.form-switch { display: inline-flex; align-items: center; cursor: pointer; }
+.form-switch-bg { width: 40px; height: 20px; border-radius: 9999px; position: relative; transition: background-color 0.2s ease; }
+.form-switch-knob { width: 16px; height: 16px; background-color: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.form-switch input:checked + .form-switch-bg { background-color: #0052cc; }
+.dark .form-switch input:checked + .form-switch-bg { background-color: #0065ff; }
+.form-switch input:checked + .form-switch-bg .form-switch-knob { transform: translateX(20px); }
+.checkbox-label { user-select: none; }
+
+/* Ensure consistency for specific elements if needed */
+.modal { transition: opacity 0.3s ease; }
+.modal-content { transition: transform 0.3s ease; }
+.tag { background-color: rgba(255, 255, 255, 0.1); cursor: pointer; transition: background-color 0.2s; border-radius: 9999px; }
+.tag:hover, .tag.active { background-color: #0052cc; }
+.dark .tag { background-color: rgba(255, 255, 255, 0.1); }
+.dark .tag:hover, .dark .tag.active { background-color: #0052cc; }
+
+/* === Dropdown Sidebar Styles === */
+button[data-toggle].sidebar-link { cursor: pointer; }
+.sidebar-link.active-parent { color: #ffffff; background-color: rgba(255, 255, 255, 0.05); }
+button[data-toggle].sidebar-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); }
+.sidebar-submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
+.sidebar-submenu a.sidebar-link { font-size: 0.9rem; padding-top: 0.5rem; padding-bottom: 0.5rem; padding-left: 0.75rem; color: #a9a9b3; }
+.sidebar-submenu a.sidebar-link:hover, .sidebar-submenu a.sidebar-link.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.1); }
+.sidebar-link .fa-chevron-down { transition: transform 0.2s ease-in-out; }
+.sidebar-link .fa-chevron-down.rotate-180 { transform: rotate(180deg); }
+
+/* Added Stat Card styles from Journal page for consistency if used elsewhere */
+.stat-card { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+.stat-title { @apply text-xs sm:text-sm font-medium text-color-muted uppercase tracking-wider block mb-1; }
+.stat-value { @apply text-lg sm:text-xl font-bold text-color-base; }
+/* Added Inset Card Style from Journal page */
+.glass-card-inset { @apply bg-gray-100 dark:bg-white/5 p-3 rounded-lg; }
+/* Added Ghost Button Style */
+.main-button-ghost { @apply inline-flex items-center justify-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition; }
+.main-button-ghost.active { @apply bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300; } 
+
+/* --- SCROLL REVEAL ANIMATION STYLES (NEW) --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px); /* Increased movement for visibility */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-on-scroll {
+    /* Initially hidden and slightly moved down */
+    opacity: 0;
+    transform: translateY(30px);
+    /* Ensure only the triggered elements transition */
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll.is-visible {
+    /* Class applied by JavaScript to trigger the animation */
+    animation: fadeInUp 0.8s ease-out forwards; /* Longer duration for a smoother feel */
+    opacity: 1; 
+    transform: translateY(0); 
+}
+/* === GLOBAL CUSTOM DROPDOWN STYLES === */
+.custom-select-wrapper { 
+    position: relative; 
+}
+.custom-select-trigger {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    cursor: pointer;
+    padding: 0.75rem; /* Match .form-input padding */
+    border-radius: 0.5rem; /* Match .form-input radius */
+    width: 100%;
+    background: rgba(0, 0, 0, 0.03); /* Light mode background */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Light mode border */
+    color: #1f2937; /* Light mode text */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .custom-select-trigger {
+    background: rgba(255, 255, 255, 0.05); /* Dark mode background */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Dark mode border */
+    color: #f4f6f9; /* Dark mode text */
+}
+.custom-select-trigger .fa-chevron-down {
+    color: #4b5563; /* Light mode chevron */
+    font-size: 0.75rem; /* text-xs */
+    transition: transform 0.2s ease-in-out;
+    margin-left: 0.5rem;
+}
+html.dark .custom-select-trigger .fa-chevron-down {
+     color: #a9a9b3; /* Dark mode chevron */
+}
+.custom-select-wrapper.open .custom-select-trigger .fa-chevron-down {
+    transform: rotate(180deg);
+}
+.custom-select-options {
+    position: absolute; 
+    z-index: 50; /* High z-index to appear over other content */
+    width: 100%;
+    background-color: #f4f6f9; border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem; margin-top: 0.25rem; max-height: 12rem;
+    overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    display: none;
+}
+html.dark .custom-select-options {
+    background-color: #1f2937; border-color: rgba(255, 255, 255, 0.1);
+}
+.custom-select-wrapper.open .custom-select-options { 
+    display: block; 
+}
+.custom-option {
+    padding: 0.75rem; font-size: 0.875rem; cursor: pointer; color: #1f2937;
+    white-space: normal; /* Allow text to wrap */
+    line-height: 1.4;
+}
+html.dark .custom-option { color: #f4f6f9; }
+.custom-option:hover { background-color: #dbeafe; }
+html.dark .custom-option:hover { background-color: rgba(59, 130, 246, 0.2); }
+.custom-option.selected { background-color: #dbeafe; font-weight: 600; }
+html.dark .custom-option.selected { background-color: rgba(59, 130, 246, 0.2); }
+
+/* Specific styles for focus pair options in dropdown */
+.custom-option.focus-pair-option {
+    font-size: 0.8rem; /* Slightly smaller */
+}
+.custom-option.focus-pair-option .focus-pair-reason {
+    display: block;
+    font-weight: 400;
+    font-size: 0.75rem; /* Even smaller for reason */
+    color: #4b5563; /* text-color-muted light */
+    white-space: normal; /* Ensure reason wraps */
+}
+html.dark .custom-option.focus-pair-option .focus-pair-reason {
+    color: #a9a9b3; /* text-color-muted dark */
+}
+
+/* Color styles for dropdown triggers */
+.dir-long { border-color: rgba(16, 185, 129, 0.5) !important; background-color: rgba(16, 185, 129, 0.05) !important; }
+.dir-short { border-color: rgba(239, 68, 68, 0.5) !important; background-color: rgba(239, 68, 68, 0.05) !important; }
+.source-impulse { border-color: rgba(234, 179, 8, 0.5) !important; background-color: rgba(234, 179, 8, 0.05) !important; }
+.source-watchlist { border-color: rgba(59, 130, 246, 0.5) !important; background-color: rgba(59, 130, 246, 0.05) !important; }
+.source-focus { border-color: rgba(16, 185, 129, 0.5) !important; background-color: rgba(16, 185, 129, 0.05) !important; }
+.type-stock { border-color: rgba(59, 130, 246, 0.5) !important; background-color: rgba(59, 130, 246, 0.05) !important; }
+.type-crypto { border-color: rgba(234, 179, 8, 0.5) !important; background-color: rgba(234, 179, 8, 0.05) !important; }
+.type-etf { border-color: rgba(16, 185, 129, 0.5) !important; background-color: rgba(16, 185, 129, 0.05) !important; }
+.type-other { border-color: rgba(107, 114, 128, 0.5) !important; background-color: rgba(107, 114, 128, 0.05) !important; }
+/* === END GLOBAL CUSTOM DROPDOWN STYLES === */
