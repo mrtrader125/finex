@@ -63,8 +63,7 @@
         0 1px 1px rgba(255, 255, 255, 0.2),
         0 -1px 1px rgba(0, 0, 0, 0.5);
     }
-    #digital-clock-3d .colon { animation: blink 1s step-end infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
+    #digital-clock-3d .colon { animation: none; }
   </style>
 </head>
 
@@ -332,40 +331,40 @@
         if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) return;
 
         const now = new Date();
-        const utcHour = now.getUTCHours();
-        const utcDay = now.getUTCDay(); /* FIX: no undeclared variable */
+const utcHour = now.getUTCHours();
+const utcDay = now.getUTCDay();
 
-        let sessionName = "";
-        let bestPairs = [];
+let sessionName = "";
+let bestPairs = [];
 
-        if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
-          sessionName = "Market Closed";
-          bestPairs = ["--"];
-        } else if (utcHour >= 12 && utcHour < 16) {
-          sessionName = "London / New York Overlap";
-          bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
-        } else if (utcHour >= 7 && utcHour < 9) {
-          sessionName = "Tokyo / London Overlap";
-          bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
-        } else if (utcHour >= 0 && utcHour < 6) {
-          sessionName = "Sydney / Tokyo Overlap";
-          bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
-        } else if (utcHour >= 9 && utcHour < 12) {
-          sessionName = "London Session";
-          bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
-        } else if (utcHour >= 16 && utcHour < 21) {
-          sessionName = "New York Session";
-          bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
-        } else if (utcHour >= 6 && utcHour < 7) {
-          sessionName = "Tokyo Session";
-          bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
-        } else if (utcHour >= 21) {
-          sessionName = "Sydney Session";
-          bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
-        } else {
-          sessionName = "Market Open (Low Volatility)";
-          bestPairs = ["--"];
-        }
+if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
+  sessionName = "Market Closed";
+  bestPairs = ["--"];
+} else if (utcHour >= 12 && utcHour < 16) {
+  sessionName = "London / New York Overlap";
+  bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
+} else if (utcHour >= 7 && utcHour < 9) {
+  sessionName = "Tokyo / London Overlap";
+  bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
+} else if (utcHour >= 0 && utcHour < 6) {
+  sessionName = "Sydney / Tokyo Overlap";
+  bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
+} else if (utcHour >= 9 && utcHour < 12) {
+  sessionName = "London Session";
+  bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
+} else if (utcHour >= 16 && utcHour < 21) {
+  sessionName = "New York Session";
+  bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
+} else if (utcHour >= 6 && utcHour < 7) {
+  sessionName = "Tokyo Session";
+  bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
+} else if (utcHour >= 21) {
+  sessionName = "Sydney Session";
+  bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
+} else {
+  sessionName = "Market Open (Low Volatility)";
+  bestPairs = ["--"];
+}
 
         if (sessionElement) sessionElement.textContent = sessionName;
         if (heroSessionElement) heroSessionElement.textContent = sessionName;
@@ -835,13 +834,14 @@ function updateClock() {
 setInterval(updateClock,1000);
 updateClock();
 
-/* ✅ FIXED session pairs */
 function updateSessionInfo() {
-  const ses1 = document.getElementById('session-name');
-  const ses2 = document.getElementById('hero-session-name');
-  const bp1 = document.getElementById('best-pairs');
-  const bp2 = document.getElementById('hero-best-pairs');
-  if (!ses1 && !ses2) return;
+  const sessionElement = document.getElementById('session-name');
+  const pairsElement = document.getElementById('best-pairs');
+  const heroSessionElement = document.getElementById('hero-session-name');
+  const heroPairsElement = document.getElementById('hero-best-pairs');
+
+  if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) return;
+
 
   const now = new Date();
   const h = now.getUTCHours();
@@ -877,17 +877,21 @@ function updateSessionInfo() {
     name="Market Open";
   }
 
-  if (ses1) ses1.textContent=name;
-  if (ses2) ses2.textContent=name;
+  if (sessionElement) sessionElement.textContent = sessionName;
+  if (heroSessionElement) heroSessionElement.textContent = sessionName;
 
-  if (bp1) {
-    bp1.innerHTML="";
-    pairs.forEach(p=>bp1.innerHTML+=`<li>${p}</li>`);
-  }
-  if (bp2) {
-    bp2.innerHTML="";
-    pairs.forEach(p=>bp2.innerHTML+=`<li>${p}</li>`);
-  }
+  const renderPairs = (ul, pairs, chip=false) => {
+    if (!ul) return;
+    ul.innerHTML = "";
+    pairs.forEach(pair => {
+      ul.innerHTML += chip
+        ? `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`
+        : `<li>${pair}</li>`;
+    });
+  };
+
+  renderPairs(pairsElement, bestPairs, true);
+  renderPairs(heroPairsElement, bestPairs, false);
 }
 
 /* Scroll */
