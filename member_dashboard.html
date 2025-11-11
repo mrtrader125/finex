@@ -41,6 +41,8 @@
       .hover-bg-base     { @apply hover:bg-zinc-100 dark:hover:bg-zinc-800; }
       .glass-card        { @apply rounded-2xl border border-color-base bg-white/60 dark:bg-zinc-900/40 backdrop-blur; }
       .textured-background { @apply bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900; }
+      .content-container { @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
+      .section-gap       { @apply space-y-8 md:space-y-12; }
     }
 
     .strength-bar-bg { @apply w-full bg-zinc-100 rounded-full h-1.5 dark:bg-zinc-800; }
@@ -74,27 +76,21 @@
         0 1px 1px rgba(255, 255, 255, 0.8),
         0 -1px 1px rgba(0, 0, 0, 0.2);
     }
-
     .dark .glass-text {
       color: rgba(228, 228, 231, 0.75);
       text-shadow:
         0 1px 1px rgba(255, 255, 255, 0.2),
         0 -1px 1px rgba(0, 0, 0, 0.5);
     }
-    
     #digital-clock-3d > span { @apply glass-text; }
-    #digital-clock-3d .colon {
-      animation: blink 1s step-end infinite;
-      @apply relative -top-1 md:-top-2;
-    }
+    #digital-clock-3d .colon { animation: blink 1s step-end infinite; @apply relative -top-0.5 md:-top-1; }
     @keyframes blink { 50% { opacity: 0; } }
   </style>
 </head>
 
 <body class="antialiased textured-background">
-
-  <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+  <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900/80 z-50">
+    <div class="animate-spin rounded-full h-14 w-14 md:h-16 md:w-16 border-t-2 border-b-2 border-blue-500"></div>
   </div>
 
   <div id="app-wrapper" style="display: none;">
@@ -102,67 +98,76 @@
     <div id="sidebar-placeholder"></div>
 
     <main class="pt-[68px]">
-      <section class="container mx-auto h-[calc(100dvh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
-        
-        <div class="max-w-3xl">
-          <h1 class="text-4xl md:text-6xl font-bold text-color-base">
+      <!-- HERO -->
+      <section class="content-container h-[calc(100dvh-68px)] relative flex flex-col items-center justify-center text-center">
+        <div class="max-w-3xl md:max-w-4xl">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight text-color-base">
             Welcome back, <span id="member-name">Member</span>.
           </h1>
-          <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">
+          <p class="text-base sm:text-lg md:text-xl text-color-muted mt-4 md:mt-5 max-w-2xl mx-auto leading-relaxed">
             Your journey to financial clarity continues. What will you master today?
           </p>
         </div>
 
-        <div class="absolute inset-x-4 md:inset-x-6 bottom-8 md:bottom-10 flex justify-between items-end">
-
-          <div id="hero-session-widget" class="glass-text text-left p-4">
-            <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold">--</h3>
-            <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
+        <!-- Bottom bar inside viewport -->
+        <div class="absolute inset-x-4 sm:inset-x-6 bottom-6 md:bottom-8 flex items-end justify-between pointer-events-none">
+          <!-- Session (left) -->
+          <div id="hero-session-widget" class="pointer-events-auto text-left px-3 py-2 md:px-4 md:py-3 rounded-xl bg-black/10 dark:bg-white/5 backdrop-blur-sm">
+            <h3 id="hero-session-name" class="text-xl md:text-2xl font-bold leading-tight">--</h3>
+            <ul id="hero-best-pairs" class="text-xs md:text-sm font-medium space-y-1 mt-1.5">
               <li>--</li>
             </ul>
           </div>
 
-          <div>
-            <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
-              <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
+          <!-- Arrow (center) -->
+          <div class="pointer-events-auto">
+            <a href="#dashboard-content" class="text-color-muted/80 hover:text-color-base transition-colors inline-flex items-center justify-center">
+              <i class="fas fa-chevron-down text-2xl md:text-3xl animate-bounce"></i>
             </a>
           </div>
 
-          <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans p-4"></div>
-        
+          <!-- Clock (right) -->
+          <div id="digital-clock-3d" class="pointer-events-none text-3xl md:text-4xl lg:text-5xl font-bold font-sans p-2 md:p-3"></div>
         </div>
       </section>
 
-      <section id="dashboard-content" class="scroll-mt-[84px] container mx-auto pt-16 md:py-20 space-y-10">
-        <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
-          <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
+      <!-- MAIN CONTENT -->
+      <section id="dashboard-content" class="content-container pt-12 md:pt-16 section-gap">
+        <!-- Featured -->
+        <article class="glass-card transition-all duration-300 hover:border-blue-500/50 p-6 md:p-8 lg:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+          <div class="text-6xl md:text-7xl lg:text-8xl text-blue-500 flex-shrink-0" aria-hidden="true">
             <i class="fas fa-book-open"></i>
           </div>
-          <div>
-            <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-            <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
-            <p class="text-color-muted mb-6">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
-            <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
+          <div class="w-full">
+            <span class="text-xs md:text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
+            <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold mt-2 mb-3 leading-tight">Your Guide: The 5 Pillars of Wealth</h2>
+            <p class="text-sm md:text-base text-color-muted mb-5 md:mb-6 leading-relaxed">Start with the fundamentals. This guide covers the core principles for building a strong financial foundation.</p>
+            <a href="articles.html" class="main-button font-bold py-2.5 px-5 md:py-3 md:px-6 rounded-lg inline-block">Start Learning</a>
           </div>
         </article>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="glass-card p-6 flex flex-col justify-center">
-            <h3 class="text-xl font-bold text-color-base mb-1">Current Trading Session</h3>
-            <p id="session-name" class="text-2xl font-semibold text-blue-400">--</p>
+        <!-- Session + Pairs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
+          <div class="glass-card p-6 md:p-7 lg:p-8 flex flex-col justify-center min-h-[140px]">
+            <h3 class="text-lg md:text-xl font-bold text-color-base mb-1.5">Current Trading Session</h3>
+            <p id="session-name" class="text-xl md:text-2xl lg:text-3xl font-semibold text-blue-400 leading-tight">--</p>
           </div>
-          <div class="glass-card p-6 flex flex-col justify-center">
-            <h3 class="text-xl font-bold text-color-base mb-2">Top Pairs by Volatility</h3>
-            <ul id="best-pairs" class="flex flex-wrap gap-x-3 gap-y-2 text-base font-medium text-color-base">
+          <div class="glass-card p-6 md:p-7 lg:p-8 flex flex-col justify-center min-h-[140px]">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg md:text-xl font-bold text-color-base">Top Pairs by Volatility</h3>
+            </div>
+            <ul id="best-pairs" class="flex flex-wrap gap-2.5 md:gap-3 text-sm md:text-base font-medium text-color-base">
               <li>--</li>
             </ul>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="glass-card h-[500px] flex flex-col p-6">
-            <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
-            <div class="aspect-video mb-4 rounded-lg overflow-hidden">
+        <!-- Live blocks -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
+          <!-- Live video -->
+          <div class="glass-card h-[460px] md:h-[500px] flex flex-col p-6 md:p-7 lg:p-8">
+            <h3 class="text-xl font-bold mb-4">Al Jazeera English Live</h3>
+            <div class="aspect-video mb-4 rounded-xl overflow-hidden shadow-sm">
               <iframe
                 src="https://www.youtube.com/embed/gCNeDWCI0vo?autoplay=1&mute=1"
                 title="Al Jazeera English 24/7 Live"
@@ -174,48 +179,31 @@
               </iframe>
             </div>
             <div class="mt-auto">
-              <h4 class="text-lg font-semibold">Live Global News</h4>
+              <h4 class="text-base md:text-lg font-semibold">Live Global News</h4>
               <p class="text-sm text-color-muted">24/7 coverage of global news, finance, and major events.</p>
             </div>
           </div>
 
-          <div class="glass-card h-[500px] flex flex-col p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-2xl font-bold">Live Market Updates</h3>
-              <button id="news-refresh-btn" class="text-color-muted hover:text-blue-500 transition-colors" title="Refresh Feed">
+          <!-- Live news -->
+          <div class="glass-card h-[460px] md:h-[500px] flex flex-col p-6 md:p-7 lg:p-8">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xl font-bold">Live Market Updates</h3>
+              <button id="news-refresh-btn" class="text-color-muted hover:text-blue-500 transition-colors" title="Refresh Feed" aria-label="Refresh news">
                 <i class="fas fa-sync-alt"></i>
               </button>
             </div>
 
-            <div class="flex w-full h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
-              <button class="news-tab-btn flex-1"
-                data-tab-name="LiveSquawk"
-                data-tab-url="https://www.investing.com/rss/news.rss"
-                data-tab-link="https://www.investing.com/news/latest-news"
-                data-state="inactive">
-                LiveSquawk
-              </button>
-              <button class="news-tab-btn flex-1
-                " data-tab-name="PiQ"
-                data-tab-url="https://www.investing.com/rss/news_285.rss"
-                data-tab-link="https://www.investing.com/news/forex-news"
-                data-state="inactive">
-                PiQ
-              </button>
-              <button class="news-tab-btn flex-1"
-                data-tab-name="FinancialJuice"
-                data-tab-url="https://www.dailyfx.com/rss/market_news.xml"
-                data-tab-link="https://www.dailyfx.com/market-news"
-                data-state="inactive">
-                FinancialJuice
-              </button>
+            <div class="flex w-full h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-3" id="news-tab-container">
+              <button class="news-tab-btn flex-1" data-tab-name="LiveSquawk" data-tab-url="https://www.investing.com/rss/news.rss" data-tab-link="https://www.investing.com/news/latest-news" data-state="inactive">LiveSquawk</button>
+              <button class="news-tab-btn flex-1" data-tab-name="PiQ" data-tab-url="https://www.investing.com/rss/news_285.rss" data-tab-link="https://www.investing.com/news/forex-news" data-state="inactive">PiQ</button>
+              <button class="news-tab-btn flex-1" data-tab-name="FinancialJuice" data-tab-url="https://www.dailyfx.com/rss/market_news.xml" data-tab-link="https://www.dailyfx.com/market-news" data-state="inactive">FinancialJuice</button>
             </div>
 
-            <div id="news-content-container" class="flex-grow overflow-y-auto pr-2 space-y-4" aria-live="polite">
+            <div id="news-content-container" class="flex-grow overflow-y-auto pr-1.5 md:pr-2 space-y-3" aria-live="polite">
               <p class="text-color-muted text-center" id="news-loading-text">Loading live feed...</p>
             </div>
 
-            <div class="mt-auto pt-4 border-t border-color-base">
+            <div class="mt-auto pt-3 border-t border-color-base">
               <a href="https://www.investing.com/news/latest-news" id="view-more-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline">
                 View more <i class="fas fa-external-link-alt fa-xs ml-1"></i>
               </a>
@@ -223,26 +211,28 @@
           </div>
         </div>
 
-        <div class="glass-card p-8">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
-            <p class="text-sm text-color-muted" id="currency-last-updated">Updating...</p>
+        <!-- Currency strength -->
+        <div class="glass-card p-6 md:p-8">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+            <h3 class="text-xl font-bold">Live Forex (vs. USD)</h3>
+            <p class="text-xs md:text-sm text-color-muted" id="currency-last-updated">Updating...</p>
           </div>
-          <div id="currency-strength-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4" aria-live="polite">
+          <div id="currency-strength-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-8 gap-y-3 md:gap-y-4" aria-live="polite">
             <p class="text-color-muted text-center">Loading live rates...</p>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="glass-card p-8">
-            <h3 class="text-2xl font-bold mb-4">Fresh Insights</h3>
+        <!-- Latest items -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
+          <div class="glass-card p-6 md:p-8">
+            <h3 class="text-xl font-bold mb-3 md:mb-4">Fresh Insights</h3>
             <div id="latest-articles-list" class="space-y-2">
               <p class="text-color-muted text-center">Loading latest articles...</p>
             </div>
           </div>
 
-          <div class="glass-card p-8">
-            <h3 class="text-2xl font-bold mb-4">Latest Analysis</h3>
+          <div class="glass-card p-6 md:p-8">
+            <h3 class="text-xl font-bold mb-3 md:mb-4">Latest Analysis</h3>
             <div id="latest-analysis-list" class="space-y-2">
               <p class="text-color-muted text-center">Loading latest analysis...</p>
             </div>
@@ -266,24 +256,24 @@
         
         clockElement.innerHTML = `
           <span>${hours}</span>
-          <span class="colon text-3xl md:text-4xl">:</span>
+          <span class="colon text-2xl md:text-3xl lg:text-4xl">:</span>
           <span>${minutes}</span>
-          <span class="colon text-3xl md:text-4xl">:</span>
-          <span class="text-2xl md:text-3xl opacity-80">${seconds}</span>
+          <span class="colon text-2xl md:text-3xl lg:text-4xl">:</span>
+          <span class="text-xl md:text-2xl lg:text-3xl opacity-80">${seconds}</span>
         `;
       }
       updateClock();
       setInterval(updateClock, 1000);
       // --- END CLOCK LOGIC ---
 
-      // Core app
+      // Core app (functions unchanged)
       const { initializeAppCore, db } = await import('./app.js');
       const { collection, onSnapshot, query, orderBy, limit } =
         await import("https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js");
 
       const rssFeedCache = new Map();
 
-      // --- SESSION & PAIRS FUNCTIONS (DASHBOARD ONLY) ---
+      // --- SESSION & PAIRS (functions unchanged) ---
       function updateSessionInfo() {
         const sessionElement = document.getElementById('session-name');
         const pairsElement = document.getElementById('best-pairs');
@@ -345,7 +335,6 @@
         }
       }
 
-      // Smooth scroll helper
       function scrollToContent() {
         const el = document.getElementById('dashboard-content');
         if (!el) return;
@@ -389,8 +378,8 @@
             const article = { id: doc.id, ...doc.data() };
             container.innerHTML += `
               <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
-                <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+                <a href="articles.html?id=${article.id}" class="text-base md:text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
+                <p class="text-xs md:text-sm text-color-muted">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
               </div>
               ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
           });
@@ -414,8 +403,8 @@
             const analysis = { id: doc.id, ...doc.data() };
             container.innerHTML += `
               <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
-                <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+                <a href="analysis.html?id=${analysis.id}" class="text-base md:text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
+                <p class="text-xs md:text-sm text-color-muted">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
               </div>
               ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
           });
@@ -480,9 +469,9 @@
           tempDiv.innerHTML = item.description;
           const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
 
-          const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish"
-                          : sourceName === "PiQ" ? "fa-chart-pie"
-                          : "fa-newspaper";
+        const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish"
+                        : sourceName === "PiQ" ? "fa-chart-pie"
+                        : "fa-newspaper";
 
           const itemHTML = `
             <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
@@ -581,7 +570,7 @@
           const currencies = ['EUR','JPY','GBP','AUD','CAD','CHF','NZD'];
 
           currencies.forEach(ccy => {
-            if (!rates[ccy] || !oldRates[ccY]) return; /* NOTE: keep as-is per your current code */
+            if (!rates[ccy] || !oldRates[ccY]) return; /* preserving your code path */
             const current = rates[ccy];
             const prev = oldRates[ccy];
             const change = ((current - prev) / prev) * 100;
