@@ -223,22 +223,8 @@
 
       const rssFeedCache = new Map();
 
-      // --- NEW: CLOCK AND SESSION FUNCTIONS ---
-
-      /**
-       * Updates the digital clock element in the header.
-       */
-      function updateClock() {
-        const clockElement = document.getElementById('digital-clock');
-        if (!clockElement) return; // Stop if clock isn't on the page
-
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        
-        clockElement.textContent = `${hours}:${minutes}:${seconds}`;
-      }
+      // --- SESSION & PAIRS FUNCTIONS (DASHBOARD ONLY) ---
+      // The updateClock function has been MOVED to app.js
 
       /**
        * Updates the session name and best pairs on the dashboard.
@@ -315,7 +301,7 @@
           pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
         });
       }
-      // --- END: NEW FUNCTIONS ---
+      // --- END: SESSION FUNCTIONS ---
 
 
       // Smooth scroll helper for the chevron anchor
@@ -339,9 +325,10 @@
         loadLiveNewsTabs();
         loadLiveCurrencyRates();
 
-        // --- NEW CALL ---
+        // --- CALL SESSION INFO (DASHBOARD ONLY) ---
         updateSessionInfo(); // Run once on page load
-        // --- END NEW CALL ---
+        setInterval(updateSessionInfo, 300000); // Update session every 5 mins
+        // --- END ---
 
         // Reveal content smoothly once layout is ready (optional)
         requestAnimationFrame(() => {
@@ -507,7 +494,6 @@
           });
         }
 
-        // FIX 2: Corrected this line (removed '.js' and added '{')
         tabContainer.addEventListener('click', (e) => {
           const button = e.target.closest('button.news-tab-btn');
           if (!button) return;
@@ -595,18 +581,8 @@
 
       // INIT
       initializeAppCore(initDashboardPage);
-
-
-      // --- NEW: START TIMERS ---
-      // Update the clock every second
-      setInterval(updateClock, 1000);
       
-      // Update the session info every 5 minutes (300,000 ms)
-      setInterval(updateSessionInfo, 300000);
-      
-      // Run clock once immediately
-      updateClock();
-      // --- END NEW TIMERS ---
+      // --- ALL CLOCK TIMERS HAVE BEEN REMOVED FROM THIS FILE ---
 
     } catch (error) {
       // Fallback if Firebase/app fails
