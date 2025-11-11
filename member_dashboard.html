@@ -63,6 +63,7 @@
         0 1px 1px rgba(255, 255, 255, 0.2),
         0 -1px 1px rgba(0, 0, 0, 0.5);
     }
+    /* Stop blinking */
     #digital-clock-3d .colon { animation: none; }
   </style>
 </head>
@@ -146,7 +147,7 @@
             bottom: max(20px, env(safe-area-inset-bottom));
           "
         >
-          <!-- Left: Session & pairs (PLAIN — no glass) -->
+          <!-- Left: Session & pairs -->
           <div id="hero-session-widget" class="text-left px-3 py-2 rounded-xl">
             <h3 id="hero-session-name" class="text-base md:text-lg font-bold leading-tight">--</h3>
             <ul id="hero-best-pairs" class="text-xs md:text-sm font-medium flex flex-wrap gap-2 mt-1">
@@ -162,7 +163,7 @@
             <i class="fas fa-chevron-down text-2xl md:text-3xl animate-bounce"></i>
           </a>
 
-          <!-- Right: Clock -->
+          <!-- Right: Clock (with 1ch spacing from right border) -->
           <div id="digital-clock-3d"
                class="ml-auto text-2xl md:text-3xl font-bold font-sans p-1 mr-[1ch]"></div>
         </div>
@@ -170,7 +171,7 @@
 
       <!-- DASHBOARD CONTENT -->
       <section id="dashboard-content" class="content-container pt-16 md:pt-20 space-y-10">
-        <!-- Featured card (kept as glass) -->
+        <!-- Featured card -->
         <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
           <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
             <i class="fas fa-book-open"></i>
@@ -183,7 +184,7 @@
           </div>
         </article>
 
-        <!-- Session + Pairs (PLAIN — glass-card removed) -->
+        <!-- Session + Pairs (plain, no glass) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="rounded-2xl border border-color-base p-6 flex flex-col justify-center bg-transparent">
             <h3 class="text-xl font-bold text-color-base mb-1">Current Trading Session</h3>
@@ -197,7 +198,7 @@
           </div>
         </div>
 
-        <!-- Live blocks (kept as glass) -->
+        <!-- Live blocks -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="glass-card h-[500px] flex flex-col p-6">
             <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
@@ -321,7 +322,7 @@
 
       const rssFeedCache = new Map();
 
-      /* Session & pairs — FIXED strict-mode var */
+      /* Session & pairs — fixed names */
       function updateSessionInfo() {
         const sessionElement = document.getElementById('session-name');
         const pairsElement = document.getElementById('best-pairs');
@@ -331,40 +332,40 @@
         if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) return;
 
         const now = new Date();
-const utcHour = now.getUTCHours();
-const utcDay = now.getUTCDay();
+        const utcHour = now.getUTCHours();
+        const utcDay = now.getUTCDay();
 
-let sessionName = "";
-let bestPairs = [];
+        let sessionName = "";
+        let bestPairs = [];
 
-if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
-  sessionName = "Market Closed";
-  bestPairs = ["--"];
-} else if (utcHour >= 12 && utcHour < 16) {
-  sessionName = "London / New York Overlap";
-  bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
-} else if (utcHour >= 7 && utcHour < 9) {
-  sessionName = "Tokyo / London Overlap";
-  bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
-} else if (utcHour >= 0 && utcHour < 6) {
-  sessionName = "Sydney / Tokyo Overlap";
-  bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
-} else if (utcHour >= 9 && utcHour < 12) {
-  sessionName = "London Session";
-  bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
-} else if (utcHour >= 16 && utcHour < 21) {
-  sessionName = "New York Session";
-  bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
-} else if (utcHour >= 6 && utcHour < 7) {
-  sessionName = "Tokyo Session";
-  bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
-} else if (utcHour >= 21) {
-  sessionName = "Sydney Session";
-  bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
-} else {
-  sessionName = "Market Open (Low Volatility)";
-  bestPairs = ["--"];
-}
+        if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
+          sessionName = "Market Closed";
+          bestPairs = ["--"];
+        } else if (utcHour >= 12 && utcHour < 16) {
+          sessionName = "London / New York Overlap";
+          bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
+        } else if (utcHour >= 7 && utcHour < 9) {
+          sessionName = "Tokyo / London Overlap";
+          bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
+        } else if (utcHour >= 0 && utcHour < 6) {
+          sessionName = "Sydney / Tokyo Overlap";
+          bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
+        } else if (utcHour >= 9 && utcHour < 12) {
+          sessionName = "London Session";
+          bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
+        } else if (utcHour >= 16 && utcHour < 21) {
+          sessionName = "New York Session";
+          bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
+        } else if (utcHour >= 6 && utcHour < 7) {
+          sessionName = "Tokyo Session";
+          bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
+        } else if (utcHour >= 21) {
+          sessionName = "Sydney Session";
+          bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
+        } else {
+          sessionName = "Market Open (Low Volatility)";
+          bestPairs = ["--"];
+        }
 
         if (sessionElement) sessionElement.textContent = sessionName;
         if (heroSessionElement) heroSessionElement.textContent = sessionName;
@@ -392,76 +393,7 @@ if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour 
       document.querySelector('a[href="#dashboard-content"]')
         ?.addEventListener('click', (e) => { e.preventDefault(); scrollToContent(); });
 
-      /* Init page */
-      function initDashboardPage(user, db, userProfile) {
-        const memberNameEl = document.getElementById('member-name');
-        if (memberNameEl && userProfile?.displayName) {
-          const name = userProfile.displayName;
-          memberNameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-        }
-
-        loadLatestArticles(db);
-        loadLatestAnalysis(db);
-        loadLiveNewsTabs();
-        loadLiveCurrencyRates();
-
-        updateSessionInfo();
-        setInterval(updateSessionInfo, 300000);
-      }
-
-      /* Latest articles */
-      function loadLatestArticles(db) {
-        const container = document.getElementById('latest-articles-list');
-        if (!container) return;
-        const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
-        onSnapshot(q, (snapshot) => {
-          container.innerHTML = '';
-          if (snapshot.empty) {
-            container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
-            return;
-          }
-          snapshot.forEach((doc, index) => {
-            const article = { id: doc.id, ...doc.data() };
-            container.innerHTML += `
-              <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
-                <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
-              </div>
-              ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
-          });
-        }, (error) => {
-          console.error("Error fetching latest articles:", error);
-          container.innerHTML = `<p class="text-red-500 text-center">Could not load articles.</p>`;
-        });
-      }
-
-      /* Latest analysis */
-      function loadLatestAnalysis(db) {
-        const container = document.getElementById('latest-analysis-list');
-        if (!container) return;
-        const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
-        onSnapshot(q, (snapshot) => {
-          container.innerHTML = '';
-          if (snapshot.empty) {
-            container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
-            return;
-          }
-          snapshot.forEach((doc, index) => {
-            const analysis = { id: doc.id, ...doc.data() };
-            container.innerHTML += `
-              <div class="p-4 rounded-lg group hover-bg-base transition-colors">
-                <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
-                <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
-              </div>
-              ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
-          });
-        }, (error) => {
-          console.error("Error fetching latest analysis:", error);
-          container.innerHTML = `<p class="text-red-500 text-center">Could not load analysis.</p>`;
-        });
-      }
-
-      /* Time-ago helper */
+      /* News helpers */
       function formatTimeAgo(dateString) {
         const time = new Date(dateString);
         const now = new Date();
@@ -474,28 +406,21 @@ if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour 
         return `${diffInDays}d ago`;
       }
 
-      /* RSS fetch/render */
       async function fetchRSSFeed(feedUrl, sourceName, containerId, forceRefresh = false) {
         const container = document.getElementById(containerId);
         if (!container) return;
-
         container.innerHTML = `<p class="text-color-muted text-center">Loading ${sourceName} feed...</p>`;
-
         if (rssFeedCache.has(feedUrl) && !forceRefresh) {
           renderRSSFeed(rssFeedCache.get(feedUrl), sourceName, container);
           return;
         }
-
         try {
           const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
           if (!response.ok) throw new Error('Network error');
-
           const data = await response.json();
           if (data.status !== 'ok') throw new Error('RSS feed error');
-
           rssFeedCache.set(feedUrl, data.items);
           renderRSSFeed(data.items, sourceName, container);
-
         } catch (error) {
           console.error("Error fetching RSS feed:", error);
           container.innerHTML = `<p class="text-red-500 text-center">Could not load ${sourceName} feed.</p>`;
@@ -505,24 +430,20 @@ if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour 
       function renderRSSFeed(items, sourceName, container) {
         if (!container) return;
         container.innerHTML = '';
-
         if (!items || items.length === 0) {
           container.innerHTML = `<p class="text-color-muted text-center">No news available.</p>`;
           return;
         }
-
         const fragment = document.createDocumentFragment();
-
         items.forEach(item => {
           const tempDiv = document.createElement('div');
           tempDiv.innerHTML = item.description;
           const description = (tempDiv.textContent || tempDiv.innerText || "").trim();
-
           const iconClass = sourceName === "LiveSquawk" ? "fa-satellite-dish"
                           : sourceName === "PiQ" ? "fa-chart-pie"
                           : "fa-newspaper";
-
-          const itemHTML = `
+          const node = document.createElement('div');
+          node.innerHTML = `
             <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-item hover-bg-base transition-colors rounded-lg">
               <div class="news-item-icon">
                 <i class="fas ${iconClass}"></i>
@@ -536,11 +457,8 @@ if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour 
                 <p class="news-item-desc">${description}</p>
               </div>
             </a>`;
-          const node = document.createElement('div');
-          node.innerHTML = itemHTML;
           fragment.appendChild(node);
         });
-
         container.appendChild(fragment);
       }
 
@@ -656,7 +574,75 @@ if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour 
         }
       }
 
-      /* Start app */
+      /* Latest articles */
+      function loadLatestArticles(db) {
+        const container = document.getElementById('latest-articles-list');
+        if (!container) return;
+        const q = query(collection(db, "articles"), orderBy("createdAt", "desc"), limit(3));
+        onSnapshot(q, (snapshot) => {
+          container.innerHTML = '';
+          if (snapshot.empty) {
+            container.innerHTML = `<p class="text-color-muted text-center">No articles available yet.</p>`;
+            return;
+          }
+          snapshot.forEach((doc, index) => {
+            const article = { id: doc.id, ...doc.data() };
+            container.innerHTML += `
+              <div class="p-4 rounded-lg group hover-bg-base transition-colors">
+                <a href="articles.html?id=${article.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${article.title}</a>
+                <p class="text-color-muted text-sm">${article.readTime || '? min read'} • ${article.createdAt ? article.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+              </div>
+              ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
+          });
+        }, (error) => {
+          console.error("Error fetching latest articles:", error);
+          container.innerHTML = `<p class="text-red-500 text-center">Could not load articles.</p>`;
+        });
+      }
+
+      /* Latest analysis */
+      function loadLatestAnalysis(db) {
+        const container = document.getElementById('latest-analysis-list');
+        if (!container) return;
+        const q = query(collection(db, "analysis"), orderBy("createdAt", "desc"), limit(3));
+        onSnapshot(q, (snapshot) => {
+          container.innerHTML = '';
+          if (snapshot.empty) {
+            container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
+            return;
+          }
+          snapshot.forEach((doc, index) => {
+            const analysis = { id: doc.id, ...doc.data() };
+            container.innerHTML += `
+              <div class="p-4 rounded-lg group hover-bg-base transition-colors">
+                <a href="analysis.html?id=${analysis.id}" class="text-lg font-semibold text-color-base group-hover:text-blue-500">${analysis.title}</a>
+                <p class="text-color-muted text-sm">Category: ${analysis.category || 'General'} • ${analysis.createdAt ? analysis.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+              </div>
+              ${index < snapshot.docs.length - 1 ? '<hr class="border-color-base mx-4">' : ''}`;
+          });
+        }, (error) => {
+          console.error("Error fetching latest analysis:", error);
+          container.innerHTML = `<p class="text-red-500 text-center">Could not load analysis.</p>`;
+        });
+      }
+
+      /* Init page via app.js (will hide loader once auth is known) */
+      function initDashboardPage(user, db, userProfile) {
+        const memberNameEl = document.getElementById('member-name');
+        if (memberNameEl && userProfile?.displayName) {
+          const name = userProfile.displayName;
+          memberNameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+
+        loadLatestArticles(db);
+        loadLatestAnalysis(db);
+        loadLiveNewsTabs();
+        loadLiveCurrencyRates();
+
+        updateSessionInfo();
+        setInterval(updateSessionInfo, 300000);
+      }
+
       initializeAppCore(initDashboardPage);
 
     } catch (error) {
@@ -678,243 +664,5 @@ if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour 
       }
     }
   </script>
-</body>
-</html>
-      .hover-bg-base { @apply hover:bg-zinc-100 dark:hover:bg-zinc-800; }
-      .textured-background { @apply bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900; }
-      .content-container { @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
-    }
-
-    /* 3D TEXT */
-    #digital-clock-3d,
-    #digital-clock-3d *,
-    #hero-session-widget,
-    #hero-session-widget * {
-      color: rgba(63,63,70,0.85);
-      text-shadow:
-        0 1px 1px rgba(255,255,255,0.8),
-        0 -1px 1px rgba(0,0,40,0.25);
-    }
-    .dark #digital-clock-3d,
-    .dark #digital-clock-3d *,
-    .dark #hero-session-widget,
-    .dark #hero-session-widget * {
-      color: rgba(228,228,231,0.9);
-      text-shadow:
-        0 1px 1px rgba(255,255,255,0.2),
-        0 -1px 1px rgba(0,0,0,0.6);
-    }
-
-    #digital-clock-3d .colon { animation: blink 1s step-end infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
-  </style>
-
-</head>
-
-<body class="antialiased textured-background">
-
-<!-- Loader -->
-<div id="app-loader"
-     class="fixed inset-0 flex items-center justify-center bg-gray-900/80 z-50">
-  <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-</div>
-
-<div id="app-wrapper" style="display:none;">
-
-  <!-- header-placeholder FILLED BY APP.JS -->
-  <header id="header-placeholder"></header>
-
-  <!-- sidebar-placeholder FILLED BY APP.JS -->
-  <div id="sidebar-placeholder"></div>
-
-  <main>
-
-    <!-- FIRST SCREEN -->
-    <section class="container mx-auto min-h-[calc(100svh-68px)]
-                   flex flex-col items-center justify-center text-center p-4 relative">
-
-      <div class="max-w-3xl">
-        <h1 class="text-4xl md:text-6xl font-bold text-color-base">
-          Welcome back, <span id="member-name">Member</span>.
-        </h1>
-        <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">
-          Your journey to financial clarity continues. What will you master today?
-        </p>
-      </div>
-
-      <!-- FLOATING BOTTOM BAR -->
-      <div class="absolute left-0 right-0 bottom-6 px-4 flex items-center justify-between">
-
-        <!-- SESSION & PAIRS (no glass-card) -->
-        <div id="hero-session-widget" class="text-left px-3 py-2 rounded-xl">
-          <h3 id="hero-session-name" class="text-xl font-bold leading-tight">--</h3>
-          <ul id="hero-best-pairs" class="text-sm font-medium flex gap-3 mt-1">
-            <li>--</li>
-          </ul>
-        </div>
-
-        <!-- CENTER ARROW -->
-        <a href="#dashboard-content"
-           class="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
-           aria-label="Scroll">
-          <i class="fas fa-chevron-down text-2xl md:text-3xl animate-bounce text-color-muted"></i>
-        </a>
-
-        <!-- CLOCK RIGHT -->
-        <div id="digital-clock-3d"
-             class="text-xl md:text-2xl font-bold font-sans p-1 mr-[1ch]"></div>
-
-      </div>
-
-    </section>
-
-    <!-- DASHBOARD CONTENT -->
-    <section id="dashboard-content" class="content-container pt-20 space-y-10">
-
-      <!-- Featured -->
-      <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 hover:border-blue-500/50">
-        <div class="text-7xl text-blue-500 flex-shrink-0"><i class="fas fa-book-open"></i></div>
-        <div>
-          <span class="text-sm font-semibold text-blue-400 uppercase tracking-wider">Featured Guide</span>
-          <h2 class="text-3xl font-bold mt-2 mb-3">Your Guide: The 5 Pillars of Wealth</h2>
-          <p class="text-color-muted mb-6">Start with the fundamentals...</p>
-          <a href="articles.html" class="main-button font-bold py-3 px-6 rounded-lg inline-block">Start Learning</a>
-        </div>
-      </article>
-
-      <!-- Session + Pairs -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="glass-card p-6">
-          <h3 class="text-xl font-bold text-color-base mb-1">Current Trading Session</h3>
-          <p id="session-name" class="text-2xl font-semibold text-blue-400">--</p>
-        </div>
-        <div class="glass-card p-6">
-          <h3 class="text-xl font-bold text-color-base mb-2">Top Pairs by Volatility</h3>
-          <ul id="best-pairs" class="flex flex-wrap gap-3 text-base font-medium text-color-base">
-            <li>--</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Remaining content stays unchanged ... -->
-      <!-- LIVE NEWS, FOREX, ARTICLES, ANALYSIS (omitted for brevity but fully functional) -->
-
-    </section>
-
-  </main>
-
-</div>
-
-<script type="module">
-/* THIS PART IS 100% UNCHANGED — Original logic */
-/* JUST REMOVED DUPLICATES + FIXED DOM TARGETS */
-
-import { initializeAppCore, db } from './app.js';
-import { collection, onSnapshot, query, orderBy, limit } 
-from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
-
-const rssFeedCache = new Map();
-
-/* Clock */
-function updateClock() {
-  const clock = document.getElementById('digital-clock-3d');
-  if (!clock) return;
-  const now = new Date();
-  const h = now.getHours().toString().padStart(2,'0');
-  const m = now.getMinutes().toString().padStart(2,'0');
-  const s = now.getSeconds().toString().padStart(2,'0');
-  clock.innerHTML = `
-    <span>${h}</span>
-    <span class="colon text-3xl">:</span>
-    <span>${m}</span>
-    <span class="colon text-3xl">:</span>
-    <span>${s}</span>
-  `;
-}
-setInterval(updateClock,1000);
-updateClock();
-
-function updateSessionInfo() {
-  const sessionElement = document.getElementById('session-name');
-  const pairsElement = document.getElementById('best-pairs');
-  const heroSessionElement = document.getElementById('hero-session-name');
-  const heroPairsElement = document.getElementById('hero-best-pairs');
-
-  if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) return;
-
-
-  const now = new Date();
-  const h = now.getUTCHours();
-  const d = now.getUTCDay();
-
-  let name="--";
-  let pairs=["--"];
-
-  if ((d===5 && h>=21) || d===6 || (d===0 && h<21)) {
-    name="Market Closed";
-  } else if (h>=12 && h<16) {
-    name="London / New York Overlap";
-    pairs=["EUR/USD","GBP/USD","USD/JPY"];
-  } else if (h>=7 && h<9) {
-    name="Tokyo / London Overlap";
-    pairs=["EUR/JPY","GBP/JPY","CHF/JPY"];
-  } else if (h>=0 && h<6) {
-    name="Sydney / Tokyo Overlap";
-    pairs=["AUD/JPY","NZD/JPY","USD/JPY"];
-  } else if (h>=9 && h<12) {
-    name="London Session";
-    pairs=["EUR/USD","GBP/USD","USD/CHF"];
-  } else if (h>=16 && h<21) {
-    name="New York Session";
-    pairs=["USD/CAD","AUD/USD","NZD/USD"];
-  } else if (h>=6 && h<7) {
-    name="Tokyo Session";
-    pairs=["USD/JPY","AUD/JPY","NZD/JPY"];
-  } else if (h>=21) {
-    name="Sydney Session";
-    pairs=["AUD/USD","NZD/USD","AUD/JPY"];
-  } else {
-    name="Market Open";
-  }
-
-  if (sessionElement) sessionElement.textContent = sessionName;
-  if (heroSessionElement) heroSessionElement.textContent = sessionName;
-
-  const renderPairs = (ul, pairs, chip=false) => {
-    if (!ul) return;
-    ul.innerHTML = "";
-    pairs.forEach(pair => {
-      ul.innerHTML += chip
-        ? `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`
-        : `<li>${pair}</li>`;
-    });
-  };
-
-  renderPairs(pairsElement, bestPairs, true);
-  renderPairs(heroPairsElement, bestPairs, false);
-}
-
-/* Scroll */
-document.querySelector('a[href="#dashboard-content"]')
-?.addEventListener('click',e=>{
-  e.preventDefault();
-  document.getElementById('dashboard-content')
-    ?.scrollIntoView({behavior:'smooth'});
-});
-
-/* Init */
-function initDashboardPage(user,db,profile){
-  const nameEl=document.getElementById('member-name');
-  if (profile?.displayName && nameEl)
-    nameEl.textContent=profile.displayName;
-
-  updateSessionInfo();
-  setInterval(updateSessionInfo,300000); //5min
-}
-
-initializeAppCore(initDashboardPage);
-
-</script>
-
 </body>
 </html>
