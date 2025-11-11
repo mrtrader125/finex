@@ -345,6 +345,39 @@ export function renderSidebar() {
         pageTitleEl.textContent = currentPageTitle === "Dashboard" ? "Finex" : currentPageTitle;
     }
 }
+function openSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar || !overlay) return;
+  sidebar.classList.remove('-translate-x-full');
+  overlay.classList.remove('hidden');
+  requestAnimationFrame(() => overlay.classList.remove('opacity-0'));
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar || !overlay) return;
+  sidebar.classList.add('-translate-x-full');
+  overlay.classList.add('opacity-0');
+  setTimeout(() => overlay.classList.add('hidden'), 300);
+}
+
+/* Wire once after the header + sidebar HTML are injected */
+function wireSidebarOnce() {
+  const sidebar  = document.getElementById('sidebar');
+  if (!sidebar || sidebar.dataset.wired === '1') return; // idempotent
+
+  const openBtn  = document.getElementById('open-sidebar-btn');
+  const closeBtn = document.getElementById('close-sidebar-btn');
+  const overlay  = document.getElementById('sidebar-overlay');
+
+  if (openBtn)  openBtn.addEventListener('click', (e) => { e.preventDefault(); openSidebar(); });
+  if (closeBtn) closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+  if (overlay)  overlay.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+
+  sidebar.dataset.wired = '1';
+}
 
 // Event listeners
 function attachCoreEventListeners() {
