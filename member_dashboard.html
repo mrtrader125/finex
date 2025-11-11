@@ -44,33 +44,28 @@
     .content-container { @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
   }
 
-  /* --- 3D GLASS TEXT (robust selectors so it applies to dynamic content) --- */
-  /* Base (light) */
+  /* 3D glass effect for clock + session widget */
   #digital-clock-3d,
   #digital-clock-3d * ,
   #hero-session-widget,
   #hero-session-widget * {
-    color: rgba(63, 63, 70, 0.85);           /* similar to text-zinc-700 */
+    color: rgba(63, 63, 70, 0.85);
     text-shadow:
-      0 1px 1px rgba(255, 255, 255, 0.8),   /* highlight */
-      0 -1px 1px rgba(0, 0, 0, 0.25);       /* bottom shadow */
+      0 1px 1px rgba(255, 255, 255, 0.8),
+      0 -1px 1px rgba(0, 0, 0, 0.25);
   }
-  /* Dark mode */
   .dark #digital-clock-3d,
   .dark #digital-clock-3d * ,
   .dark #hero-session-widget,
   .dark #hero-session-widget * {
-    color: rgba(228, 228, 231, 0.9);        /* text-zinc-200-ish */
+    color: rgba(228, 228, 231, 0.9);
     text-shadow:
       0 1px 1px rgba(255, 255, 255, 0.2),
       0 -1px 1px rgba(0, 0, 0, 0.5);
   }
-
-  /* Keep the blinking colon */
   #digital-clock-3d .colon { animation: blink 1s step-end infinite; }
   @keyframes blink { 50% { opacity: 0; } }
-</style>
-
+  </style>
 </head>
 
 <body class="antialiased textured-background">
@@ -82,73 +77,97 @@
 
   <div id="app-wrapper" style="display: none;">
 
-    <!-- Filled by app.js -> /_header.html -->
+    <!-- Sidebar overlay + aside (NEEDED for open button to work) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
+
+    <aside id="sidebar"
+      class="fixed top-0 left-0 h-full w-72 bg-[#111827]/80 backdrop-blur-lg shadow-2xl z-50 transform -translate-x-full
+             transition-transform duration-300 will-change-transform">
+      <div class="p-6 flex flex-col h-full">
+        <div class="flex justify-between items-center mb-8">
+          <div class="text-xl font-bold tracking-wider text-white">
+            <a href="member_dashboard.html">FINEX</a>
+          </div>
+          <button id="close-sidebar-btn" class="text-gray-400 hover:text-white">
+            <i class="fas fa-times fa-lg"></i>
+          </button>
+        </div>
+
+        <nav id="sidebar-nav" class="flex flex-col space-y-2 text-lg overflow-y-auto"></nav>
+
+        <div class="mt-auto">
+          <a href="#" id="logout-btn"
+             class="flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 p-3 rounded-lg transition-colors">
+            <i class="fas fa-sign-out-alt fa-fw w-6"></i>
+            <span>Log Out</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Header -->
     <header id="header" class="header backdrop-blur-md sticky top-0 z-30 h-[68px]">
-  <div class="container mx-auto h-full flex justify-between items-center px-4">
-    <div class="flex items-center gap-4">
-      <button id="open-sidebar-btn" class="text-color-base hover:text-blue-500 p-2 rounded-full hover-bg-base">
-        <i class="fas fa-bars fa-lg"></i>
-      </button>
-      <div id="page-title" class="text-2xl font-bold tracking-wider text-color-base">Finex</div>
-    </div>
-    <nav class="flex items-center gap-4">
-      <span id="user-email" class="hidden sm:inline text-color-muted">user@example.com</span>
-      <a href="settings.html" class="text-color-base p-2 rounded-full hover-bg-base">
-        <i class="fas fa-user-circle fa-lg"></i>
-      </a>
-    </nav>
-  </div>
-</header>
+      <div class="container mx-auto h-full flex justify-between items-center px-4">
+        <div class="flex items-center gap-4">
+          <button id="open-sidebar-btn" class="text-color-base hover:text-blue-500 p-2 rounded-full hover-bg-base">
+            <i class="fas fa-bars fa-lg"></i>
+          </button>
+          <div id="page-title" class="text-2xl font-bold tracking-wider text-color-base">Finex</div>
+        </div>
+        <nav class="flex items-center gap-4">
+          <span id="user-email" class="hidden sm:inline text-color-muted">user@example.com</span>
+          <a href="settings.html" class="text-color-base p-2 rounded-full hover-bg-base">
+            <i class="fas fa-user-circle fa-lg"></i>
+          </a>
+        </nav>
+      </div>
+    </header>
 
-<section class="container mx-auto min-h-[calc(100svh-68px)] flex flex-col items-center justify-center text-center p-4 relative overflow-hidden">
+    <!-- MAIN -->
+    <main>
 
-  <div class="max-w-3xl">
-    <h1 class="text-4xl md:text-6xl font-bold text-color-base">
-      Welcome back, <span id="member-name">Member</span>.
-    </h1>
-    <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">
-      Your journey to financial clarity continues. What will you master today?
-    </p>
-  </div>
+      <!-- HERO (fills viewport minus header) -->
+      <section class="container mx-auto min-h-[calc(100svh-68px)] flex flex-col items-center justify-center text-center p-4 relative overflow-hidden">
 
-  <!-- Bottom bar pinned perfectly inside viewport -->
-  <div
-    class="absolute z-10 flex items-end justify-between"
-    style="
-      left:  max(10px, env(safe-area-inset-left));
-      right: max(10px, env(safe-area-inset-right));
-      bottom: max(20px, env(safe-area-inset-bottom));
-    "
-  >
+        <div class="max-w-3xl">
+          <h1 class="text-4xl md:text-6xl font-bold text-color-base">
+            Welcome back, <span id="member-name">Member</span>.
+          </h1>
+          <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">
+            Your journey to financial clarity continues. What will you master today?
+          </p>
+        </div>
 
-  <!-- Left: Session & pairs, reduced size + horizontal alignment -->
-<div id="hero-session-widget"
-     class="glass-text text-left px-3 py-2 rounded-xl bg-black/10 dark:bg-white/5 backdrop-blur-sm">
-  <h3 id="hero-session-name" class="text-xl md:text-2xl font-bold leading-tight">--</h3>
-  <ul id="hero-best-pairs" class="text-sm font-medium flex gap-3 mt-1">
-    <li class="inline-block">--</li>
-  </ul>
-</div>
+        <!-- Bottom bar pinned inside viewport -->
+        <div
+          class="absolute z-10 flex items-end justify-between gap-2 w-full"
+          style="
+            left:  max(10px, env(safe-area-inset-left));
+            right: max(10px, env(safe-area-inset-right));
+            bottom: max(20px, env(safe-area-inset-bottom));
+          "
+        >
+          <!-- Left: Session & pairs (smaller + horizontal) -->
+          <div id="hero-session-widget"
+               class="text-left px-3 py-2 rounded-xl bg-black/10 dark:bg-white/5 backdrop-blur-sm">
+            <h3 id="hero-session-name" class="text-base md:text-lg font-bold leading-tight">--</h3>
+            <ul id="hero-best-pairs" class="text-xs md:text-sm font-medium flex flex-wrap gap-2 mt-1">
+              <li class="inline-block">--</li>
+            </ul>
+          </div>
 
-<!-- Clock: reduced size -->
-<div id="digital-clock-3d"
-     class="glass-text ml-auto text-2xl md:text-3xl font-bold font-sans p-1"></div>
+          <!-- Down arrow (centered) -->
+          <a href="#dashboard-content"
+             class="text-color-muted hover:text-color-base transition-colors inline-flex items-center justify-center mx-auto"
+             aria-label="Scroll to content"
+             style="position:absolute; left:50%; transform:translateX(-50%); bottom:0;">
+            <i class="fas fa-chevron-down text-2xl md:text-3xl animate-bounce"></i>
+          </a>
 
-
-    <!-- Centered arrow -->
-    <a href="#dashboard-content"
-       class="text-color-muted hover:text-color-base transition-colors inline-flex items-center justify-center"
-       aria-label="Scroll to content"
-       style="position:absolute; left:50%; transform:translateX(-50%); bottom:0;">
-      <i class="fas fa-chevron-down text-2xl md:text-3xl animate-bounce"></i>
-    </a>
-
-    <!-- Clock right aligned -->
-    <div id="digital-clock-3d" class="text-2xl md:text-3xl font-bold font-sans p-1"></div>
-
-  </div>
-
-</section>
+          <!-- Right: Clock (single ID!) -->
+          <div id="digital-clock-3d" class="text-xl md:text-2xl font-bold font-sans p-1"></div>
+        </div>
+      </section>
 
       <!-- DASHBOARD CONTENT -->
       <section id="dashboard-content" class="content-container pt-16 md:pt-20 space-y-10">
@@ -277,7 +296,7 @@
 
   <script type="module">
     try {
-      /* 3D CLOCK (visual only) */
+      /* 3D CLOCK */
       function updateClock() {
         const clockElement = document.getElementById('digital-clock-3d');
         if (!clockElement) return;
@@ -303,7 +322,7 @@
 
       const rssFeedCache = new Map();
 
-      /* Session & pairs (fixed heroPairsElement reference) */
+      /* Session & pairs */
       function updateSessionInfo() {
         const sessionElement = document.getElementById('session-name');
         const pairsElement = document.getElementById('best-pairs');
@@ -332,16 +351,16 @@
           sessionName = "Sydney / Tokyo Overlap";
           bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
         } else if (utcHour >= 9 && utcHour < 12) {
-          sessionName = "London";
+          sessionName = "London Session";
           bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
         } else if (utcHour >= 16 && utcHour < 21) {
-          sessionName = "New York";
+          sessionName = "New York Session";
           bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
         } else if (utcHour >= 6 && utcHour < 7) {
-          sessionName = "Tokyo";
+          sessionName = "Tokyo Session";
           bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
         } else if (utcHour >= 21) {
-          sessionName = "Sydney";
+          sessionName = "Sydney Session";
           bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
         } else {
           sessionName = "Market Open (Low Volatility)";
@@ -351,18 +370,18 @@
         if (sessionElement) sessionElement.textContent = sessionName;
         if (heroSessionElement) heroSessionElement.textContent = sessionName;
 
-        if (pairsElement) {
-          pairsElement.innerHTML = "";
-          bestPairs.forEach(pair => {
-            pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
+        const renderPairs = (ul, pairs, chip=false) => {
+          if (!ul) return;
+          ul.innerHTML = "";
+          pairs.forEach(pair => {
+            ul.innerHTML += chip
+              ? `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`
+              : `<li>${pair}</li>`;
           });
-        }
-        if (heroPairsElement) {
-          heroPairsElement.innerHTML = "";
-          bestPairs.forEach(pair => {
-            heroPairsElement.innerHTML += `<li>${pair}</li>`;
-          });
-        }
+        };
+
+        renderPairs(pairsElement, bestPairs, true);
+        renderPairs(heroPairsElement, bestPairs, false);
       }
 
       /* Smooth scroll */
@@ -526,7 +545,7 @@
         container.appendChild(fragment);
       }
 
-      /* Live currency rates — fixed ccY typo + guards */
+      /* Live currency rates */
       async function loadLiveCurrencyRates() {
         const container = document.getElementById('currency-strength-container');
         const lastUpdatedEl = document.getElementById('currency-last-updated');
@@ -554,7 +573,7 @@
           const currencies = ['EUR','JPY','GBP','AUD','CAD','CHF','NZD'];
 
           currencies.forEach(ccy => {
-            if (!rates?.[ccy] || !oldRates?.[ccy]) return; /* FIXED: ccY -> ccy + safety */
+            if (!rates?.[ccy] || !oldRates?.[ccy]) return;
             const current = rates[ccy];
             const prev = oldRates[ccy];
             const change = ((current - prev) / prev) * 100;
