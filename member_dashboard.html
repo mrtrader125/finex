@@ -28,8 +28,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <script> tailwind.config = { darkMode: 'class' } </script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script> tailwind.config = { darkMode: 'class' } </script>
 
   <link rel="stylesheet" href="main.css" />
 
@@ -507,7 +507,8 @@
           });
         }
 
-        tabContainer.addEventListener('click', (e).js
+        // FIX 2: Corrected this line (removed '.js' and added '{')
+        tabContainer.addEventListener('click', (e) => {
           const button = e.target.closest('button.news-tab-btn');
           if (!button) return;
           activeTab = button;
