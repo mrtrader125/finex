@@ -1,12 +1,25 @@
 <header id="header" class="header backdrop-blur-md sticky top-0 z-30">
     <div class="container mx-auto flex justify-between items-center p-4">
-         <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4">
             <button id="open-sidebar-btn" class="text-color-base hover:text-blue-500 p-2 rounded-full hover-bg-base"><i class="fas fa-bars fa-lg"></i></button>
             <div id="page-title" class="text-2xl font-bold tracking-wider text-color-base">Page Title</div>
         </div>
         <nav class="flex items-center gap-4">
-             <span id="user-email" class="hidden sm:inline text-color-muted">user@example.com</span>
-             <a href="settings.html" class="text-color-base p-2 rounded-full hover-bg-base"><i class="fas fa-user-circle fa-lg"></i></a>
+
+            <div id="market-info-header" class="hidden md:flex items-center gap-3 text-sm text-color-muted mr-4">
+                <span id="digital-clock" class="font-medium text-color-base w-[75px] text-right">--:--:--</span>
+                <span class="opacity-50">|</span>
+                <span class="flex items-center gap-1.5">
+                    <strong>Session:</strong>
+                    <span id="session-name" class="font-medium text-color-base">--</span>
+                </span>
+                <span class="flex items-center gap-1.5">
+                    <strong>Focus:</strong>
+                    <span id="session-pair" class="font-medium text-color-base">--</span>
+                </span>
+            </div>
+            <span id="user-email" class="hidden sm:inline text-color-muted">user@example.com</span>
+            <a href="settings.html" class="text-color-base p-2 rounded-full hover-bg-base"><i class="fas fa-user-circle fa-lg"></i></a>
         </nav>
     </div>
 </header>
