@@ -112,16 +112,6 @@
     <main class="pt-[68px]">
       <section class="container mx-auto min-h-[72vh] flex flex-col items-center justify-center text-center p-4 relative">
         
-        <div id="hero-session-widget" class="absolute bottom-6 left-6 p-4 text-left">
-            <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold text-color-base">--</h3>
-            <ul id="hero-best-pairs" class="text-sm text-color-muted font-medium space-y-1 mt-2">
-                <li>--</li>
-            </ul>
-        </div>
-
-        <div id="digital-clock-3d" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 p-4 text-4xl md:text-5xl font-bold font-sans">
-          </div>
-        
         <div class="max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-bold text-color-base">
             Welcome back, <span id="member-name">Member</span>.
@@ -131,10 +121,24 @@
           </p>
         </div>
 
-        <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
+        <div class="absolute bottom-24 left-1/2 -translate-x-1/2">
           <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
             <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
           </a>
+        </div>
+
+        <div class="glass-card shadow-lg absolute bottom-6 left-6 right-6 flex justify-between items-center p-4 md:p-6">
+            
+            <div id="hero-session-widget" class="text-left">
+                <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold text-color-base">--</h3>
+                <ul id="hero-best-pairs" class="text-sm text-color-muted font-medium space-y-1 mt-2">
+                    <li>--</li>
+                </ul>
+            </div>
+
+            <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans">
+              </div>
+        
         </div>
       </section>
 
@@ -645,7 +649,7 @@
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-color-base">${ccy}</span>
                   </div>
-                  <div class="flex items-center">
+                  <div classG="flex items-center">
                     <span class="text-sm font-medium text-color-base">${rateString}</span>
                     <span class="text-xs ml-2 ${changeStyle.class}">${changeStyle.icon} ${Math.abs(change).toFixed(2)}%</span>
                   </div>
