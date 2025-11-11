@@ -121,14 +121,18 @@
     "
   >
 
-    <!-- Session & pairs left aligned -->
-    <div id="hero-session-widget"
-         class="glass-text text-left px-4 py-3 rounded-xl bg-black/10 dark:bg-white/5 backdrop-blur-sm">
-      <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold leading-tight">--</h3>
-      <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
-        <li>--</li>
-      </ul>
-    </div>
+  <!-- Left: Session & pairs, reduced size + horizontal alignment -->
+<div id="hero-session-widget"
+     class="glass-text text-left px-3 py-2 rounded-xl bg-black/10 dark:bg-white/5 backdrop-blur-sm">
+  <h3 id="hero-session-name" class="text-xl md:text-2xl font-bold leading-tight">--</h3>
+  <ul id="hero-best-pairs" class="text-sm font-medium flex gap-3 mt-1">
+    <li class="inline-block">--</li>
+  </ul>
+</div>
+
+<!-- Clock: reduced size -->
+<div id="digital-clock-3d" class="text-2xl md:text-3xl font-bold font-sans p-1"></div>
+
 
     <!-- Centered arrow -->
     <a href="#dashboard-content"
@@ -139,7 +143,7 @@
     </a>
 
     <!-- Clock right aligned -->
-    <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans p-2"></div>
+    <div id="digital-clock-3d" class="text-2xl md:text-3xl font-bold font-sans p-1"></div>
 
   </div>
 
@@ -169,7 +173,7 @@
           <div class="glass-card p-6 flex flex-col justify-center">
             <h3 class="text-xl font-bold text-color-base mb-2">Top Pairs by Volatility</h3>
             <ul id="best-pairs" class="flex flex-wrap gap-x-3 gap-y-2 text-base font-medium text-color-base">
-              <li>--</li>
+              <li class="inline-block">--</li>
             </ul>
           </div>
         </div>
