@@ -67,7 +67,7 @@
       overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* --- NEW 3D GLASS TEXT STYLES --- */
+    /* --- 3D GLASS TEXT STYLES --- */
     .glass-text {
       /* Light Mode Default */
       color: rgba(63, 63, 70, 0.75); /* text-zinc-700 with 75% opacity */
@@ -125,23 +125,26 @@
           </p>
         </div>
 
-        <div class="absolute bottom-24 left-1/2 -translate-x-1/2">
-          <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
-            <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
-          </a>
+        <div class="absolute bottom-6 left-6 right-6 flex justify-between items-center">
+
+            <div id="hero-session-widget" class="glass-text text-left p-4">
+                <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold">--</h3>
+                <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
+                    <li>--</li>
+                </ul>
+            </div>
+
+            <div>
+              <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
+                <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
+              </a>
+            </div>
+
+            <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans p-4">
+              </div>
+        
         </div>
-
-        <div id="hero-session-widget" class="glass-text absolute bottom-6 left-6 md:left-8 p-4 text-left">
-            <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold">--</h3>
-            <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
-                <li>--</li>
-            </ul>
-        </div>
-
-        <div id="digital-clock-3d" class="absolute bottom-6 right-6 md:right-8 p-4 text-4xl md:text-5xl font-bold font-sans">
-          </div>
-
-      </section>
+        </section>
 
       <section id="dashboard-content" class="scroll-mt-[84px] container mx-auto pt-16 md:py-20 space-y-10">
         <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
@@ -456,7 +459,7 @@
         onSnapshot(q, (snapshot) => {
           container.innerHTML = '';
           if (snapshot.empty) {
-            container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</a</p>`;
+            container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
             return;
           }
           snapshot.forEach((doc, index) => {
@@ -619,7 +622,7 @@
           yesterday.setDate(yesterday.getDate() - 1);
           const yds = yesterday.toISOString().split('T')[0];
 
-          const r2 = await fetch(`httpsG//api.frankfurter.app/${yds}?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD`);
+          const r2 = await fetch(`https://api.frankfurter.app/${yds}?from=USD&to=EUR,JPY,GBP,AUD,CAD,CHF,NZD`);
           if (!r2.ok) throw new Error('Network response for historical data was not ok');
           const old = await r2.json();
 
@@ -630,7 +633,7 @@
           const currencies = ['EUR','JPY','GBP','AUD','CAD','CHF','NZD'];
 
           currencies.forEach(ccy => {
-            if (!rates[ccy] || !oldRates[ccy]) return;
+            if (!rates[ccy] || !oldRates[ccY]) return;
             const current = rates[ccy];
             const prev = oldRates[ccy];
             const change = ((current - prev) / prev) * 100;
@@ -651,7 +654,7 @@
                     <span class="font-medium text-color-base">${ccy}</span>
                   </div>
                   <div class="flex items-center">
-                    <span classG"text-sm font-medium text-color-base">${rateString}</span>
+                    <span class="text-sm font-medium text-color-base">${rateString}</span>
                     <span class="text-xs ml-2 ${changeStyle.class}">${changeStyle.icon} ${Math.abs(change).toFixed(2)}%</span>
                   </div>
                 </div>
