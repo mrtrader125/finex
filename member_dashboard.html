@@ -68,15 +68,15 @@
 
   <div id="app-wrapper" style="display: none;">
 
-    <!-- Header placeholder is filled by app.js -> _header.html -->
+    <!-- Filled by app.js -> /_header.html -->
     <header id="header-placeholder"></header>
-    <!-- Sidebar placeholder is filled by app.js -> _sidebar.html -->
+    <!-- Filled by app.js -> /_sidebar.html -->
     <div id="sidebar-placeholder"></div>
 
     <!-- Main content (top padding equals fixed header height) -->
     <main class="pt-[68px]">
 
-      <!-- HERO occupies exactly one viewport (minus header). Overflow hidden prevents the bottom bar from slipping out. -->
+      <!-- HERO occupies exactly one viewport (minus header). overflow-hidden keeps bottom bar inside. -->
       <section class="content-container min-h-[calc(100svh-68px)] relative flex flex-col items-center justify-center text-center overflow-hidden">
 
         <div class="max-w-3xl md:max-w-4xl">
@@ -264,13 +264,12 @@
 
       const rssFeedCache = new Map();
 
-      /* Session & pairs (unchanged logic) */
+      /* Session & pairs (fixed heroPairsElement reference) */
       function updateSessionInfo() {
         const sessionElement = document.getElementById('session-name');
         const pairsElement = document.getElementById('best-pairs');
         const heroSessionElement = document.getElementById('hero-session-name');
-        theHeroPairs = document.getElementById('hero-best-pairs');
-        const heroPairsElement = theHeroPairs; // alias
+        const heroPairsElement = document.getElementById('hero-best-pairs');
 
         if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) return;
 
