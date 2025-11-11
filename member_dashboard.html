@@ -19,7 +19,7 @@
   <meta name="twitter:title" content="Member Dashboard | Finex">
   <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
 
-  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js" />
+  <link rel="modulepreload" href="httpshttps://www.gstatic.com/firebasejs/10.5.2/firebase-app.js" />
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js" />
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js" />
 
@@ -93,7 +93,7 @@
     #digital-clock-3d .colon {
       animation: blink 1s step-end infinite;
       /* Tweak position to look centered */
-      @apply relative -top-1 md:-top-2;
+      @apply relative -top-0.5; /* Adjusted for smaller font */
     }
 
     @keyframes blink {
@@ -128,8 +128,8 @@
         <div class="absolute bottom-6 left-6 right-6 flex justify-between items-center">
 
             <div id="hero-session-widget" class="glass-text text-left p-4">
-                <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold">--</h3>
-                <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
+                <h3 id="hero-session-name" class="text-lg md:text-xl font-bold">--</h3>
+                <ul id="hero-best-pairs" class="text-xs font-medium space-y-1 mt-2">
                     <li>--</li>
                 </ul>
             </div>
@@ -140,7 +140,7 @@
               </a>
             </div>
 
-            <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans p-4">
+            <div id="digital-clock-3d" class="text-2xl md:text-3xl font-bold font-sans p-4">
               </div>
         
         </div>
@@ -202,14 +202,14 @@
             <div class="flex w-full h-9 items-center justify-center rounded-lg bg-black/20 p-1 mb-4" id="news-tab-container">
               <button class="news-tab-btn flex-1"
                 data-tab-name="LiveSquawk"
-                data-tab-url="https://www.investing.com/rss/news.rss"
+                data-tab-url="httpshttps://www.investing.com/rss/news.rss"
                 data-tab-link="https://www.investing.com/news/latest-news"
                 data-state="inactive">
                 LiveSquawk
               </button>
               <button class="news-tab-btn flex-1"
                 data-tab-name="PiQ"
-                data-tab-url="https://www.investing.com/rss/news_285.rss"
+                data-tab-url="httpshttps://www.investing.com/rss/news_285.rss"
                 data-tab-link="https://www.investing.com/news/forex-news"
                 data-state="inactive">
                 PiQ
@@ -276,12 +276,13 @@
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
         
+        // REDUCED FONT SIZE FOR COLON AND SECONDS
         clockElement.innerHTML = `
           <span>${hours}</span>
-          <span class="colon text-3xl md:text-4xl">:</span>
+          <span class="colon text-xl md:text-2xl">:</span>
           <span>${minutes}</span>
-          <span class="colon text-3xl md:text-4xl">:</span>
-          <span class="text-2xl md:text-3xl opacity-80">${seconds}</span>
+          <span class="colon text-xl md:text-2xl">:</span>
+          <span class="text-lg md:text-xl opacity-80">${seconds}</span>
         `;
       }
       updateClock(); // Run once on load
@@ -633,7 +634,7 @@
           const currencies = ['EUR','JPY','GBP','AUD','CAD','CHF','NZD'];
 
           currencies.forEach(ccy => {
-            if (!rates[ccy] || !oldRates[ccY]) return;
+            if (!rates[ccy] || !oldRates[ccy]) return;
             const current = rates[ccy];
             const prev = oldRates[ccy];
             const change = ((current - prev) / prev) * 100;
@@ -650,7 +651,7 @@
             container.innerHTML += `
               <div class="space-y-1">
                 <div class="flex justify-between items-center">
-                  <div class="flex items-center gap-2">
+                  <div classG="flex items-center gap-2">
                     <span class="font-medium text-color-base">${ccy}</span>
                   </div>
                   <div class="flex items-center">
@@ -664,7 +665,7 @@
           lastUpdatedEl.textContent = `Live data from ${data.date}`;
         } catch (error) {
           console.error("Error fetching currency rates:", error);
-          container.innerHTML = `<p class="text-red-500 text-center">Could not load live rates.</p>`;
+          container.innerHTML = `<p class"text-red-500 text-center">Could not load live rates.</p>`;
           lastUpdatedEl.textContent = 'Error updating data';
         }
       }
