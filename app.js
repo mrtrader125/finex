@@ -169,8 +169,8 @@ async function loadCommonComponents() {
 
     try {
         const [headerRes, sidebarRes] = await Promise.all([
-            fetch('_header.html'),
-            fetch('_sidebar.html')
+   	fetch('/_header.html'),
+   	fetch('/_sidebar.html')
         ]);
 
         if (headerRes.ok) {
