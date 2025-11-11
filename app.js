@@ -81,7 +81,7 @@ export const allSidebarItems = [
   { id: 'settings', href: 'settings.html', icon: 'fa-user-cog', text: 'Settings' },
 ];
 
-// User preferences
+// --- Preferences ---
 export let userPreferences = {
   theme: localStorage.getItem('finex_theme') || 'dark',
   sidebarItems: {},
@@ -95,11 +95,129 @@ if (typeof window !== 'undefined') {
   else if (savedTheme === 'light') document.documentElement.classList.remove('dark');
 }
 
-// --- Main App Initialization ---
+// ---------------- Sidebar wiring (robust) ----------------
+function openSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  if (!sidebar || !overlay) return;
+  sidebar.classList.remove("-translate-x-full");
+  overlay.classList.remove("hidden");
+  requestAnimationFrame(() => overlay.classList.remove("opacity-0"));
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  if (!sidebar || !overlay) return;
+  sidebar.classList.add("-translate-x-full");
+  overlay.classList.add("opacity-0");
+  setTimeout(() => overlay.classList.add("hidden"), 300);
+}
+
+/** Bind buttons if present (idempotent). */
+function bindSidebarButtons() {
+  const openBtn  = document.getElementById("open-sidebar-btn");
+  const closeBtn = document.getElementById("close-sidebar-btn");
+  const overlay  = document.getElementById("sidebar-overlay");
+
+  if (openBtn && !openBtn.dataset.bound) {
+    openBtn.addEventListener('click', (e) => { e.preventDefault(); openSidebar(); });
+    openBtn.dataset.bound = "1";
+  }
+  if (closeBtn && !closeBtn.dataset.bound) {
+    closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+    closeBtn.dataset.bound = "1";
+  }
+  if (overlay && !overlay.dataset.bound) {
+    overlay.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+    overlay.dataset.bound = "1";
+  }
+}
+
+/** Observe DOM until #sidebar + #open-sidebar-btn exist, then bind. */
+function ensureSidebarWired() {
+  bindSidebarButtons(); // try immediately
+  if (document.getElementById("sidebar") && document.getElementById("open-sidebar-btn")) return;
+
+  const mo = new MutationObserver(() => {
+    if (document.getElementById("sidebar") && document.getElementById("open-sidebar-btn")) {
+      bindSidebarButtons();
+      mo.disconnect();
+    }
+  });
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+// ---------------- Hero session & pairs (dashboard only, safe) ----------------
+function updateSessionInfoIfPresent() {
+  const sessionEl = document.getElementById('session-name');
+  const pairsEl = document.getElementById('best-pairs');
+  const heroSessionEl = document.getElementById('hero-session-name');
+  const heroPairsEl = document.getElementById('hero-best-pairs');
+
+  // If none of the elements exist, do nothing
+  if (!sessionEl && !pairsEl && !heroSessionEl && !heroPairsEl) return;
+
+  const now = new Date();
+  const utcHour = now.getUTCHours();
+  const utcDay = now.getUTCDay(); // 0 Sun ... 6 Sat
+
+  let sessionName = "";
+  let bestPairs = [];
+
+  // Market Closed (Fri 21:00 → Sun 21:00 UTC)
+  if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
+    sessionName = "Market Closed";
+    bestPairs = ["--"];
+  } else if (utcHour >= 12 && utcHour < 16) {
+    sessionName = "London / New York Overlap";
+    bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
+  } else if (utcHour >= 7 && utcHour < 9) {
+    sessionName = "Tokyo / London Overlap";
+    bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
+  } else if (utcHour >= 0 && utcHour < 6) {
+    sessionName = "Sydney / Tokyo Overlap";
+    bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
+  } else if (utcHour >= 9 && utcHour < 12) {
+    sessionName = "London Session";
+    bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
+  } else if (utcHour >= 16 && utcHour < 21) {
+    sessionName = "New York Session";
+    bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
+  } else if (utcHour >= 6 && utcHour < 7) {
+    sessionName = "Tokyo Session";
+    bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
+  } else if (utcHour >= 21) {
+    sessionName = "Sydney Session";
+    bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
+  } else {
+    sessionName = "Market Open (Low Volatility)";
+    bestPairs = ["--"];
+  }
+
+  if (sessionEl) sessionEl.textContent = sessionName;
+  if (heroSessionEl) heroSessionEl.textContent = sessionName;
+
+  const renderPairs = (ulEl) => {
+    if (!ulEl) return;
+    ulEl.innerHTML = ""; // clear
+    bestPairs.forEach(pair => {
+      const li = document.createElement('li');
+      li.textContent = pair;
+      li.className = "inline-block"; // horizontal layout (CSS flex on UL)
+      ulEl.appendChild(li);
+    });
+  };
+
+  renderPairs(pairsEl);
+  renderPairs(heroPairsEl);
+}
+
+// ---------------- Core App Init ----------------
 export async function initializeAppCore(pageSpecificInit) {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Hide loader, show app
+      // Loader
       const appLoader = document.getElementById('app-loader');
       if (appLoader) appLoader.style.display = 'none';
       const appWrapper = document.getElementById('app-wrapper');
@@ -108,13 +226,10 @@ export async function initializeAppCore(pageSpecificInit) {
       applyTheme(userPreferences.theme);
 
       const userDocRef = doc(db, 'users', user.uid);
-      let userProfile = {
-        email: user.email,
-        displayName: user.email.split('@')[0]
-      };
+      let userProfile = { email: user.email, displayName: user.email.split('@')[0] };
 
       try {
-        // Load layout files + preferences simultaneously
+        // Load partials + preferences
         const componentsPromise = loadCommonComponents();
         const preferencesPromise = loadPreferences(
           doc(db, "siteSettings", "sidebarDefaults"),
@@ -123,24 +238,26 @@ export async function initializeAppCore(pageSpecificInit) {
         );
         const profilePromise = getDoc(userDocRef);
 
-        // Wait only for UI + preferences
         await Promise.all([componentsPromise, preferencesPromise]);
 
         applyTheme(userPreferences.theme);
         renderSidebar();
 
-        // Wire global (non-sidebar) events
+        // Global events (logout, submenu, etc.)
         attachCoreEventListeners();
 
-        // ⭐ Wire the sidebar EVEN IF the header/sidebar were inline in the HTML
-        wireSidebar();
+        // Ensure sidebar wires (inline or injected)
+        ensureSidebarWired();
 
-        // Finish profile
+        // Dashboard hero widgets (only if elements exist)
+        updateSessionInfoIfPresent();
+        setInterval(updateSessionInfoIfPresent, 300000); // every 5 mins
+
+        // User profile
         const userDocSnap = await profilePromise;
         if (userDocSnap.exists()) {
           userProfile.displayName = userDocSnap.data().displayName || userProfile.displayName;
         }
-
         const userEmailSpan = document.getElementById('user-email');
         if (userEmailSpan) userEmailSpan.textContent = userProfile.email;
 
@@ -152,10 +269,9 @@ export async function initializeAppCore(pageSpecificInit) {
         console.error("Failed to initialize app components:", error);
         const mainContent = document.querySelector('main');
         if (mainContent) {
-          mainContent.innerHTML = `
-            <p style="color: red; text-align: center; padding: 20px;">
-              Error: Could not load page components. ${error.message}
-            </p>`;
+          mainContent.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">
+            Error: Could not load page components. ${error.message}
+          </p>`;
         }
       }
     } else {
@@ -164,7 +280,7 @@ export async function initializeAppCore(pageSpecificInit) {
   });
 }
 
-// --- Load layout components ---
+// --- Load common components (header + sidebar) ---
 async function loadCommonComponents() {
   const headerPlaceholder = document.getElementById('header-placeholder');
   const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
@@ -188,8 +304,8 @@ async function loadCommonComponents() {
       sidebarPlaceholder.innerHTML = `<p style="color:red;text-align:center;">Error: Could not load sidebar.</p>`;
     }
 
-    // ⭐ Wire the sidebar after injection (if placeholders were used)
-    wireSidebar();
+    // After injection, (re)bind sidebar controls
+    ensureSidebarWired();
 
   } catch (error) {
     console.error("Error loading common components:", error);
@@ -198,7 +314,7 @@ async function loadCommonComponents() {
   }
 }
 
-// --- Load preferences in correct hierarchy ---
+// --- Preferences ---
 async function loadPreferences(globalRef, adminRef, userRef) {
   try {
     const [globalSnap, adminSnap, userSnap] = await Promise.all([
@@ -220,22 +336,16 @@ async function loadPreferences(globalRef, adminRef, userRef) {
     const processItem = (id) => {
       let isVisible = true;
       let isLocked = false;
-
       if (userSidebarPrefs[id] !== undefined) isVisible = userSidebarPrefs[id];
       if (adminPrefs[id] !== undefined) { isVisible = adminPrefs[id]; isLocked = true; }
       if (globalPrefs[id] === false) { isVisible = false; isLocked = true; }
-
       if (isLocked) lockedItems[id] = true;
       return isVisible;
     };
 
     allSidebarItems.forEach(item => {
       finalSidebar[item.id] = processItem(item.id);
-      if (item.subItems) {
-        item.subItems.forEach(sub => {
-          finalSidebar[sub.id] = processItem(sub.id));
-        });
-      }
+      if (item.subItems) item.subItems.forEach(sub => finalSidebar[sub.id] = processItem(sub.id));
     });
 
     userPreferences.sidebarItems = finalSidebar;
@@ -247,17 +357,16 @@ async function loadPreferences(globalRef, adminRef, userRef) {
   }
 }
 
-// --- Apply theme ---
+// --- Theme ---
 export function applyTheme(theme) {
   if (typeof window !== 'undefined') localStorage.setItem('finex_theme', theme);
   userPreferences.theme = theme;
   document.documentElement.classList.toggle('dark', theme === 'dark');
-
   const themeToggle = document.getElementById('theme-toggle');
-  if (themeToggle) themeToggle.checked = theme === 'dark';
+  if (themeToggle) themeToggle.checked = (theme === 'dark');
 }
 
-// --- Render sidebar links ---
+// --- Sidebar rendering ---
 export function renderSidebar() {
   const sidebarNav = document.getElementById('sidebar-nav');
   const pageTitleEl = document.getElementById('page-title');
@@ -322,70 +431,18 @@ export function renderSidebar() {
       const link = document.createElement('a');
       link.href = item.href;
       link.className = 'sidebar-link flex items-center gap-4 p-3 rounded-lg';
-      if (item.href === currentPage) {
-        link.classList.add('active');
-        currentPageTitle = item.text;
-      }
+      if (item.href === currentPage) { link.classList.add('active'); currentPageTitle = item.text; }
       link.innerHTML = `<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`;
       sidebarNav.appendChild(link);
     }
   });
 
-  if (pageTitleEl) {
-    pageTitleEl.textContent = currentPageTitle === "Dashboard" ? "Finex" : currentPageTitle;
-  }
+  if (pageTitleEl) pageTitleEl.textContent = currentPageTitle === "Dashboard" ? "Finex" : currentPageTitle;
 }
 
-// --- Sidebar open/close helpers ---
-function openSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const overlay = document.getElementById("sidebar-overlay");
-  if (!sidebar || !overlay) return;
-  sidebar.classList.remove("-translate-x-full");
-  overlay.classList.remove("hidden");
-  requestAnimationFrame(() => overlay.classList.remove("opacity-0"));
-}
-
-function closeSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const overlay = document.getElementById("sidebar-overlay");
-  if (!sidebar || !overlay) return;
-  sidebar.classList.add("-translate-x-full");
-  overlay.classList.add("opacity-0");
-  setTimeout(() => overlay.classList.add("hidden"), 300);
-}
-
-// --- Wire sidebar controls AFTER HTML is injected (or inline) ---
-function wireSidebar() {
-  const openBtn  = document.getElementById("open-sidebar-btn");
-  const closeBtn = document.getElementById("close-sidebar-btn");
-  const overlay  = document.getElementById("sidebar-overlay");
-
-  if (openBtn && !openBtn.dataset.bound) {
-    openBtn.addEventListener('click', (e) => { e.preventDefault(); openSidebar(); });
-    openBtn.dataset.bound = "1";
-  }
-  if (closeBtn && !closeBtn.dataset.bound) {
-    closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
-    closeBtn.dataset.bound = "1";
-  }
-  if (overlay && !overlay.dataset.bound) {
-    overlay.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
-    overlay.dataset.bound = "1";
-  }
-}
-
-// --- Global (non-sidebar) event listeners ---
+// --- Global (non-sidebar) events ---
 function attachCoreEventListeners() {
-  // Fallback: capture clicks anywhere for open/close (handles race conditions)
   document.addEventListener('click', (e) => {
-    const openBtn  = e.target.closest('#open-sidebar-btn');
-    const closeBtn = e.target.closest('#close-sidebar-btn');
-    const overlay  = e.target.closest('#sidebar-overlay');
-
-    if (openBtn)  { e.preventDefault(); openSidebar(); return; }
-    if (closeBtn || overlay) { e.preventDefault(); closeSidebar(); return; }
-
     // Logout
     const logoutBtn = e.target.closest('#logout-btn');
     if (logoutBtn) {
@@ -396,17 +453,19 @@ function attachCoreEventListeners() {
       return;
     }
 
-    // Sidebar nav interactions
+    // Sidebar nav: submenu toggle + close on narrow
     const sidebarNav = document.getElementById('sidebar-nav');
     if (sidebarNav && sidebarNav.contains(e.target)) {
       const link = e.target.closest('a');
       const toggle = e.target.closest('button[data-toggle]');
+
       if (link && !link.closest('.sidebar-submenu')) {
         if (window.innerWidth < 1024) closeSidebar();
       } else if (toggle) {
         const subMenuId = `submenu-${toggle.dataset.toggle}`;
         const subMenu = document.getElementById(subMenuId);
         const chevron = toggle.querySelector('.chevron-icon');
+
         if (subMenu) {
           if (subMenu.style.maxHeight && subMenu.style.maxHeight !== '0px') {
             subMenu.style.maxHeight = '0px';
@@ -422,5 +481,5 @@ function attachCoreEventListeners() {
         if (window.innerWidth < 1024) closeSidebar();
       }
     }
-  }, true); // capture
+  }, true);
 }
