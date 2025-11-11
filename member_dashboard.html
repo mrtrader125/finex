@@ -69,37 +69,25 @@
 
     /* --- 3D GLASS TEXT STYLES --- */
     .glass-text {
-      /* Light Mode Default */
-      color: rgba(63, 63, 70, 0.75); /* text-zinc-700 with 75% opacity */
+      color: rgba(63, 63, 70, 0.75);
       text-shadow:
-        0 1px 1px rgba(255, 255, 255, 0.8), /* Top highlight */
-        0 -1px 1px rgba(0, 0, 0, 0.2);     /* Bottom shadow */
+        0 1px 1px rgba(255, 255, 255, 0.8),
+        0 -1px 1px rgba(0, 0, 0, 0.2);
     }
 
     .dark .glass-text {
-      /* Dark Mode Override */
-      color: rgba(228, 228, 231, 0.75); /* text-zinc-200 with 75% opacity */
+      color: rgba(228, 228, 231, 0.75);
       text-shadow:
-        0 1px 1px rgba(255, 255, 255, 0.2), /* Top highlight */
-        0 -1px 1px rgba(0, 0, 0, 0.5);     /* Bottom shadow */
+        0 1px 1px rgba(255, 255, 255, 0.2),
+        0 -1px 1px rgba(0, 0, 0, 0.5);
     }
     
-    /* Apply base glass text style to the clock's child elements */
-    #digital-clock-3d > span {
-      @apply glass-text;
-    }
-    
-    /* Make the colon blink */
+    #digital-clock-3d > span { @apply glass-text; }
     #digital-clock-3d .colon {
       animation: blink 1s step-end infinite;
-      /* Tweak position to look centered */
       @apply relative -top-1 md:-top-2;
     }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-    /* --- END NEW 3D GLASS TEXT STYLES --- */
+    @keyframes blink { 50% { opacity: 0; } }
   </style>
 </head>
 
@@ -114,7 +102,7 @@
     <div id="sidebar-placeholder"></div>
 
     <main class="pt-[68px]">
-      <section class="container mx-auto h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
+      <section class="container mx-auto h-[calc(100dvh-68px)] flex flex-col items-center justify-center text-center p-4 relative">
         
         <div class="max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-bold text-color-base">
@@ -125,26 +113,25 @@
           </p>
         </div>
 
-         <div class="absolute left-6 right-6 bottom-6 flex justify-between items-end">
+        <div class="absolute inset-x-4 md:inset-x-6 bottom-8 md:bottom-10 flex justify-between items-end">
 
-            <div id="hero-session-widget" class="glass-text text-left p-4">
-                <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold">--</h3>
-                <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
-                    <li>--</li>
-                </ul>
-            </div>
+          <div id="hero-session-widget" class="glass-text text-left p-4">
+            <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold">--</h3>
+            <ul id="hero-best-pairs" class="text-sm font-medium space-y-1 mt-2">
+              <li>--</li>
+            </ul>
+          </div>
 
-            <div>
-              <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
-                <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
-              </a>
-            </div>
+          <div>
+            <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
+              <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
+            </a>
+          </div>
 
-            <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans p-4">
-              </div>
+          <div id="digital-clock-3d" class="text-4xl md:text-5xl font-bold font-sans p-4"></div>
         
         </div>
-        </section>
+      </section>
 
       <section id="dashboard-content" class="scroll-mt-[84px] container mx-auto pt-16 md:py-20 space-y-10">
         <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
@@ -171,6 +158,7 @@
             </ul>
           </div>
         </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="glass-card h-[500px] flex flex-col p-6">
             <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
@@ -207,8 +195,8 @@
                 data-state="inactive">
                 LiveSquawk
               </button>
-              <button class="news-tab-btn flex-1"
-                data-tab-name="PiQ"
+              <button class="news-tab-btn flex-1
+                " data-tab-name="PiQ"
                 data-tab-url="https://www.investing.com/rss/news_285.rss"
                 data-tab-link="https://www.investing.com/news/forex-news"
                 data-state="inactive">
@@ -284,10 +272,9 @@
           <span class="text-2xl md:text-3xl opacity-80">${seconds}</span>
         `;
       }
-      updateClock(); // Run once on load
-      setInterval(updateClock, 1000); // Run every second
+      updateClock();
+      setInterval(updateClock, 1000);
       // --- END CLOCK LOGIC ---
-
 
       // Core app
       const { initializeAppCore, db } = await import('./app.js');
@@ -297,104 +284,68 @@
       const rssFeedCache = new Map();
 
       // --- SESSION & PAIRS FUNCTIONS (DASHBOARD ONLY) ---
-      /**
-       * Updates session name and pairs for BOTH the hero and main dashboard.
-       */
       function updateSessionInfo() {
-        // Get references to ALL session elements
         const sessionElement = document.getElementById('session-name');
         const pairsElement = document.getElementById('best-pairs');
         const heroSessionElement = document.getElementById('hero-session-name');
         const heroPairsElement = document.getElementById('hero-best-pairs');
-        
-        // Stop if *none* of the dashboard elements are on the page
-        if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) {
-            return; 
-        }
+        if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) return;
 
         const now = new Date();
         const utcHour = now.getUTCHours();
-        const utcDay = now.getUTCDay(); // 0 = Sunday
+        const utcDay = now.getUTCDay();
 
         let sessionName = "";
         let bestPairs = [];
 
-        // Market Closed Check (Friday 21:00 UTC to Sunday 21:00 UTC)
         if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
-            sessionName = "Market Closed";
-            bestPairs = ["--"];
-        }
-        // London / New York Overlap (12:00 - 16:00 UTC)
-        else if (utcHour >= 12 && utcHour < 16) { 
-            sessionName = "London / New York Overlap";
-            bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
-        }
-        // Tokyo / London Overlap (07:00 - 09:00 UTC)
-        else if (utcHour >= 7 && utcHour < 9) {
-            sessionName = "Tokyo / London Overlap";
-            bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
-        }
-        // Sydney / Tokyo Overlap (00:00 - 06:00 UTC)
-        else if (utcHour >= 0 && utcHour < 6) {
-            sessionName = "Sydney / Tokyo Overlap";
-            bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
-        }
-        // London Session (Only) (09:00 - 12:00 UTC)
-        else if (utcHour >= 9 && utcHour < 12) { 
-            sessionName = "London Session";
-            bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
-        }
-        // New York Session (Only) (16:00 - 21:00 UTC)
-        else if (utcHour >= 16 && utcHour < 21) {
-            sessionName = "New York Session";
-            bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
-        }
-        // Tokyo Session (Only) (06:00 - 07:00 UTC)
-        else if (utcHour >= 6 && utcHour < 7) {
-            sessionName = "Tokyo Session";
-            bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
-        }
-        // Sydney Session (Only) (21:00 - 00:00 UTC)
-        else if (utcHour >= 21) {
-            sessionName = "Sydney Session";
-            bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
-        }
-        // Fallback for gaps
-        else {
-            sessionName = "Market Open (Low Volatility)";
-            bestPairs = ["--"];
+          sessionName = "Market Closed";
+          bestPairs = ["--"];
+        } else if (utcHour >= 12 && utcHour < 16) { 
+          sessionName = "London / New York Overlap";
+          bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
+        } else if (utcHour >= 7 && utcHour < 9) {
+          sessionName = "Tokyo / London Overlap";
+          bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
+        } else if (utcHour >= 0 && utcHour < 6) {
+          sessionName = "Sydney / Tokyo Overlap";
+          bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
+        } else if (utcHour >= 9 && utcHour < 12) { 
+          sessionName = "London Session";
+          bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
+        } else if (utcHour >= 16 && utcHour < 21) {
+          sessionName = "New York Session";
+          bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
+        } else if (utcHour >= 6 && utcHour < 7) {
+          sessionName = "Tokyo Session";
+          bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
+        } else if (utcHour >= 21) {
+          sessionName = "Sydney Session";
+          bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
+        } else {
+          sessionName = "Market Open (Low Volatility)";
+          bestPairs = ["--"];
         }
 
-        // --- Update Session Name (Both locations) ---
-        if (sessionElement) {
-            sessionElement.textContent = sessionName;
-        }
-        if (heroSessionElement) {
-            heroSessionElement.textContent = sessionName;
-        }
+        if (sessionElement) sessionElement.textContent = sessionName;
+        if (heroSessionElement) heroSessionElement.textContent = sessionName;
 
-        // --- Update Pairs for Main Dashboard Widget ---
         if (pairsElement) {
-            pairsElement.innerHTML = ""; // Clear old list
-            bestPairs.forEach(pair => {
-                // Render pairs as styled tags
-                pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
-            });
+          pairsElement.innerHTML = "";
+          bestPairs.forEach(pair => {
+            pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
+          });
         }
 
-        // --- Update Pairs for Hero Widget ---
         if (heroPairsElement) {
-            heroPairsElement.innerHTML = ""; // Clear old list
-            bestPairs.forEach(pair => {
-                // Render pairs as simple list items
-                heroPairsElement.innerHTML += `<li>${pair}</li>`;
-            });
+          heroPairsElement.innerHTML = "";
+          bestPairs.forEach(pair => {
+            heroPairsElement.innerHTML += `<li>${pair}</li>`;
+          });
         }
       }
-      // --- END: SESSION FUNCTIONS ---
 
-
-      // Smooth scroll helper for the chevron anchor
+      // Smooth scroll helper
       function scrollToContent() {
         const el = document.getElementById('dashboard-content');
         if (!el) return;
@@ -415,12 +366,9 @@
         loadLiveNewsTabs();
         loadLiveCurrencyRates();
 
-        // --- CALL SESSION INFO (DASHBOARD ONLY) ---
-        updateSessionInfo(); // Run once on page load
-        setInterval(updateSessionInfo, 300000); // Update session every 5 mins
-        // --- END ---
+        updateSessionInfo();
+        setInterval(updateSessionInfo, 300000);
 
-        // Reveal content smoothly once layout is ready (optional)
         requestAnimationFrame(() => {
           const dc = document.getElementById('dashboard-content');
           if (dc) dc.classList.remove('opacity-0');
@@ -633,7 +581,7 @@
           const currencies = ['EUR','JPY','GBP','AUD','CAD','CHF','NZD'];
 
           currencies.forEach(ccy => {
-            if (!rates[ccy] || !oldRates[ccY]) return;
+            if (!rates[ccy] || !oldRates[ccY]) return; /* NOTE: keep as-is per your current code */
             const current = rates[ccy];
             const prev = oldRates[ccy];
             const change = ((current - prev) / prev) * 100;
@@ -642,7 +590,6 @@
                               : change < -0.01 ? { class:'change-red', icon:'▼' }
                               : { class:'change-gray', icon:'■' };
 
-            // Mixed presentation preserved intentionally to match your prior UX
             const rateString = ccy === 'JPY'
               ? `1 USD = ${current.toFixed(2)} ${ccy}`
               : `1 ${ccy} = ${(1 / current).toFixed(4)} USD`;
@@ -673,7 +620,6 @@
       initializeAppCore(initDashboardPage);
       
     } catch (error) {
-      // Fallback if Firebase/app fails
       console.error("Failed to initialize the application:", error);
       const appLoader = document.getElementById('app-loader');
       if (appLoader) appLoader.style.display = 'none';
