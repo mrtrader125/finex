@@ -19,25 +19,20 @@
   <meta name="twitter:title" content="Member Dashboard | Finex">
   <meta name="twitter:description" content="Your personal hub for financial tools and clarity.">
 
-  <!-- Firebase preloads -->
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js" />
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js" />
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js" />
 
-  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <!-- Tailwind (Play CDN) -->
   <script> tailwind.config = { darkMode: 'class' } </script>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Your sitewide CSS (optional) -->
   <link rel="stylesheet" href="main.css" />
 
-  <!-- Tailwind utilities & component classes -->
   <style type="text/tailwindcss">
     @layer utilities {
       .text-color-base   { @apply text-zinc-900 dark:text-zinc-100; }
@@ -76,7 +71,6 @@
 
 <body class="antialiased textured-background">
 
-  <!-- App loader -->
   <div id="app-loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
     <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
   </div>
@@ -86,7 +80,6 @@
     <div id="sidebar-placeholder"></div>
 
     <main class="pt-[68px]">
-      <!-- HERO (as per your screenshot) -->
       <section class="container mx-auto min-h-[72vh] flex flex-col items-center justify-center text-center p-4 relative">
         <div class="max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-bold text-color-base">
@@ -96,7 +89,6 @@
             Your journey to financial clarity continues. What will you master today?
           </p>
         </div>
-        <!-- Chevron kept visible -->
         <div class="absolute bottom-[2px] left-1/2 -translate-x-1/2">
           <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
             <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
@@ -104,7 +96,6 @@
         </div>
       </section>
 
-      <!-- MAIN CONTENT -->
       <section id="dashboard-content" class="scroll-mt-[84px] container mx-auto pt-16 md:py-20 space-y-10">
         <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
           <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
@@ -119,7 +110,18 @@
         </article>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <!-- Live YouTube -->
+          <div class="glass-card p-6 flex flex-col justify-center">
+            <h3 class="text-xl font-bold text-color-base mb-1">Current Trading Session</h3>
+            <p id="session-name" class="text-2xl font-semibold text-blue-400">--</p>
+          </div>
+          <div class="glass-card p-6 flex flex-col justify-center">
+            <h3 class="text-xl font-bold text-color-base mb-2">Top Pairs by Volatility</h3>
+            <ul id="best-pairs" class="flex flex-wrap gap-x-3 gap-y-2 text-base font-medium text-color-base">
+              <li>--</li>
+            </ul>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="glass-card h-[500px] flex flex-col p-6">
             <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
             <div class="aspect-video mb-4 rounded-lg overflow-hidden">
@@ -139,7 +141,6 @@
             </div>
           </div>
 
-          <!-- Live Market Updates -->
           <div class="glass-card h-[500px] flex flex-col p-6">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-2xl font-bold">Live Market Updates</h3>
@@ -184,7 +185,6 @@
           </div>
         </div>
 
-        <!-- Forex -->
         <div class="glass-card p-8">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-2xl font-bold">Live Forex (vs. USD)</h3>
@@ -214,7 +214,6 @@
     </main>
   </div>
 
-  <!-- IMPORTANT: single module script (no duplicate app.js include) -->
   <script type="module">
     try {
       // Core app
@@ -223,6 +222,101 @@
         await import("https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js");
 
       const rssFeedCache = new Map();
+
+      // --- NEW: CLOCK AND SESSION FUNCTIONS ---
+
+      /**
+       * Updates the digital clock element in the header.
+       */
+      function updateClock() {
+        const clockElement = document.getElementById('digital-clock');
+        if (!clockElement) return; // Stop if clock isn't on the page
+
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        
+        clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+      }
+
+      /**
+       * Updates the session name and best pairs on the dashboard.
+       * Session times are based on UTC.
+       */
+      function updateSessionInfo() {
+        const sessionElement = document.getElementById('session-name');
+        const pairsElement = document.getElementById('best-pairs');
+        
+        // Stop if dashboard elements aren't on the page
+        if (!sessionElement || !pairsElement) {
+          return; 
+        }
+
+        const now = new Date();
+        const utcHour = now.getUTCHours();
+        const utcDay = now.getUTCDay(); // 0 = Sunday
+
+        let sessionName = "";
+        let bestPairs = [];
+
+        // Market Closed Check (Friday 21:00 UTC to Sunday 21:00 UTC)
+        if ((utcDay === 5 && utcHour >= 21) || utcDay === 6 || (utcDay === 0 && utcHour < 21)) {
+            sessionName = "Market Closed";
+            bestPairs = ["--"];
+        }
+        // London / New York Overlap (12:00 - 16:00 UTC)
+        else if (utcHour >= 12 && utcHour < 16) { 
+            sessionName = "London / New York Overlap";
+            bestPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
+        }
+        // Tokyo / London Overlap (07:00 - 09:00 UTC)
+        else if (utcHour >= 7 && utcHour < 9) {
+            sessionName = "Tokyo / London Overlap";
+            bestPairs = ["EUR/JPY", "GBP/JPY", "CHF/JPY"];
+        }
+        // Sydney / Tokyo Overlap (00:00 - 06:00 UTC)
+        else if (utcHour >= 0 && utcHour < 6) {
+            sessionName = "Sydney / Tokyo Overlap";
+            bestPairs = ["AUD/JPY", "NZD/JPY", "USD/JPY"];
+        }
+        // London Session (Only) (09:00 - 12:00 UTC)
+        else if (utcHour >= 9 && utcHour < 12) { 
+            sessionName = "London Session";
+            bestPairs = ["EUR/USD", "GBP/USD", "USD/CHF"];
+        }
+        // New York Session (Only) (16:00 - 21:00 UTC)
+        else if (utcHour >= 16 && utcHour < 21) {
+            sessionName = "New York Session";
+            bestPairs = ["USD/CAD", "AUD/USD", "NZD/USD"];
+        }
+        // Tokyo Session (Only) (06:00 - 07:00 UTC)
+        else if (utcHour >= 6 && utcHour < 7) {
+            sessionName = "Tokyo Session";
+            bestPairs = ["USD/JPY", "AUD/JPY", "NZD/JPY"];
+        }
+        // Sydney Session (Only) (21:00 - 00:00 UTC)
+        else if (utcHour >= 21) {
+            sessionName = "Sydney Session";
+            bestPairs = ["AUD/USD", "NZD/USD", "AUD/JPY"];
+        }
+        // Fallback for gaps (e.g., 06:00-07:00 UTC)
+        else {
+            sessionName = "Market Open (Low Volatility)";
+            bestPairs = ["--"];
+        }
+
+        // --- Update the Dashboard ---
+        sessionElement.textContent = sessionName;
+
+        pairsElement.innerHTML = ""; // Clear old list
+        bestPairs.forEach(pair => {
+          // Render pairs as styled tags
+          pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
+        });
+      }
+      // --- END: NEW FUNCTIONS ---
+
 
       // Smooth scroll helper for the chevron anchor
       function scrollToContent() {
@@ -244,6 +338,10 @@
         loadLatestAnalysis(db);
         loadLiveNewsTabs();
         loadLiveCurrencyRates();
+
+        // --- NEW CALL ---
+        updateSessionInfo(); // Run once on page load
+        // --- END NEW CALL ---
 
         // Reveal content smoothly once layout is ready (optional)
         requestAnimationFrame(() => {
@@ -409,7 +507,7 @@
           });
         }
 
-        tabContainer.addEventListener('click', (e) => {
+        tabContainer.addEventListener('click', (e).js
           const button = e.target.closest('button.news-tab-btn');
           if (!button) return;
           activeTab = button;
@@ -496,6 +594,18 @@
 
       // INIT
       initializeAppCore(initDashboardPage);
+
+
+      // --- NEW: START TIMERS ---
+      // Update the clock every second
+      setInterval(updateClock, 1000);
+      
+      // Update the session info every 5 minutes (300,000 ms)
+      setInterval(updateSessionInfo, 300000);
+      
+      // Run clock once immediately
+      updateClock();
+      // --- END NEW TIMERS ---
 
     } catch (error) {
       // Fallback if Firebase/app fails
