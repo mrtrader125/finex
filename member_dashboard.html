@@ -44,7 +44,7 @@
     .content-container { @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
   }
 
-  /* 3D glass effect for clock + session widget */
+  /* 3D glass effect text (visual only; no glass backgrounds) */
   #digital-clock-3d,
   #digital-clock-3d * ,
   #hero-session-widget,
@@ -77,7 +77,7 @@
 
   <div id="app-wrapper" style="display: none;">
 
-    <!-- Sidebar overlay + aside (NEEDED for open button to work) -->
+    <!-- Sidebar overlay + aside -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 opacity-0 hidden"></div>
 
     <aside id="sidebar"
@@ -147,9 +147,8 @@
             bottom: max(20px, env(safe-area-inset-bottom));
           "
         >
-          <!-- Left: Session & pairs (smaller + horizontal) -->
-          <div id="hero-session-widget"
-               class="text-left px-3 py-2 rounded-xl bg-black/10 dark:bg-white/5 backdrop-blur-sm">
+          <!-- Left: Session & pairs (PLAIN — no glass) -->
+          <div id="hero-session-widget" class="text-left px-3 py-2 rounded-xl">
             <h3 id="hero-session-name" class="text-base md:text-lg font-bold leading-tight">--</h3>
             <ul id="hero-best-pairs" class="text-xs md:text-sm font-medium flex flex-wrap gap-2 mt-1">
               <li class="inline-block">--</li>
@@ -164,14 +163,14 @@
             <i class="fas fa-chevron-down text-2xl md:text-3xl animate-bounce"></i>
           </a>
 
-          <!-- Right: Clock (single ID!) -->
+          <!-- Right: Clock -->
           <div id="digital-clock-3d" class="text-xl md:text-2xl font-bold font-sans p-1"></div>
         </div>
       </section>
 
       <!-- DASHBOARD CONTENT -->
       <section id="dashboard-content" class="content-container pt-16 md:pt-20 space-y-10">
-        <!-- Featured card -->
+        <!-- Featured card (kept as glass) -->
         <article class="glass-card flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-300 hover:border-blue-500/50">
           <div class="text-7xl text-blue-500 flex-shrink-0" aria-hidden="true">
             <i class="fas fa-book-open"></i>
@@ -184,13 +183,13 @@
           </div>
         </article>
 
-        <!-- Session + Pairs -->
+        <!-- Session + Pairs (PLAIN — glass-card removed) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="glass-card p-6 flex flex-col justify-center">
+          <div class="rounded-2xl border border-color-base p-6 flex flex-col justify-center bg-transparent">
             <h3 class="text-xl font-bold text-color-base mb-1">Current Trading Session</h3>
             <p id="session-name" class="text-2xl font-semibold text-blue-400">--</p>
           </div>
-          <div class="glass-card p-6 flex flex-col justify-center">
+          <div class="rounded-2xl border border-color-base p-6 flex flex-col justify-center bg-transparent">
             <h3 class="text-xl font-bold text-color-base mb-2">Top Pairs by Volatility</h3>
             <ul id="best-pairs" class="flex flex-wrap gap-x-3 gap-y-2 text-base font-medium text-color-base">
               <li class="inline-block">--</li>
@@ -198,7 +197,7 @@
           </div>
         </div>
 
-        <!-- Live blocks -->
+        <!-- Live blocks (kept as glass) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="glass-card h-[500px] flex flex-col p-6">
             <h3 class="text-2xl font-bold mb-4">Al Jazeera English Live</h3>
