@@ -128,11 +128,14 @@ export async function initializeAppCore(pageSpecificInit) {
 
         applyTheme(userPreferences.theme);
         renderSidebar();
-        attachCoreEventListeners(); // (no sidebar open/close here)
 
-        // Now that partials are injected, wire the sidebar buttons
+        // Wire global (non-sidebar) events
+        attachCoreEventListeners();
+
+        // ⭐ Wire the sidebar EVEN IF the header/sidebar were inline in the HTML
         wireSidebar();
 
+        // Finish profile
         const userDocSnap = await profilePromise;
         if (userDocSnap.exists()) {
           userProfile.displayName = userDocSnap.data().displayName || userProfile.displayName;
@@ -173,19 +176,19 @@ async function loadCommonComponents() {
       fetch('/_sidebar.html')
     ]);
 
-    if (headerRes.ok && headerPlaceholder) {
+    if (headerRes?.ok && headerPlaceholder) {
       headerPlaceholder.innerHTML = await headerRes.text();
     } else if (headerPlaceholder) {
       headerPlaceholder.innerHTML = `<p style="color:red;text-align:center;">Error: Could not load header.</p>`;
     }
 
-    if (sidebarRes.ok && sidebarPlaceholder) {
+    if (sidebarRes?.ok && sidebarPlaceholder) {
       sidebarPlaceholder.innerHTML = await sidebarRes.text();
     } else if (sidebarPlaceholder) {
       sidebarPlaceholder.innerHTML = `<p style="color:red;text-align:center;">Error: Could not load sidebar.</p>`;
     }
 
-    // Wire sidebar after HTML is injected
+    // ⭐ Wire the sidebar after injection (if placeholders were used)
     wireSidebar();
 
   } catch (error) {
@@ -230,7 +233,7 @@ async function loadPreferences(globalRef, adminRef, userRef) {
       finalSidebar[item.id] = processItem(item.id);
       if (item.subItems) {
         item.subItems.forEach(sub => {
-          finalSidebar[sub.id] = processItem(sub.id);
+          finalSidebar[sub.id] = processItem(sub.id));
         });
       }
     });
@@ -319,12 +322,10 @@ export function renderSidebar() {
       const link = document.createElement('a');
       link.href = item.href;
       link.className = 'sidebar-link flex items-center gap-4 p-3 rounded-lg';
-
       if (item.href === currentPage) {
         link.classList.add('active');
         currentPageTitle = item.text;
       }
-
       link.innerHTML = `<i class="fas ${item.icon} fa-fw w-6"></i><span>${item.text}</span>`;
       sidebarNav.appendChild(link);
     }
@@ -335,7 +336,7 @@ export function renderSidebar() {
   }
 }
 
-// --- SIDEBAR OPEN/CLOSE HELPERS (working) ---
+// --- Sidebar open/close helpers ---
 function openSidebar() {
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebar-overlay");
@@ -354,21 +355,38 @@ function closeSidebar() {
   setTimeout(() => overlay.classList.add("hidden"), 300);
 }
 
-// --- Wire sidebar controls AFTER HTML is injected ---
+// --- Wire sidebar controls AFTER HTML is injected (or inline) ---
 function wireSidebar() {
   const openBtn  = document.getElementById("open-sidebar-btn");
   const closeBtn = document.getElementById("close-sidebar-btn");
   const overlay  = document.getElementById("sidebar-overlay");
-  if (!openBtn || !closeBtn || !overlay) return; // not ready yet
-  openBtn.onclick  = (e) => { e.preventDefault(); openSidebar(); };
-  closeBtn.onclick = (e) => { e.preventDefault(); closeSidebar(); };
-  overlay.onclick  = (e) => { e.preventDefault(); closeSidebar(); };
+
+  if (openBtn && !openBtn.dataset.bound) {
+    openBtn.addEventListener('click', (e) => { e.preventDefault(); openSidebar(); });
+    openBtn.dataset.bound = "1";
+  }
+  if (closeBtn && !closeBtn.dataset.bound) {
+    closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+    closeBtn.dataset.bound = "1";
+  }
+  if (overlay && !overlay.dataset.bound) {
+    overlay.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+    overlay.dataset.bound = "1";
+  }
 }
 
 // --- Global (non-sidebar) event listeners ---
 function attachCoreEventListeners() {
-  document.body.addEventListener('click', (e) => {
-    // Logout Button
+  // Fallback: capture clicks anywhere for open/close (handles race conditions)
+  document.addEventListener('click', (e) => {
+    const openBtn  = e.target.closest('#open-sidebar-btn');
+    const closeBtn = e.target.closest('#close-sidebar-btn');
+    const overlay  = e.target.closest('#sidebar-overlay');
+
+    if (openBtn)  { e.preventDefault(); openSidebar(); return; }
+    if (closeBtn || overlay) { e.preventDefault(); closeSidebar(); return; }
+
+    // Logout
     const logoutBtn = e.target.closest('#logout-btn');
     if (logoutBtn) {
       e.preventDefault();
@@ -378,19 +396,17 @@ function attachCoreEventListeners() {
       return;
     }
 
-    // Sidebar Navigation (dropdowns & responsive close on link)
+    // Sidebar nav interactions
     const sidebarNav = document.getElementById('sidebar-nav');
     if (sidebarNav && sidebarNav.contains(e.target)) {
       const link = e.target.closest('a');
       const toggle = e.target.closest('button[data-toggle]');
-
       if (link && !link.closest('.sidebar-submenu')) {
         if (window.innerWidth < 1024) closeSidebar();
       } else if (toggle) {
         const subMenuId = `submenu-${toggle.dataset.toggle}`;
         const subMenu = document.getElementById(subMenuId);
         const chevron = toggle.querySelector('.chevron-icon');
-
         if (subMenu) {
           if (subMenu.style.maxHeight && subMenu.style.maxHeight !== '0px') {
             subMenu.style.maxHeight = '0px';
@@ -406,5 +422,5 @@ function attachCoreEventListeners() {
         if (window.innerWidth < 1024) closeSidebar();
       }
     }
-  });
+  }, true); // capture
 }
