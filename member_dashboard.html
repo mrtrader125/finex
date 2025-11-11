@@ -25,7 +25,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;6G00;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -67,7 +67,7 @@
       overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* --- NEW 3D CLOCK STYLES --- */
+    /* --- 3D CLOCK STYLES --- */
     #digital-clock-3d {
       /* Light Mode "3D" Effect (inset) */
       text-shadow: 
@@ -96,8 +96,6 @@
     @keyframes blink {
       50% { opacity: 0; }
     }
-    /* --- END NEW 3D CLOCK STYLES --- */
-
   </style>
 </head>
 
@@ -114,17 +112,26 @@
     <main class="pt-[68px]">
       <section class="container mx-auto min-h-[72vh] flex flex-col items-center justify-center text-center p-4 relative">
         
-        <div id="digital-clock-3d" class="absolute top-6 right-6 md:top-8 md:right-8 p-4 text-4xl md:text-5xl font-bold font-sans">
+        <div id="hero-session-widget" class="absolute bottom-6 left-6 p-4 text-left">
+            <h3 id="hero-session-name" class="text-2xl md:text-3xl font-bold text-color-base">--</h3>
+            <ul id="hero-best-pairs" class="text-sm text-color-muted font-medium space-y-1 mt-2">
+                <li>--</li>
+            </ul>
+        </div>
+
+        <div id="digital-clock-3d" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 p-4 text-4xl md:text-5xl font-bold font-sans">
           </div>
+        
         <div class="max-w-3xl">
           <h1 class="text-4xl md:text-6xl font-bold text-color-base">
             Welcome back, <span id="member-name">Member</span>.
           </h1>
           <p class="text-lg md:text-xl text-color-muted mt-4 max-w-xl mx-auto">
             Your journey to financial clarity continues. What will you master today?
-          </a</p>
+          </p>
         </div>
-        <div class="absolute bottom-[2px] left-1/2 -translate-x-1/2">
+
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
           <a href="#dashboard-content" class="text-color-muted animate-bounce" aria-label="Scroll to content">
             <i class="fas fa-chevron-down fa-2x" aria-hidden="true"></i>
           </a>
@@ -251,8 +258,7 @@
 
   <script type="module">
     try {
-      // --- NEW: 3D CLOCK LOGIC (DASHBOARD ONLY) ---
-      // This runs immediately when the page loads.
+      // --- 3D CLOCK LOGIC (DASHBOARD ONLY) ---
       function updateClock() {
         const clockElement = document.getElementById('digital-clock-3d');
         if (!clockElement) return;
@@ -262,7 +268,6 @@
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
         
-        // Build the HTML with spans for styling the colon and seconds
         clockElement.innerHTML = `
           <span>${hours}</span>
           <span class="colon text-3xl md:text-4xl">:</span>
@@ -273,10 +278,10 @@
       }
       updateClock(); // Run once on load
       setInterval(updateClock, 1000); // Run every second
-      // --- END NEW CLOCK LOGIC ---
+      // --- END CLOCK LOGIC ---
 
 
-      // Core app (will run after clock starts)
+      // Core app
       const { initializeAppCore, db } = await import('./app.js');
       const { collection, onSnapshot, query, orderBy, limit } =
         await import("https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js");
@@ -285,13 +290,19 @@
 
       // --- SESSION & PAIRS FUNCTIONS (DASHBOARD ONLY) ---
       /**
-       * Updates the session name and best pairs on the dashboard.
+       * Updates session name and pairs for BOTH the hero and main dashboard.
        */
       function updateSessionInfo() {
+        // Get references to ALL session elements
         const sessionElement = document.getElementById('session-name');
         const pairsElement = document.getElementById('best-pairs');
+        const heroSessionElement = document.getElementById('hero-session-name');
+        const heroPairsElement = document.getElementById('hero-best-pairs');
         
-        if (!sessionElement || !pairsElement) return; 
+        // Stop if *none* of the dashboard elements are on the page
+        if (!sessionElement && !pairsElement && !heroSessionElement && !heroPairsElement) {
+            return; 
+        }
 
         const now = new Date();
         const utcHour = now.getUTCHours();
@@ -346,13 +357,31 @@
             bestPairs = ["--"];
         }
 
-        // --- Update the Dashboard ---
-        sessionElement.textContent = sessionName;
+        // --- Update Session Name (Both locations) ---
+        if (sessionElement) {
+            sessionElement.textContent = sessionName;
+        }
+        if (heroSessionElement) {
+            heroSessionElement.textContent = sessionName;
+        }
 
-        pairsElement.innerHTML = ""; // Clear old list
-        bestPairs.forEach(pair => {
-          pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
-        });
+        // --- Update Pairs for Main Dashboard Widget ---
+        if (pairsElement) {
+            pairsElement.innerHTML = ""; // Clear old list
+            bestPairs.forEach(pair => {
+                // Render pairs as styled tags
+                pairsElement.innerHTML += `<li class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md shadow-sm">${pair}</li>`;
+            });
+        }
+
+        // --- Update Pairs for Hero Widget ---
+        if (heroPairsElement) {
+            heroPairsElement.innerHTML = ""; // Clear old list
+            bestPairs.forEach(pair => {
+                // Render pairs as simple list items
+                heroPairsElement.innerHTML += `<li>${pair}</li>`;
+            });
+        }
       }
       // --- END: SESSION FUNCTIONS ---
 
@@ -379,7 +408,6 @@
         loadLiveCurrencyRates();
 
         // --- CALL SESSION INFO (DASHBOARD ONLY) ---
-        // (Clock calls have been removed from here)
         updateSessionInfo(); // Run once on page load
         setInterval(updateSessionInfo, 300000); // Update session every 5 mins
         // --- END ---
@@ -423,7 +451,7 @@
         onSnapshot(q, (snapshot) => {
           container.innerHTML = '';
           if (snapshot.empty) {
-            container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</a</p>`;
+            container.innerHTML = `<p class="text-color-muted text-center">No analysis available yet.</p>`;
             return;
           }
           snapshot.forEach((doc, index) => {
