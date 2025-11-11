@@ -34,29 +34,43 @@
   <link rel="stylesheet" href="main.css" />
 
   <style type="text/tailwindcss">
-    @layer utilities {
-      .text-color-base   { @apply text-zinc-900 dark:text-zinc-100; }
-      .text-color-muted  { @apply text-zinc-500 dark:text-zinc-400; }
-      .border-color-base { @apply border-zinc-200 dark:border-zinc-800; }
-      .hover-bg-base     { @apply hover:bg-zinc-100 dark:hover:bg-zinc-800; }
-      .glass-card        { @apply rounded-2xl border border-color-base bg-white/60 dark:bg-zinc-900/40 backdrop-blur; }
-      .textured-background { @apply bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900; }
-      .content-container { @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
-    }
+  @layer utilities {
+    .text-color-base   { @apply text-zinc-900 dark:text-zinc-100; }
+    .text-color-muted  { @apply text-zinc-500 dark:text-zinc-400; }
+    .border-color-base { @apply border-zinc-200 dark:border-zinc-800; }
+    .hover-bg-base     { @apply hover:bg-zinc-100 dark:hover:bg-zinc-800; }
+    .glass-card        { @apply rounded-2xl border border-color-base bg-white/60 dark:bg-zinc-900/40 backdrop-blur; }
+    .textured-background { @apply bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900; }
+    .content-container { @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
+  }
 
-    /* Glass text for clock/session */
-    .glass-text {
-      color: rgba(63, 63, 70, 0.75);
-      text-shadow: 0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(0,0,0,0.2);
-    }
-    .dark .glass-text {
-      color: rgba(228, 228, 231, 0.75);
-      text-shadow: 0 1px 1px rgba(255,255,255,0.2), 0 -1px 1px rgba(0,0,0,0.5);
-    }
-    #digital-clock-3d > span { @apply glass-text; }
-    #digital-clock-3d .colon { animation: blink 1s step-end infinite; @apply relative -top-1 md:-top-2; }
-    @keyframes blink { 50% { opacity: 0; } }
-  </style>
+  /* --- 3D GLASS TEXT (robust selectors so it applies to dynamic content) --- */
+  /* Base (light) */
+  #digital-clock-3d,
+  #digital-clock-3d * ,
+  #hero-session-widget,
+  #hero-session-widget * {
+    color: rgba(63, 63, 70, 0.85);           /* similar to text-zinc-700 */
+    text-shadow:
+      0 1px 1px rgba(255, 255, 255, 0.8),   /* highlight */
+      0 -1px 1px rgba(0, 0, 0, 0.25);       /* bottom shadow */
+  }
+  /* Dark mode */
+  .dark #digital-clock-3d,
+  .dark #digital-clock-3d * ,
+  .dark #hero-session-widget,
+  .dark #hero-session-widget * {
+    color: rgba(228, 228, 231, 0.9);        /* text-zinc-200-ish */
+    text-shadow:
+      0 1px 1px rgba(255, 255, 255, 0.2),
+      0 -1px 1px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Keep the blinking colon */
+  #digital-clock-3d .colon { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+
 </head>
 
 <body class="antialiased textured-background">
